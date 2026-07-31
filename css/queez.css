@@ -1,0 +1,180 @@
+/* ==========================================================================
+   queez.css — the help desk button and panel
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   FLOATING BUTTON — bottom left, so it never fights the toasts on the right
+   -------------------------------------------------------------------------- */
+.qz-fab{
+  position:fixed; left:16px; bottom:16px; z-index:880;
+  display:flex; align-items:center; gap:9px;
+  height:46px; padding:0 16px 0 11px; border-radius:26px;
+  background:linear-gradient(140deg, rgba(35,32,15,.96), rgba(14,18,22,.96));
+  border:1.5px solid rgba(245,197,24,.45);
+  box-shadow:0 8px 26px rgba(0,0,0,.55), 0 0 22px rgba(245,197,24,.16);
+  transition:transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
+}
+.qz-fab:hover{
+  transform:translateY(-2px);
+  border-color:var(--gold);
+  box-shadow:0 12px 32px rgba(0,0,0,.6), 0 0 32px rgba(245,197,24,.36);
+}
+.qz-fab.on{ border-color:var(--gold); }
+.qz-fab-face{
+  width:28px; height:28px; border-radius:50%;
+  display:grid; place-items:center; font-size:15px; flex-shrink:0;
+  background:radial-gradient(circle at 50% 35%, #2a2612, #0c0f13 75%);
+  border:1px solid rgba(245,197,24,.4);
+}
+.qz-fab-label{
+  font-size:12.5px; font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(180deg,#fff8c9,#f5c518 55%,#c08d15);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* he has something to say */
+.qz-fab.has-news{ animation:qzNudge 1.4s ease-in-out 3; }
+@keyframes qzNudge{
+  0%,100%{ transform:translateY(0) rotate(0); }
+  20%{ transform:translateY(-4px) rotate(-4deg); }
+  40%{ transform:translateY(0) rotate(3deg); }
+  60%{ transform:translateY(-2px) rotate(-2deg); }
+}
+
+/* --------------------------------------------------------------------------
+   PANEL
+   -------------------------------------------------------------------------- */
+.qz-panel{
+  position:fixed; left:16px; bottom:72px; z-index:881;
+  width:min(370px, calc(100vw - 32px));
+  max-height:min(560px, calc(100vh - 130px));
+  display:flex; flex-direction:column; overflow:hidden;
+  border-radius:18px;
+  background:rgba(13,17,22,.96);
+  border:1px solid rgba(245,197,24,.28);
+  box-shadow:0 26px 60px rgba(0,0,0,.7);
+  opacity:0; transform:translateY(14px) scale(.97); pointer-events:none;
+  transition:opacity .22s var(--ease), transform .22s var(--ease);
+}
+.qz-panel.on{ opacity:1; transform:none; pointer-events:auto; }
+
+.qz-head{
+  display:flex; align-items:center; gap:11px; flex-shrink:0;
+  padding:13px 14px; border-bottom:1px solid rgba(245,197,24,.2);
+  background:linear-gradient(180deg, rgba(245,197,24,.09), transparent);
+}
+.qz-avatar{
+  width:36px; height:36px; border-radius:50%;
+  display:grid; place-items:center; font-size:18px; flex-shrink:0;
+  background:radial-gradient(circle at 50% 35%, #2a2612, #0c0f13 75%);
+  border:1.5px solid rgba(245,197,24,.45);
+}
+.qz-name{ font-size:14px; font-weight:900; letter-spacing:-.2px; }
+.qz-role{ font-size:10px; color:var(--gold-deep); font-weight:700; letter-spacing:.3px; }
+.qz-x{
+  margin-left:auto; width:28px; height:28px; border-radius:8px;
+  display:grid; place-items:center; color:var(--muted); transition:.15s;
+}
+.qz-x:hover{ background:var(--panel-2); color:var(--text); }
+
+/* ---- transcript ---- */
+.qz-log{ flex:1; overflow-y:auto; padding:13px; display:flex; flex-direction:column; gap:11px; }
+.qz-msg{ display:flex; gap:8px; align-items:flex-start; animation:fade .22s var(--ease); }
+.qz-msg.you{ justify-content:flex-end; }
+.qz-face{
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  display:grid; place-items:center; font-size:12px;
+  background:radial-gradient(circle at 50% 35%, #2a2612, #0c0f13 75%);
+  border:1px solid rgba(245,197,24,.34);
+}
+.qz-bubble{
+  max-width:82%; padding:9px 12px; border-radius:13px;
+  font-size:12.5px; line-height:1.55;
+  background:var(--panel-2); border:1px solid var(--border);
+}
+.qz-msg.queez .qz-bubble{ border-top-left-radius:4px; }
+.qz-msg.you .qz-bubble{
+  border-top-right-radius:4px;
+  background:linear-gradient(180deg, rgba(79,140,255,.22), rgba(79,140,255,.12));
+  border-color:var(--accent-line);
+}
+.qz-bubble b{ color:var(--text); }
+.qz-bubble code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px; padding:1px 5px; border-radius:4px;
+  background:var(--panel-3); color:var(--gold);
+}
+.qz-open{ color:var(--gold); font-weight:700; }
+.qz-close{ color:var(--gold-deep); font-style:italic; }
+.qz-topic{
+  display:block; margin-top:7px;
+  font-size:9px; font-weight:800; letter-spacing:.7px; text-transform:uppercase;
+  color:var(--dim);
+}
+
+/* typing dots */
+.qz-typing{ display:inline-flex; gap:4px; padding:2px 0; }
+.qz-typing i{
+  width:6px; height:6px; border-radius:50%; background:var(--gold-deep);
+  animation:qzDot 1.1s ease-in-out infinite;
+}
+.qz-typing i:nth-child(2){ animation-delay:.15s; }
+.qz-typing i:nth-child(3){ animation-delay:.3s; }
+@keyframes qzDot{ 0%,60%,100%{ opacity:.3; transform:translateY(0); } 30%{ opacity:1; transform:translateY(-3px); } }
+
+/* ---- suggestion chips ---- */
+.qz-chips{
+  display:flex; gap:5px; padding:0 13px 9px; flex-shrink:0;
+  overflow-x:auto; scrollbar-width:none;
+}
+.qz-chips::-webkit-scrollbar{ display:none; }
+.qz-chip{
+  flex-shrink:0; padding:6px 11px; border-radius:20px; white-space:nowrap;
+  font-size:11px; font-weight:600; color:var(--muted);
+  background:var(--panel-2); border:1px solid var(--border);
+  transition:.15s var(--ease);
+}
+.qz-chip:hover{ color:var(--gold); border-color:rgba(245,197,24,.4); }
+
+.qz-actions{ display:flex; gap:6px; padding:0 13px 10px; flex-shrink:0; }
+.qz-act{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+  padding:8px; border-radius:9px;
+  font-size:11.5px; font-weight:700; color:var(--muted);
+  background:var(--panel-2); border:1px solid var(--border);
+  transition:.15s var(--ease);
+}
+.qz-act:hover{ color:var(--text); border-color:rgba(245,197,24,.34); }
+.qz-act i{ color:var(--gold); font-size:11px; }
+
+/* ---- input ---- */
+.qz-form{
+  display:flex; gap:7px; padding:11px 13px; flex-shrink:0;
+  border-top:1px solid rgba(245,197,24,.16);
+}
+.qz-form input{
+  flex:1; height:38px; padding:0 12px; border-radius:20px;
+  background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+  font-size:12.5px; transition:.16s;
+}
+.qz-form input::placeholder{ color:var(--dim); }
+.qz-form input:focus{
+  outline:none; border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(245,197,24,.12);
+}
+.qz-form button{
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  display:grid; place-items:center; font-size:13px; color:#12100a;
+  background:linear-gradient(180deg,#ffe680,#f5c518);
+  transition:.16s var(--ease);
+}
+.qz-form button:hover{ transform:scale(1.06); box-shadow:var(--shadow-gold); }
+
+/* --------------------------------------------------------------------------
+   Small screens: the button shrinks to the hat, the panel fills the width
+   -------------------------------------------------------------------------- */
+@media (max-width:860px){
+  .qz-fab{ padding:0; width:46px; justify-content:center; left:12px; bottom:12px; }
+  .qz-fab-label{ display:none; }
+  .qz-panel{ left:12px; right:12px; width:auto; bottom:66px; max-height:calc(100vh - 120px); }
+}

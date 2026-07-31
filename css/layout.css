@@ -220,7 +220,11 @@
   grid-template-columns:var(--left-w) minmax(0,1fr) var(--right-w);
   gap:10px; padding:10px;
 }
+/* position:relative lives here, not in a later sheet, so that the drawer
+   rules below (position:fixed at <=1180px) still win by source order. A
+   later stylesheet setting it would silently un-drawer the sidebars. */
 .card{
+  position:relative;
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:var(--radius);

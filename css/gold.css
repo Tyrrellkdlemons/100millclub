@@ -16,7 +16,9 @@
 /* --------------------------------------------------------------------------
    PANELS — a hairline of gold along the top edge of every card
    -------------------------------------------------------------------------- */
-.card{ position:relative; }
+/* NB: no `position` here on purpose. .card is already relative in layout.css;
+   re-declaring it from this sheet would land after the responsive rules and
+   cancel the position:fixed that makes the sidebars into drawers. */
 .card::before{
   content:""; position:absolute; left:14px; right:14px; top:-1px; height:1px;
   background:var(--trim-soft); border-radius:1px; pointer-events:none; z-index:2;

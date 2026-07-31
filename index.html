@@ -72,6 +72,10 @@
 <link rel="stylesheet" href="css/indicators.css" />
 <link rel="stylesheet" href="css/radar.css" />
 <link rel="stylesheet" href="css/portfolio.css" />
+<!-- backdrop after the structural sheets: it re-tints .card / .nav,
+     so it has to come later than the rules that set them solid -->
+<link rel="stylesheet" href="css/backdrop.css" />
+<link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim last, so it layers over everything it decorates -->
 <link rel="stylesheet" href="css/gold.css" />
@@ -79,6 +83,15 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
+
+<!-- animated backdrop: drifting light behind the crest's circuit traces -->
+<div class="bg" aria-hidden="true">
+  <span class="bg-orb gold"></span>
+  <span class="bg-orb green"></span>
+  <span class="bg-orb blue"></span>
+  <span class="bg-grid"></span>
+  <span class="bg-sheen"></span>
+</div>
 
 <!-- ======================= LIVE TICKER TAPE ======================= -->
 <div class="tape">
@@ -835,6 +848,39 @@
   <div class="tip-key"></div>
 </div>
 
+<!-- ======================= QUEEZ ======================= -->
+<button class="qz-fab" id="qzFab" aria-label="Ask Queez for help"
+        data-tip="Ask Queez"
+        data-tip-desc="He answers questions about the terminal. He is also insufferable about it.">
+  <span class="qz-fab-face">🎩</span>
+  <span class="qz-fab-label">Ask Queez</span>
+</button>
+
+<aside class="qz-panel" id="qzPanel" aria-label="Queez help">
+  <header class="qz-head">
+    <span class="qz-avatar">🎩</span>
+    <div>
+      <div class="qz-name">Queez</div>
+      <div class="qz-role">Help desk · permanently unimpressed</div>
+    </div>
+    <button class="qz-x" id="qzClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+  </header>
+
+  <div class="qz-log" id="qzLog"></div>
+
+  <div class="qz-chips" id="qzChips"></div>
+
+  <div class="qz-actions">
+    <button class="qz-act" id="qzTourBtn"><i class="fa-solid fa-route"></i> Walk me round</button>
+    <button class="qz-act" id="qzGuideBtn"><i class="fa-solid fa-book-open"></i> Proper guide</button>
+  </div>
+
+  <form class="qz-form" id="qzForm">
+    <input id="qzInput" type="text" placeholder="Ask me something…" autocomplete="off" />
+    <button type="submit" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+  </form>
+</aside>
+
 <!-- shown while an image file is dragged anywhere over the page -->
 <div class="file-veil" id="fileVeil">
   <div class="file-veil-card">
@@ -1210,6 +1256,8 @@
 <script src="js/vlogs.js"></script>
 <script src="js/dragdrop.js"></script>
 <script src="js/tour.js"></script>
+<script src="js/queez.js"></script>
+<script src="js/queez-ui.js"></script>
 <script src="js/indicator-ui.js"></script>
 <script src="js/alerts-ui.js"></script>
 <script src="js/radar-ui.js"></script>

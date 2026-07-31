@@ -1,0 +1,161 @@
+/* ==========================================================================
+   backdrop.css — the living background, and the glass on top of it
+
+   The crest has circuit traces, candlesticks and a gold arrow. So does the
+   background: a slow-drifting field of light behind a faint circuit grid,
+   with the panels turned to frosted glass so you can see it through them.
+
+   Legibility rule: the backdrop never rises above about 6% contrast, and
+   every glass panel keeps a solid tint under the blur. If a number is
+   harder to read than it was before, the effect has failed and gets dialled
+   back — decoration must never cost you a price.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   LAYER 1 — drifting light
+   -------------------------------------------------------------------------- */
+.bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:#05070a;
+}
+
+.bg-orb{
+  position:absolute; border-radius:50%;
+  filter:blur(70px); opacity:.5;
+  will-change:transform;
+}
+.bg-orb.gold{
+  width:46vw; height:46vw; left:-8vw; top:-14vw;
+  background:radial-gradient(circle, rgba(245,197,24,.30), transparent 68%);
+  animation:drift1 34s ease-in-out infinite alternate;
+}
+.bg-orb.green{
+  width:40vw; height:40vw; right:-10vw; top:8vw;
+  background:radial-gradient(circle, rgba(61,220,75,.20), transparent 68%);
+  animation:drift2 41s ease-in-out infinite alternate;
+}
+.bg-orb.blue{
+  width:52vw; height:52vw; left:24vw; bottom:-24vw;
+  background:radial-gradient(circle, rgba(79,140,255,.22), transparent 68%);
+  animation:drift3 47s ease-in-out infinite alternate;
+}
+@keyframes drift1{ to{ transform:translate3d(9vw, 7vh, 0) scale(1.14); } }
+@keyframes drift2{ to{ transform:translate3d(-11vw, 10vh, 0) scale(1.2); } }
+@keyframes drift3{ to{ transform:translate3d(7vw, -9vh, 0) scale(1.1); } }
+
+/* --------------------------------------------------------------------------
+   LAYER 2 — circuit traces, straight off the crest
+   -------------------------------------------------------------------------- */
+.bg-grid{
+  position:absolute; inset:-2px; opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'>\
+<g fill='none' stroke='%23f5c518' stroke-opacity='0.16' stroke-width='1'>\
+<path d='M0 40h58l16 16h52'/><path d='M126 56v44h60'/><path d='M220 150h-70l-18-18H86'/>\
+<path d='M40 220v-52l14-14h44'/><path d='M186 0v34l-16 16v40'/><path d='M0 130h34l20 20v70'/>\
+<path d='M150 220v-30l18-18h52'/><path d='M98 0v26l14 14h38'/>\
+</g>\
+<g fill='%23f5c518' fill-opacity='0.2'>\
+<circle cx='58' cy='40' r='2.2'/><circle cx='126' cy='56' r='2.2'/><circle cx='186' cy='100' r='2.2'/>\
+<circle cx='54' cy='150' r='2.2'/><circle cx='132' cy='132' r='2.2'/><circle cx='112' cy='40' r='2.2'/>\
+</g>\
+<g fill='%233ddc4b' fill-opacity='0.16'>\
+<rect x='168' y='186' width='4' height='16' rx='1'/><rect x='178' y='178' width='4' height='24' rx='1'/>\
+<rect x='188' y='170' width='4' height='32' rx='1'/><rect x='198' y='182' width='4' height='20' rx='1'/>\
+</g>\
+</svg>");
+  background-size:220px 220px;
+  animation:gridPan 90s linear infinite;
+  mask-image:radial-gradient(ellipse at 50% 40%, #000 20%, transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 40%, #000 20%, transparent 78%);
+}
+@keyframes gridPan{ to{ background-position:220px 220px; } }
+
+/* a faint sheen that sweeps the whole page every so often */
+.bg-sheen{
+  position:absolute; inset:-30% -60%;
+  background:linear-gradient(105deg, transparent 42%, rgba(245,197,24,.055) 50%, transparent 58%);
+  animation:sheen 19s ease-in-out infinite;
+}
+@keyframes sheen{
+  0%,72%{ transform:translateX(-38%); }
+  100%{ transform:translateX(38%); }
+}
+
+/* --------------------------------------------------------------------------
+   LAYER 3 — glass
+   The panels keep a solid tint under the blur so text never sits on raw
+   background. Numbers stay exactly as readable as they were.
+   -------------------------------------------------------------------------- */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)){
+  body{ background:transparent; }
+  body::before{ display:none; }          /* the old static glow is redundant now */
+
+  .card{
+    background:rgba(14,18,22,.74);
+    backdrop-filter:blur(18px) saturate(1.25);
+    -webkit-backdrop-filter:blur(18px) saturate(1.25);
+    border-color:rgba(245,197,24,.14);
+  }
+  .nav{
+    background:rgba(10,13,17,.72);
+    backdrop-filter:blur(20px) saturate(1.3);
+    -webkit-backdrop-filter:blur(20px) saturate(1.3);
+  }
+  .tape{
+    background:rgba(9,12,16,.7);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+
+  /* Inputs and inner blocks sit ON the glass, so they stay opaque —
+     stacking blur on blur is where these designs turn to mud. */
+  .input, .summary, .pf-cell, .rcell, .eq-wrap, .trade-log,
+  .pos, .al-row, .pf-row, .lib-chip, .radar-col, .build-help{
+    background:rgba(19,25,32,.92);
+  }
+
+  .modal{
+    background:rgba(14,18,22,.9);
+    backdrop-filter:blur(26px) saturate(1.3);
+    -webkit-backdrop-filter:blur(26px) saturate(1.3);
+  }
+  .qz-panel{
+    background:rgba(13,17,22,.88);
+    backdrop-filter:blur(24px) saturate(1.3);
+    -webkit-backdrop-filter:blur(24px) saturate(1.3);
+  }
+  .toast{
+    background:rgba(19,25,32,.9);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  /* The chart panel gets the least transparency of all — candles and price
+     labels are the one thing that must never fight the background. */
+  .chart-card{ background:rgba(12,16,20,.88); }
+  .chart-stack, .panes{ background:rgba(10,13,17,.6); }
+}
+
+/* No backdrop-filter (older Safari, some Firefox setups): fall back to solid
+   panels. The background still drifts behind them, just without the frosting. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .card{ background:rgba(14,18,22,.96); }
+  .nav{ background:rgba(10,13,17,.97); }
+}
+
+/* --------------------------------------------------------------------------
+   Motion and power
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  .bg-orb,.bg-grid,.bg-sheen{ animation:none; }
+}
+
+/* Phones: blur is the most expensive thing on the page, so ease off. */
+@media (max-width:860px){
+  .bg-orb{ filter:blur(56px); opacity:.42; }
+  .bg-sheen{ display:none; }
+  @supports (backdrop-filter: blur(1px)){
+    .card{ backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); background:rgba(14,18,22,.86); }
+  }
+}

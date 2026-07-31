@@ -31,6 +31,7 @@
     MC.applyIndicators();
     UI.render();
     MC.ui.toast('Added', def.name + ' is on the chart.', 'ok');
+    if (MC.queezUI) MC.queezUI.remark(MC.queez.noteIndicators(active().length));
   };
 
   UI.removeUid = function (uid) {
@@ -60,6 +61,7 @@
     MC.applyIndicators();
     UI.render();
     MC.ui.toast('Chart cleared', 'All indicators removed.', 'info');
+    if (MC.queezUI) MC.queezUI.remark(MC.queez.noteIndicators(0));
   };
 
   UI.setParam = function (uid, key, value) {

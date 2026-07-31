@@ -525,7 +525,10 @@
     ['oQty', 'oPx', 'oSl', 'oTp'].forEach(function (id) {
       $(id).addEventListener('input', MC.trade.updateSummary);
     });
-    $('placeBtn').addEventListener('click', MC.trade.place);
+    $('placeBtn').addEventListener('click', function () {
+      MC.trade.place();
+      MC.queezUI.remark(MC.queez.noteOrder());
+    });
     MC.on($('positions'), 'click', '[data-close-pos]', function (e, btn) {
       MC.trade.close(btn.getAttribute('data-close-pos'));
     });
@@ -722,6 +725,7 @@
     MC.alertsUI.init();
     MC.radarUI.init();
     MC.portfolioUI.init();
+    MC.queezUI.init();
     MC.quotes.refresh().then(function () { MC.portfolio.snapshot(true); });
     MC.quotes.startAuto(30);
     MC.news.refresh().then(function () { MC.news.primeSeen(); });

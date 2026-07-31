@@ -19,76 +19,77 @@
   var STEPS = [
     {
       target: null,
-      title: 'Welcome to the City of Grind 👑',
-      body: 'This is a full trading terminal. Nothing here risks real money — ' +
-            'every order and backtest is a simulation, so you can press anything ' +
-            'and learn how it works. Takes about a minute.'
+      title: 'Right. You must be the new one.',
+      body: 'I am <b>Queez</b>. I run the help desk, which is a generous way of describing what I do. ' +
+            'This is a full trading terminal and none of it risks real money, so you can mash every button ' +
+            'you like and the worst that happens is I judge you. Sixty seconds. Try to keep up.'
     },
     {
       target: '#leftPanel',
-      title: 'Your watchlist',
-      body: '<b>Click any row</b> to load that market. You can also <b>drag rows up ' +
-            'and down</b> to arrange them your way — the order is remembered.'
+      title: 'Your shopping list',
+      body: 'Everything you can look at lives here. <b>Click a row</b> to load it. You can also ' +
+            '<b>drag rows around</b> to put your favourites at the top, which it remembers, because it is ' +
+            'more organised than you are.'
     },
     {
       target: '.search',
-      title: 'Find anything fast',
-      body: 'Type a symbol like <b>NVDA</b> or a name like <b>Nikkei</b>. ' +
-            'The tabs beside it filter the list to Stocks, Crypto, Forex or Indices.'
+      title: 'For when scrolling is too much',
+      body: 'Type <b>NVDA</b>, or type <b>Nikkei</b> — symbol or name, both work. The tabs next to it filter ' +
+            'down to Stocks, Crypto, Forex or Indices if you enjoy doing things the long way.'
     },
     {
       target: '#srcSwitch',
-      title: 'Live or practice data',
-      body: '<b>Live</b> is a real TradingView chart with genuine market prices. ' +
-            '<b>Simulated</b> uses the built-in engine — that is what powers this ' +
-            'dashboard\'s own indicators, drawings and backtests, and it works offline.'
+      title: 'The important one, so pay attention',
+      body: '<b>Live</b> is the real TradingView chart with real market data. <b>Simulated</b> is my engine — ' +
+            'it drives the indicators, drawings and backtests on this site, and it works when your internet ' +
+            'does not. Two different things. Do not email me about it later.'
     },
     {
       target: '#tfGroup',
-      title: 'Zoom through time',
-      body: 'Each button sets how much time one candle covers — <b>1m</b> for the ' +
-            'next few minutes, <b>1d</b> or <b>1w</b> for the bigger picture.'
+      title: 'Time, but adjustable',
+      body: 'Each button sets how much time one candle covers. <b>1m</b> for staring at nothing happening, ' +
+            '<b>1d</b> or <b>1w</b> for actually seeing the trend. Most people pick 1m and then wonder why they are stressed.'
     },
     {
       target: '.tool-group',
-      title: 'Chart tools',
-      body: '<b>Indicators</b> adds average lines and a momentum meter. ' +
-            '<b>Drawing tools</b> lets you mark a trend line or a price level. ' +
-            'Then fullscreen and settings. Hover any icon for an explanation.'
+      title: 'The toys',
+      body: '<b>Indicators</b> — thirty-five of them, and you can build your own. <b>Drawing tools</b> for lines ' +
+            'you will draw confidently and be wrong about. Then fullscreen and settings. Hover anything and I ' +
+            'explain it properly.'
     },
     {
       target: '#rightPanel',
-      title: 'Place a practice order',
-      body: 'Pick <b>BUY</b> or <b>SELL</b>, set how many, and optionally add a ' +
-            '<b>stop loss</b> (your safety exit) and <b>take profit</b> (your target). ' +
-            'You can also <b>drag a watchlist row straight onto this panel</b>.'
+      title: 'Where you pretend to trade',
+      body: 'Pick <b>BUY</b> or <b>SELL</b>, say how many, and — this bit matters — set a <b>stop loss</b>. ' +
+            'That is your safety exit. Skipping it is how people learn expensive lessons. You can also drag a ' +
+            'watchlist row straight onto this panel, if clicking twice is beneath you.'
     },
     {
       target: '.rtabs',
-      title: 'Test before you risk',
-      body: 'The <b>Test a strategy</b> tab runs a real backtest over historical ' +
-            'data and reports what would have happened — return, win rate, worst ' +
-            'losing streak and every trade it took.'
+      title: 'Four tabs, all useful',
+      body: '<b>Trade</b> you have met. <b>Test</b> replays a strategy over real history and tells you the truth. ' +
+            '<b>Alerts</b> shouts when something happens, and can forward it to Telegram or Discord. ' +
+            '<b>Folio</b> tracks what you actually own and whether you are up or down.'
     },
     {
       target: '#dock',
-      title: 'Vlogs and live market panels',
-      body: '<b>Vlogs</b> holds the videos, with share buttons for YouTube, TikTok, ' +
-            'Instagram and X. <b>Technicals</b>, <b>News</b>, <b>Screener</b>, ' +
-            '<b>Heatmap</b> and <b>Calendar</b> are live TradingView panels.'
+      title: 'The bottom shelf',
+      body: '<b>Vlogs</b> for the videos. <b>Technicals</b>, <b>News</b>, <b>Screener</b>, <b>Heatmap</b> and ' +
+            '<b>Calendar</b> are live TradingView panels. <b>Radar</b> is mine — dated economic events you can ' +
+            'set alerts on, and headlines that can shout at you by keyword.'
     },
     {
       target: '.brand',
       title: 'Make it yours',
-      body: 'Click the crest to upload your logo — or just <b>drag an image file ' +
-            'anywhere onto the page</b> and drop it.'
+      body: 'Click the crest to upload your own logo. Or drag an image anywhere onto the page and drop it. ' +
+            'Anywhere. Go on, I know you want to test that.'
     },
     {
-      target: '#helpWrap',
-      title: 'Help is always here',
-      body: 'This button replays the tour, opens the full guide, or turns on ' +
-            '<b>hints</b> — little markers that point out what each area does. ' +
-            'Press <b>?</b> any time.'
+      target: '#qzFab',
+      title: 'And when it all goes wrong',
+      body: 'That is me. Press it and ask me anything about this place — alerts, portfolio, why it cannot log you ' +
+            'into TradingView, whatever. I answer properly, I just complain while doing it. ' +
+            '<br><br>Do you get it now, bozo? Good. Go make some money.'
     }
   ];
 
@@ -259,8 +260,8 @@
     MC.store.set('mc_tour_done', '1');
 
     if (completed === true) {
-      MC.ui.toast('You are all set 🎉',
-        'Hover anything for an explanation, or press ? to reopen the guide.', 'gold');
+      MC.ui.toast('Right, off you go 🎩',
+        'Hover anything for an explanation, or poke Queez when it goes sideways.', 'gold');
     }
   };
 
