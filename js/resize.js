@@ -149,6 +149,20 @@
     });
   }
 
+  /**
+   * Make sure the dock is at least `minPx` tall — used when something
+   * navigates INTO the dock (the Vlogs button) so a user who once dragged
+   * it down to a sliver still sees the content they asked for.
+   */
+  R.ensureDock = function (minPx) {
+    var current = sizes.dock || currentVar('--dock-h', DEFAULTS.dock);
+    if (current >= minPx) return;
+    sizes.dock = clampDock(minPx);
+    setVar('--dock-h', sizes.dock);
+    persist(sizes);
+    settle();
+  };
+
   function currentVar(name, fallback) {
     var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
     return isFinite(v) ? v : fallback;

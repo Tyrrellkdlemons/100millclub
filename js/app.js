@@ -599,6 +599,9 @@
       var dock = $('dock');
       dock.classList.remove('hidden');
       dock.classList.remove('collapsed');
+      // A dock once dragged down to a sliver cannot show a 227px video card.
+      // Navigating INTO the vlogs overrides that: open it to card height.
+      MC.resize.ensureDock(300);
       $('navVlogs').classList.add('on');
       openDockTab('vlogs');
       // block:'start', not 'nearest' — on short windows the dock's top edge
