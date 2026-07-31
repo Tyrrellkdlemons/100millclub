@@ -1,0 +1,117 @@
+/* ==========================================================================
+   youtube.css — YouTube search bar, shelf sections, the player modal,
+   the chart-style picker, and the bigger drag-and-drop affordances
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   SEARCH BAR at the top of the vlogs pane
+   -------------------------------------------------------------------------- */
+.yt-bar{
+  display:flex; gap:7px; align-items:center; flex-wrap:wrap;
+  padding:9px 13px 0;
+}
+.yt-search{
+  flex:1; min-width:220px; position:relative;
+  display:flex; gap:6px; align-items:center;
+}
+.yt-search > i{
+  position:absolute; left:11px; color:#f00; font-size:14px; pointer-events:none;
+}
+.yt-search input{
+  flex:1; height:34px; padding:0 10px 0 32px; border-radius:9px;
+  background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+  font-size:12px; transition:.16s;
+}
+.yt-search input::placeholder{ color:var(--dim); }
+.yt-search input:focus{
+  outline:none; border-color:#f00;
+  box-shadow:0 0 0 3px rgba(255,0,0,.12);
+}
+.yt-addlink,.yt-bar .qbtn{ flex:0 0 auto; padding:8px 11px; }
+#ytKeyBtn.on{ color:var(--green); border-color:rgba(38,201,106,.4); }
+
+.yt-chips{
+  display:flex; gap:5px; padding:7px 13px 0;
+  overflow-x:auto; scrollbar-width:none;
+}
+.yt-chips::-webkit-scrollbar{ display:none; }
+.yt-chip{
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
+  padding:5px 10px; border-radius:16px; white-space:nowrap;
+  font-size:10.5px; font-weight:600; color:var(--muted);
+  background:var(--panel-2); border:1px solid var(--border);
+  transition:.15s var(--ease);
+}
+.yt-chip i{ color:#f00; font-size:10px; }
+.yt-chip:hover{ color:var(--text); border-color:rgba(255,0,0,.4); }
+
+/* section headers inside the scrolling shelf */
+.yt-sect{
+  flex:0 0 auto; align-self:stretch;
+  display:flex; align-items:center; gap:7px;
+  writing-mode:vertical-rl; transform:rotate(180deg);
+  padding:10px 2px; margin-right:2px;
+  font-size:9.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--gold-deep); border-left:1px solid rgba(245,197,24,.25);
+}
+.yt-sect i{ transform:rotate(90deg); font-size:10px; }
+
+/* --------------------------------------------------------------------------
+   PLAYER MODAL
+   -------------------------------------------------------------------------- */
+.yt-modal{ max-width:760px; }
+.yt-frame{
+  position:relative; width:100%; aspect-ratio:16/9; background:#000;
+}
+.yt-frame iframe{
+  position:absolute; inset:0; width:100%; height:100%; border:0;
+}
+
+/* --------------------------------------------------------------------------
+   CHART STYLE PICKER — big, obvious, one click
+   -------------------------------------------------------------------------- */
+.style-switch{
+  display:flex; gap:2px; padding:3px;
+  background:var(--panel-2); border:1px solid var(--border); border-radius:9px;
+}
+.cstyle{
+  display:flex; align-items:center; gap:6px;
+  padding:6px 10px; border-radius:6px;
+  font-size:11px; font-weight:700; color:var(--muted);
+  transition:.15s var(--ease);
+}
+.cstyle i{ font-size:11px; }
+.cstyle:hover{ color:var(--text); background:var(--panel-3); }
+.cstyle.on{
+  background:var(--accent); color:#fff;
+  box-shadow:0 2px 10px rgba(79,140,255,.32), inset 0 1px 0 rgba(255,230,128,.45);
+}
+/* keep the toolbar breathable as it narrows: icons first, labels drop */
+@media (max-width:1500px){ .cstyle span{ display:none; } .cstyle{ padding:7px 9px; } }
+@media (max-width:1280px){ .cstyle[data-cstyle="baseline"], .cstyle[data-cstyle="bars"]{ display:none; } }
+
+/* --------------------------------------------------------------------------
+   BIGGER DRAG AND DROP
+   The grip is now always faintly visible, the rows are taller to grab, and
+   the drop zones announce themselves in a way nobody can miss.
+   -------------------------------------------------------------------------- */
+.wl-row{ padding:10px 7px 10px 14px; }
+.wl-grip{ opacity:.28; left:1px; font-size:10px; }
+.wl-row:hover .wl-grip{ opacity:.9; color:var(--gold); }
+
+.wl-row.drop-above{ box-shadow:inset 0 3px 0 0 var(--accent); }
+.wl-row.drop-below{ box-shadow:inset 0 -3px 0 0 var(--accent); }
+
+.chart-stack.drop-target::after,
+.rbody.drop-target::after{
+  font-size:16px; font-weight:900; letter-spacing:.4px;
+  border-width:3px; border-radius:16px;
+  background:rgba(79,140,255,.14);
+  box-shadow:inset 0 0 60px rgba(79,140,255,.15);
+}
+.chart-stack.drop-target::after{ content:"Drop to load this market  📈"; }
+.rbody.drop-target::after{ content:"Drop to trade it  ⚡"; }
+
+.file-veil-card{ padding:46px 62px; border-width:3px; }
+.file-veil-card i{ font-size:44px; }
+.file-veil-card b{ font-size:19px; }

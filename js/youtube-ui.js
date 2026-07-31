@@ -1,0 +1,249 @@
+/* ==========================================================================
+   youtube-ui.js — YouTube search, the player, and your shelf in the vlog pane
+   ========================================================================== */
+(function (window) {
+  'use strict';
+
+  var MC = window.MC = window.MC || {};
+  var UI = MC.youtubeUI = {};
+  var $ = MC.$;
+
+  var results = [];        // last in-page search results
+  var nowPlaying = null;
+
+  UI.init = function () {
+    $('ytForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      UI.search($('ytQuery').value.trim());
+    });
+
+    MC.on($('ytChips'), 'click', '.yt-chip', function (e, chip) {
+      $('ytQuery').value = chip.textContent;
+      UI.search(chip.textContent);
+    });
+
+    $('ytAddLink').addEventListener('click', function () {
+      var link = window.prompt('Paste a YouTube link (or a video id):');
+      if (!link) return;
+      var id = MC.youtube.parseId(link);
+      if (!id) {
+        MC.ui.toast('That is not a YouTube link', 'Try something like youtube.com/watch?v=… or youtu.be/…', 'err');
+        return;
+      }
+      MC.youtube.oembed(id).then(function (video) {
+        MC.youtube.pin(video);
+        UI.renderShelf();
+        MC.ui.toast('On your shelf 📌', '“' + video.title.slice(0, 50) + '” by ' + video.author, 'gold');
+      }).catch(function (err) {
+        MC.ui.toast('Could not add it', err.message, 'err');
+      });
+    });
+
+    /* key management */
+    $('ytKeyBtn').addEventListener('click', function () {
+      $('ytKeyInput').value = MC.youtube.config().apiKey || '';
+      MC.ui.openModal('mdYtKey');
+    });
+    $('ytKeySave').addEventListener('click', function () {
+      MC.youtube.saveConfig({ apiKey: $('ytKeyInput').value.trim() });
+      MC.ui.closeModals();
+      syncKeyState();
+      MC.ui.toast(
+        MC.youtube.hasKey() ? 'Search is live' : 'Key removed',
+        MC.youtube.hasKey() ? 'YouTube results now appear right here in the shelf.'
+                            : 'Searching will open YouTube in a new tab instead.',
+        MC.youtube.hasKey() ? 'ok' : 'info'
+      );
+    });
+    $('ytKeyClear').addEventListener('click', function () {
+      MC.youtube.saveConfig({ apiKey: '' });
+      $('ytKeyInput').value = '';
+      MC.ui.closeModals();
+      syncKeyState();
+    });
+
+    /* player */
+    $('playerPin').addEventListener('click', function () {
+      if (!nowPlaying) return;
+      if (MC.youtube.pin(nowPlaying)) {
+        UI.renderShelf();
+        MC.ui.toast('Saved 📌', 'It is on your shelf now.', 'gold');
+      } else {
+        MC.ui.toast('Already there', 'That one is on your shelf.', 'info');
+      }
+    });
+
+    // stop playback when the modal closes, whichever way it closes
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('backdrop') || e.target.closest('[data-close]')) {
+        stopPlayback();
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') stopPlayback();
+    });
+
+    syncKeyState();
+    renderChips();
+    UI.renderShelf();
+  };
+
+  function syncKeyState() {
+    $('ytKeyState').textContent = MC.youtube.hasKey() ? 'Search: on' : 'Set up search';
+    $('ytKeyBtn').classList.toggle('on', MC.youtube.hasKey());
+  }
+
+  function renderChips() {
+    $('ytChips').innerHTML = MC.youtube.suggestedQueries().map(function (q) {
+      return '<button class="yt-chip"><i class="fa-brands fa-youtube"></i>' + MC.esc(q) + '</button>';
+    }).join('');
+  }
+
+  /** Called when the symbol changes, so the suggestions follow the market. */
+  UI.refreshChips = renderChips;
+
+  /* ----------------------------------------------------------------------
+     SEARCH
+     ---------------------------------------------------------------------- */
+  UI.search = function (query) {
+    if (!query) return;
+
+    if (!MC.youtube.hasKey()) {
+      // Keyless path: hand the search to YouTube itself. Still lands the
+      // viewer on YouTube with intent, which their algorithm notices.
+      window.open(MC.youtube.searchUrl(query), '_blank', 'noopener,noreferrer');
+      MC.ui.toast('Opened on YouTube',
+        'Results are in the new tab. Paste a free key via “Set up search” to get them in here instead.', 'info');
+      return;
+    }
+
+    MC.ui.toast('Searching…', '“' + query + '”', 'info');
+    MC.youtube.search(query).then(function (list) {
+      results = list;
+      UI.renderShelf();
+      if (!list.length) MC.ui.toast('Nothing found', 'YouTube returned no embeddable videos for that.', 'err');
+    }).catch(function (err) {
+      if (err.message === 'no-key') return;
+      MC.ui.toast('Search failed', err.message, 'err');
+    });
+  };
+
+  /* ----------------------------------------------------------------------
+     PLAYER
+     ---------------------------------------------------------------------- */
+  UI.play = function (video) {
+    nowPlaying = video;
+    $('playerTitle').textContent = video.title.slice(0, 70);
+    $('playerOpenYt').href = MC.youtube.watchUrl(video.id);
+
+    // youtube.com/embed (not the nocookie domain) deliberately: it carries the
+    // viewer's own YouTube session, so the watch counts toward THEIR history
+    // and recommendations. autoplay=1 works because opening follows a click.
+    $('playerFrame').innerHTML =
+      '<iframe src="https://www.youtube.com/embed/' + video.id + '?autoplay=1&rel=1" ' +
+      'title="' + MC.esc(video.title) + '" allow="autoplay; encrypted-media; picture-in-picture" ' +
+      'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+
+    MC.ui.openModal('mdPlayer');
+    MC.youtube.noteWatched(video);
+  };
+
+  function stopPlayback() {
+    $('playerFrame').innerHTML = '';     // removing the iframe stops the audio
+    nowPlaying = null;
+  }
+
+  /* ----------------------------------------------------------------------
+     RENDER — search results, then your shelf, then the sample vlogs
+     ---------------------------------------------------------------------- */
+  UI.renderShelf = function () {
+    var host = $('vlogBody');
+    var html = '';
+
+    if (results.length) {
+      html += section('Search results', 'fa-solid fa-magnifying-glass');
+      html += results.map(function (v) { return ytCard(v, false); }).join('');
+    }
+
+    var shelf = MC.youtube.shelf();
+    if (shelf.length) {
+      html += section('Your shelf', 'fa-solid fa-thumbtack');
+      html += shelf.map(function (v) { return ytCard(v, true); }).join('');
+    }
+
+    html += section('Grind Tapes', 'fa-solid fa-fire');
+    html += MC.vlogs.cardsHtml();
+
+    host.innerHTML = html;
+  };
+
+  function section(title, icon) {
+    return '<div class="yt-sect"><i class="' + icon + '"></i>' + MC.esc(title) + '</div>';
+  }
+
+  function ytCard(v, pinned) {
+    return '<article class="vid yt-vid" data-ytid="' + v.id + '">' +
+      '<div class="thumb">' +
+        '<img loading="lazy" alt="" src="' + MC.esc(v.thumb || MC.youtube.thumb(v.id)) + '" ' +
+             'onerror="this.style.display=\'none\'">' +
+        '<span class="badge-tag" style="background:#f00">YouTube</span>' +
+        '<span class="play"><i class="fa-solid fa-play"></i></span>' +
+      '</div>' +
+      '<div class="vinfo">' +
+        '<div class="vtitle">' + MC.esc(v.title) + '</div>' +
+        '<div class="vmeta"><i class="fa-brands fa-youtube"></i>' + MC.esc(v.author || 'YouTube') + '</div>' +
+        '<div class="shares">' +
+          '<button class="sbtn yt" data-ytplay="' + v.id + '" data-tip="Play it here"><i class="fa-solid fa-play"></i></button>' +
+          '<a class="sbtn tw" href="' + MC.youtube.watchUrl(v.id) + '" target="_blank" rel="noopener noreferrer" ' +
+             'data-tip="Watch on YouTube" style="display:grid;place-items:center">' +
+             '<i class="fa-solid fa-arrow-up-right-from-square"></i></a>' +
+          (pinned
+            ? '<button class="sbtn more" data-ytunpin="' + v.id + '" data-tip="Take it off the shelf"><i class="fa-solid fa-xmark"></i></button>'
+            : '<button class="sbtn more" data-ytpin="' + v.id + '" data-tip="Save to your shelf"><i class="fa-solid fa-thumbtack"></i></button>') +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  /** Delegated clicks for every yt card, wired once from app.js. */
+  UI.handleCardClick = function (e, card) {
+    var id = card.dataset.ytid;
+    var video = findVideo(id);
+    if (!video) return true;                         // fall through to sample vlogs
+
+    var pin = e.target.closest('[data-ytpin]');
+    var unpin = e.target.closest('[data-ytunpin]');
+    var playBtn = e.target.closest('[data-ytplay]');
+    var external = e.target.closest('a');
+
+    if (external) return false;                      // the <a> handles itself
+    if (pin) {
+      MC.youtube.pin(video);
+      UI.renderShelf();
+      MC.ui.toast('Saved 📌', 'On your shelf.', 'gold');
+      return false;
+    }
+    if (unpin) {
+      MC.youtube.unpin(id);
+      UI.renderShelf();
+      MC.ui.toast('Removed', 'Off the shelf.', 'info');
+      return false;
+    }
+    if (playBtn || e.target.closest('.thumb') || e.target.closest('.vtitle')) {
+      UI.play(video);
+      return false;
+    }
+    return false;
+  };
+
+  function findVideo(id) {
+    var pools = [results, MC.youtube.shelf()];
+    for (var i = 0; i < pools.length; i++) {
+      for (var j = 0; j < pools[i].length; j++) {
+        if (pools[i][j].id === id) return pools[i][j];
+      }
+    }
+    return null;
+  }
+
+})(window);

@@ -52,6 +52,7 @@
     updateHeaderPrice();
     MC.trade.syncPrice();
     MC.TV.refreshSymbol();
+    if (MC.youtubeUI) MC.youtubeUI.refreshChips();   // search ideas follow the market
     MC.store.set('mc_symbol', symbol);
   }
   MC.selectSymbol = selectSymbol;
@@ -416,6 +417,33 @@
       MC.ui.toast('Timeframe changed', 'Each bar now covers ' + btn.textContent.trim() + '.', 'info');
     });
 
+    /* ---- chart style ---- */
+    MC.on($('styleSwitch'), 'click', '.cstyle', function (e, btn) {
+      var style = btn.dataset.cstyle;
+      State.chartStyle = style;
+      MC.store.set('mc_chart_style', style);
+      $$('.cstyle').forEach(function (b) { b.classList.toggle('on', b === btn); });
+
+      if (State.source === 'live') {
+        MC.TV.advancedChart();               // rebuild the widget with the new style
+      } else {
+        // The built-in engine draws candles, line and area. The live-only
+        // styles fall back to their nearest look, and say so.
+        var simMap = { candles: 'candles', bars: 'candles', heikin: 'candles',
+                       line: 'line', area: 'area', baseline: 'area' };
+        State.chart.setStyle(simMap[style]);
+        applyIndicators();
+        if (style !== simMap[style] && ['bars', 'heikin', 'baseline'].indexOf(style) !== -1) {
+          MC.ui.toast('Live-chart style',
+            btn.textContent.trim() + ' is a TradingView style — showing the nearest look here. Switch to Live for the real thing.',
+            'info');
+        }
+      }
+      var cfgSel = $('cfgStyle');
+      if (cfgSel) cfgSel.value = { candles: 'candles', bars: 'candles', heikin: 'candles',
+                                   line: 'line', area: 'area', baseline: 'area' }[style];
+    });
+
     /* ---- data source ---- */
     MC.on($('srcSwitch'), 'click', '.src', function (e, btn) { setSource(btn.dataset.src); });
 
@@ -609,6 +637,7 @@
 
     /* ---- vlogs ---- */
     MC.on($('vlogBody'), 'click', '.vid', function (e, card) {
+      if (card.dataset.ytid) { MC.youtubeUI.handleCardClick(e, card); return; }
       var video = MC.vlogs.find(card.dataset.vid);
       var shareBtn = e.target.closest('[data-plat]');
       if (shareBtn) {
@@ -698,6 +727,11 @@
     // 2. restore anything the user personalised last visit
     var savedLogo = MC.store.get('mc_logo');
     if (savedLogo) setLogo(savedLogo);
+    var savedStyle = MC.store.get('mc_chart_style');
+    if (savedStyle) {
+      State.chartStyle = savedStyle;
+      $$('.cstyle').forEach(function (b) { b.classList.toggle('on', b.dataset.cstyle === savedStyle); });
+    }
     var savedSymbol = MC.store.get('mc_symbol');
     if (savedSymbol && MC.MAP[savedSymbol]) State.symbol = savedSymbol;
     MC.dragdrop.applySavedOrder();      // their own watchlist arrangement
@@ -726,6 +760,7 @@
     MC.radarUI.init();
     MC.portfolioUI.init();
     MC.queezUI.init();
+    MC.youtubeUI.init();
     MC.quotes.refresh().then(function () { MC.portfolio.snapshot(true); });
     MC.quotes.startAuto(30);
     MC.news.refresh().then(function () { MC.news.primeSeen(); });

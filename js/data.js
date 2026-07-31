@@ -135,6 +135,7 @@
     market: 'all',
     query: '',
     source: 'live',        // 'live' = TradingView widget · 'sim' = Lightweight Charts
+    chartStyle: 'candles', // candles | bars | heikin | line | area | baseline
     bars: [],
     side: 'buy',
     positions: [],

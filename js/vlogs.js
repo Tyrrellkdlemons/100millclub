@@ -25,8 +25,12 @@
   /* ----------------------------------------------------------------------
      RENDER
      ---------------------------------------------------------------------- */
-  Vlogs.render = function () {
-    MC.$('vlogBody').innerHTML = MC.VLOGS.map(function (v) {
+  /** The sample cards as an HTML string, so the YouTube shelf can compose them. */
+  Vlogs.cardsHtml = function () {
+    return MC.VLOGS.map(cardHtml).join('');
+  };
+
+  function cardHtml(v) {
       return '<article class="vid" data-vid="' + v.id + '">' +
         '<div class="thumb">' +
           '<img loading="lazy" alt="" src="https://picsum.photos/seed/' + v.seed + '/480/270" ' +
@@ -47,7 +51,10 @@
           '</div>' +
         '</div>' +
       '</article>';
-    }).join('');
+  }
+
+  Vlogs.render = function () {
+    MC.$('vlogBody').innerHTML = Vlogs.cardsHtml();
   };
 
   function btn(cls, platform, icon, tip) {

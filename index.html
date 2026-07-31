@@ -75,6 +75,7 @@
 <!-- backdrop after the structural sheets: it re-tints .card / .nav,
      so it has to come later than the rules that set them solid -->
 <link rel="stylesheet" href="css/backdrop.css" />
+<link rel="stylesheet" href="css/youtube.css" />
 <link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim last, so it layers over everything it decorates -->
@@ -296,6 +297,34 @@
           </button>
         </div>
 
+        <!-- chart style: one obvious picker, works on both engines -->
+        <div class="style-switch" id="styleSwitch" aria-label="Chart style">
+          <button class="cstyle on" data-cstyle="candles"
+                  data-tip="Candles" data-tip-desc="The classic. Body shows open to close, wicks show the extremes.">
+            <i class="fa-solid fa-chart-column"></i><span>Candles</span>
+          </button>
+          <button class="cstyle" data-cstyle="bars"
+                  data-tip="Bars" data-tip-desc="Same information as candles, drawn as open/high/low/close bars. Live chart only.">
+            <i class="fa-solid fa-bars-staggered"></i><span>Bars</span>
+          </button>
+          <button class="cstyle" data-cstyle="heikin"
+                  data-tip="Heikin Ashi" data-tip-desc="Averaged candles that smooth the noise and make trends easier to see. Live chart only.">
+            <i class="fa-solid fa-wave-square"></i><span>Heikin</span>
+          </button>
+          <button class="cstyle" data-cstyle="line"
+                  data-tip="Line" data-tip-desc="Just the closing price, connected. Clean and calm.">
+            <i class="fa-solid fa-chart-line"></i><span>Line</span>
+          </button>
+          <button class="cstyle" data-cstyle="area"
+                  data-tip="Mountain" data-tip-desc="The line with a soft fill under it.">
+            <i class="fa-solid fa-chart-area"></i><span>Area</span>
+          </button>
+          <button class="cstyle" data-cstyle="baseline"
+                  data-tip="Baseline" data-tip-desc="Green above the starting level, red below it. Live chart only.">
+            <i class="fa-solid fa-arrows-up-down"></i><span>Base</span>
+          </button>
+        </div>
+
         <!-- live TradingView chart vs the built-in simulated engine -->
         <div class="src-switch" id="srcSwitch">
           <button class="src on" data-src="live"
@@ -393,6 +422,24 @@
       <div class="dock-body">
         <!-- vlogs -->
         <div class="dock-pane on" id="dock-vlogs">
+          <div class="yt-bar">
+            <form class="yt-search" id="ytForm">
+              <i class="fa-brands fa-youtube"></i>
+              <input id="ytQuery" type="text" placeholder="Search YouTube — strategies, breakdowns, market news…" autocomplete="off" />
+              <button type="submit" class="btn btn-accent" style="height:32px">Search</button>
+            </form>
+            <button class="qbtn yt-addlink" id="ytAddLink"
+                    data-tip="Add a video by link"
+                    data-tip-desc="Paste any YouTube link and it joins your shelf — no key needed.">
+              <i class="fa-solid fa-link"></i> Add by link
+            </button>
+            <button class="qbtn" id="ytKeyBtn"
+                    data-tip="In-page search needs a free key"
+                    data-tip-desc="Without one, searching opens YouTube's own results in a new tab. Paste a free Data API key and results appear right here instead.">
+              <i class="fa-solid fa-key"></i><span id="ytKeyState">Set up search</span>
+            </button>
+          </div>
+          <div class="yt-chips" id="ytChips"></div>
           <div class="vlog-body" id="vlogBody"></div>
         </div>
 
@@ -1215,6 +1262,54 @@
   </div>
 </div>
 
+<!-- video player -->
+<div class="backdrop" id="mdPlayer">
+  <div class="modal wide yt-modal">
+    <div class="m-head">
+      <i class="fa-brands fa-youtube" style="color:#f00"></i><h3 id="playerTitle">Now playing</h3>
+      <a class="btn" id="playerOpenYt" target="_blank" rel="noopener noreferrer" style="margin-left:auto"
+         data-tip="Watch on YouTube"
+         data-tip-desc="Opens the video on youtube.com — likes, comments and subscriptions all feed your recommendations there.">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i><span class="lbl">YouTube</span>
+      </a>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="yt-frame" id="playerFrame"></div>
+    <div class="m-foot" style="justify-content:space-between">
+      <span class="help-p" style="margin:0;font-size:11px">Signed in to YouTube in this browser? Watching here counts toward your recommendations.</span>
+      <button class="btn btn-gold" id="playerPin"><i class="fa-solid fa-thumbtack"></i> Save to my shelf</button>
+    </div>
+  </div>
+</div>
+
+<!-- YouTube search key -->
+<div class="backdrop" id="mdYtKey">
+  <div class="modal">
+    <div class="m-head">
+      <i class="fa-brands fa-youtube" style="color:#f00"></i><h3>In-page YouTube search</h3>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="m-body">
+      <p class="help-p">Without a key, searching opens YouTube's results in a new tab — which works fine.
+        With a <b>free</b> key, results appear as cards right here and play without leaving the page.</p>
+      <div class="help-h">Get one in about two minutes</div>
+      <p class="help-p">1 · Go to <b>console.cloud.google.com</b> and make a project (any name).<br>
+        2 · <b>APIs &amp; Services → Library</b> → enable <b>YouTube Data API v3</b>.<br>
+        3 · <b>Credentials → Create credentials → API key</b>. Copy it.<br>
+        The free allowance is 10,000 units a day — about a hundred searches. Playback never uses it.</p>
+      <div class="field" style="margin-top:12px">
+        <div class="label">Your API key</div>
+        <input class="input mono" id="ytKeyInput" type="password" placeholder="AIza…" autocomplete="off" />
+      </div>
+      <div class="note">Stored only in this browser and sent only to Google. Playback and add-by-link never need it.</div>
+    </div>
+    <div class="m-foot">
+      <button class="btn" id="ytKeyClear">Remove key</button>
+      <button class="btn btn-accent" id="ytKeySave">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- keyboard shortcuts -->
 <div class="backdrop" id="mdKeys">
   <div class="modal">
@@ -1254,10 +1349,12 @@
 <script src="js/calendar.js"></script>
 <script src="js/news.js"></script>
 <script src="js/vlogs.js"></script>
+<script src="js/youtube.js"></script>
 <script src="js/dragdrop.js"></script>
 <script src="js/tour.js"></script>
 <script src="js/queez.js"></script>
 <script src="js/queez-ui.js"></script>
+<script src="js/youtube-ui.js"></script>
 <script src="js/indicator-ui.js"></script>
 <script src="js/alerts-ui.js"></script>
 <script src="js/radar-ui.js"></script>

@@ -131,7 +131,9 @@
       interval: MC.TV_INTERVAL[MC.State.tf],
       timezone: 'Etc/UTC',
       theme: 'dark',
-      style: '1',
+      // TradingView style codes: 1 candles, 0 bars, 8 heikin ashi, 2 line,
+      // 3 area, 10 baseline — driven by the style picker in the toolbar.
+      style: ({candles:'1', bars:'0', heikin:'8', line:'2', area:'3', baseline:'10'})[MC.State.chartStyle] || '1',
       locale: 'en',
       backgroundColor: 'rgba(14,18,22,1)',
       gridColor: 'rgba(29,37,48,0.6)',
