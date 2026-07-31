@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <title>100MillClub</title>
+  <defs>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3a8"/><stop offset=".45" stop-color="#f5c518"/><stop offset="1" stop-color="#a9791c"/>
+    </linearGradient>
+    <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9d1db"/><stop offset="1" stop-color="#6e7887"/>
+    </linearGradient>
+    <radialGradient id="gGlow">
+      <stop offset="0" stop-color="#f5c518" stop-opacity=".5"/><stop offset="1" stop-color="#f5c518" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="120" height="120" rx="24" fill="#07090b"/>
+  <circle cx="60" cy="62" r="52" fill="url(#gGlow)"/>
+
+  <!-- laurel wreath -->
+  <g fill="url(#gGold)">
+    <g transform="rotate(-32 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(-56 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(-80 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(-104 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(-128 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(32 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(56 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(80 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(104 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+    <g transform="rotate(128 60 62)"><path d="M60 17q6-8 0-16-6 8 0 16"/></g>
+  </g>
+
+  <!-- crown -->
+  <path d="M44 26 L49 13 L55 22 L60 8 L65 22 L71 13 L76 26 Z" fill="url(#gGold)"/>
+  <rect x="44" y="26" width="32" height="5" rx="1.6" fill="url(#gGold)"/>
+
+  <!-- ring -->
+  <circle cx="60" cy="62" r="33" fill="none" stroke="url(#gSilver)" stroke-width="5"/>
+  <circle cx="60" cy="62" r="29.5" fill="#060c06"/>
+
+  <!-- candles -->
+  <g fill="#3ddc4b">
+    <rect x="47" y="62" width="5" height="13" rx="1.2"/>
+    <rect x="55" y="54" width="5" height="18" rx="1.2"/>
+    <rect x="63" y="45" width="5" height="20" rx="1.2"/>
+    <rect x="71" y="40" width="5" height="16" rx="1.2"/>
+  </g>
+
+  <!-- rising arrow -->
+  <path d="M40 76 L53 62 L61 70 L79 45" fill="none" stroke="url(#gGold)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M67 43 L83 41 L81 57 Z" fill="url(#gGold)"/>
+
+  <!-- gold bars -->
+  <g fill="url(#gGold)">
+    <path d="M49 86 h9 l1.6 5 h-12.2 z"/>
+    <path d="M62 86 h9 l1.6 5 h-12.2 z"/>
+    <path d="M55.5 80 h9 l1.6 5 h-12.2 z"/>
+  </g>
+</svg>

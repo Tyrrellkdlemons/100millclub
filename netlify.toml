@@ -1,11 +1,11 @@
 # 100MillClub — Netlify configuration
-# Static single-file site: nothing to build, publish the repo root as-is.
+# Static site, no build step. Publish the repo root as-is.
 
 [build]
   publish = "."
   command = ""
 
-# SPA-style fallback so any path (e.g. /vlog/v1) still serves the terminal.
+# Serve the terminal for any path, so share links like /vlog/v1 resolve.
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -14,12 +14,23 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
+# HTML should always revalidate so deploys land immediately.
 [[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# Fingerprint-free static assets: short cache, still revalidated.
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

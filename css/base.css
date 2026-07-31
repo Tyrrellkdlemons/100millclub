@@ -1,0 +1,111 @@
+/* ==========================================================================
+   base.css — design tokens, reset, typography, utilities
+   100MillClub · City of Grind
+   ========================================================================== */
+
+:root{
+  /* ---- surfaces ---- */
+  --bg:#07090b;
+  --panel:#0e1216;
+  --panel-2:#131920;
+  --panel-3:#182029;
+  --border:#1d2530;
+  --border-2:#2a3542;
+
+  /* ---- text ---- */
+  --text:#e9eef5;
+  --muted:#8a97a8;
+  --dim:#5f6b7a;
+
+  /* ---- primary accent (design system) ---- */
+  --accent:#4f8cff;
+  --accent-soft:rgba(79,140,255,.13);
+  --accent-line:rgba(79,140,255,.32);
+
+  /* ---- 100MillClub brand (from the crest) ---- */
+  --gold:#f5c518;
+  --gold-lite:#ffe680;
+  --gold-deep:#a9791c;
+  --silver:#d7dde6;
+  --grind:#3ddc4b;
+
+  /* ---- market colours ---- */
+  --green:#26c96a;
+  --red:#ff4d5e;
+
+  /* ---- shape & motion ---- */
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow:0 10px 30px rgba(0,0,0,.55);
+  --shadow-accent:0 0 24px rgba(79,140,255,.25);
+  --shadow-gold:0 0 24px rgba(245,197,24,.22);
+  --ease:cubic-bezier(.4,0,.2,1);
+
+  /* ---- layout metrics ---- */
+  --nav-h:60px;
+  --tape-h:52px;
+  --left-w:262px;
+  --right-w:330px;
+  --dock-h:322px;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; }
+
+body{
+  margin:0;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ambient glow — brand gold + accent blue, sits behind everything */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(900px 420px at 12% -10%, rgba(245,197,24,.09), transparent 62%),
+    radial-gradient(760px 400px at 88% 6%, rgba(79,140,255,.10), transparent 60%),
+    radial-gradient(700px 500px at 50% 115%, rgba(61,220,75,.05), transparent 60%);
+}
+
+button,input,select,textarea{ font-family:inherit; font-size:inherit; color:inherit; }
+button{ cursor:pointer; border:none; background:none; }
+a{ color:var(--accent); text-decoration:none; }
+img{ max-width:100%; }
+
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:#232d3a; border-radius:9px; }
+::-webkit-scrollbar-thumb:hover{ background:#31404f; }
+
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+
+/* ---- utilities ---- */
+.up{ color:var(--green) !important; }
+.down{ color:var(--red) !important; }
+.mono{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.hidden{ display:none !important; }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+/* ---- shared animations ---- */
+@keyframes fade{ from{ opacity:0; transform:translateY(5px); } to{ opacity:1; transform:none; } }
+@keyframes pulse{ 70%{ box-shadow:0 0 0 8px rgba(38,201,106,0); } 100%{ box-shadow:0 0 0 0 rgba(38,201,106,0); } }
+@keyframes flashUp{ 0%{ background:rgba(38,201,106,.32); border-radius:6px; } 100%{ background:transparent; } }
+@keyframes flashDown{ 0%{ background:rgba(255,77,94,.32); border-radius:6px; } 100%{ background:transparent; } }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.flash-up{ animation:flashUp .6s var(--ease); }
+.flash-dn{ animation:flashDown .6s var(--ease); }
+
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
