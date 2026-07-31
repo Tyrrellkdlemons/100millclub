@@ -1,0 +1,92 @@
+/* ==========================================================================
+   feel.css — the hand-feel layer: the gold Q cursor, the scrollbar,
+   and the rendering-performance containment rules.
+   Loaded late so it wins the cascade it needs to win.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   THE GOLD Q CURSOR
+   The crest's Q — ring plus blade tail — drawn as the pointer. The blade
+   points down-right so the ring reads as the "tip". A dark under-stroke
+   keeps it visible over gold UI. Interactive things get a brighter Q, and
+   precision tools (text boxes, grips, drag headers) keep their native
+   cursors, because usability outranks costume.
+   -------------------------------------------------------------------------- */
+:root{
+  --cur-q: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><g fill='none' stroke-linecap='round'><circle cx='10' cy='10' r='6.5' stroke='%2307090b' stroke-width='5.5'/><path d='M14.5 14.5 L22 22' stroke='%2307090b' stroke-width='6'/><circle cx='10' cy='10' r='6.5' stroke='%23f5c518' stroke-width='2.8'/><path d='M14.5 14.5 L22 22' stroke='%23f5c518' stroke-width='3.2'/></g></svg>") 4 4;
+  --cur-q-hot: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><g fill='none' stroke-linecap='round'><circle cx='10' cy='10' r='6.5' stroke='%2307090b' stroke-width='5.5'/><path d='M14.5 14.5 L22 22' stroke='%2307090b' stroke-width='6'/><circle cx='10' cy='10' r='6.5' stroke='%23ffe680' stroke-width='3'/><path d='M14.5 14.5 L22 22' stroke='%23ffe680' stroke-width='3.4'/><circle cx='10' cy='10' r='2.2' fill='%23ffe680'/></g></svg>") 4 4;
+}
+
+body{ cursor:var(--cur-q), auto; }
+
+a, button, select, label,
+[role="button"], [role="switch"], [role="menuitem"],
+.wl-row, .vid, .tf, .mtab, .src, .cstyle, .dock-tab, .rtab, .bnav,
+.sw, .qbtn, .chip-ins, .yt-chip, .qz-chip, .qz-rel-chip,
+.lib-row, .cal-row button, .help-item, .tour-btn, .sbtn, .quick{
+  cursor:var(--cur-q-hot), pointer;
+}
+
+/* precision beats costume */
+input, textarea{ cursor:text; }
+.panel-grip.grip-left, .panel-grip.grip-right{ cursor:col-resize !important; }
+.panel-grip.grip-top, .panel-grip.grip-bottom{ cursor:row-resize !important; }
+.mini-grip{ cursor:nwse-resize !important; }
+.mini-head{ cursor:grab !important; }
+.mini-head:active{ cursor:grabbing !important; }
+.wl-row[draggable]:active{ cursor:grabbing; }
+
+/* --------------------------------------------------------------------------
+   THE SCROLLBAR — slim, rounded, gold metal on a dark channel
+   -------------------------------------------------------------------------- */
+*{ scrollbar-width:thin; scrollbar-color:#7a641c #0c1014; }   /* Firefox */
+
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{
+  background:rgba(10,13,17,.6);
+  border-radius:10px;
+}
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg, #8a7020, #5c4a15 60%, #443710);
+  border-radius:10px;
+  border:2px solid rgba(10,13,17,.85);   /* inset look, thumb floats in channel */
+}
+::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg, #d9ae15, #8a7020 70%);
+  box-shadow:0 0 8px rgba(245,197,24,.35);
+}
+::-webkit-scrollbar-thumb:active{
+  background:linear-gradient(180deg, #ffe680, #b8912a 70%);
+}
+::-webkit-scrollbar-corner{ background:transparent; }
+
+/* --------------------------------------------------------------------------
+   RENDERING PERFORMANCE
+   This is a heavy page — live iframes, canvases, glass. Containment tells
+   the browser that repainting one row never dirties its neighbours, and
+   content-visibility skips layout entirely for rows that are off-screen.
+   -------------------------------------------------------------------------- */
+.wl-row{
+  contain:layout paint;
+  content-visibility:auto;
+  contain-intrinsic-size:auto 58px;
+}
+.vid{
+  contain:layout paint;
+  content-visibility:auto;
+  contain-intrinsic-size:auto 214px;
+}
+.pos, .al-row, .pf-row, .rv-find, .cal-row, .news-row, .toast{
+  contain:layout paint;
+}
+.card{ contain:layout; }
+
+/* the scrolling column gets its own compositor layer, so scrolling it never
+   repaints the fixed chrome around it */
+.center{ will-change:scroll-position; }
+.left, .right{ contain:layout paint; }
+
+/* smoother entrances for whatever scrolls into view */
+@media (prefers-reduced-motion:no-preference){
+  .dock-pane.on{ animation:fade .22s var(--ease); }
+}

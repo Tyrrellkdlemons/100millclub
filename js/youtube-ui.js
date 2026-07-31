@@ -87,8 +87,35 @@
 
     syncKeyState();
     renderChips();
+    renderPlatformLinks();
     UI.renderShelf();
   };
+
+  /** One-tap jumps into the visitor's own signed-in feeds. */
+  function renderPlatformLinks() {
+    var LINKS = [
+      { n: 'My YouTube',    i: 'fa-brands fa-youtube',  c: '#f00',
+        u: 'https://www.youtube.com/feed/history',
+        d: 'Your real watch history, in your signed-in tab' },
+      { n: 'Subscriptions', i: 'fa-solid fa-rss',       c: '#f00',
+        u: 'https://www.youtube.com/feed/subscriptions',
+        d: 'Latest uploads from channels you follow' },
+      { n: 'TradingView',   i: 'fa-solid fa-chart-line', c: '#4f8cff',
+        u: 'https://www.tradingview.com/',
+        d: 'Your charts, layouts and alerts on your own plan' },
+      { n: 'X markets',     i: 'fa-brands fa-x-twitter', c: '#e9eef5',
+        u: 'https://x.com/search?q=%23stockmarket&f=live',
+        d: 'Live market chatter, your account' },
+      { n: 'r/stocks',      i: 'fa-brands fa-reddit-alien', c: '#ff4500',
+        u: 'https://www.reddit.com/r/stocks/',
+        d: 'The retail floor, signed in as you' }
+    ];
+    $('ytLinks').innerHTML = LINKS.map(function (l) {
+      return '<a class="yt-link" href="' + l.u + '" target="_blank" rel="noopener noreferrer" ' +
+             'data-tip="' + MC.esc(l.n) + '" data-tip-desc="' + MC.esc(l.d) + '">' +
+             '<i class="' + l.i + '" style="color:' + l.c + '"></i>' + MC.esc(l.n) + '</a>';
+    }).join('');
+  }
 
   function syncKeyState() {
     $('ytKeyState').textContent = MC.youtube.hasKey() ? 'Search: on' : 'Set up search';
@@ -274,6 +301,13 @@
   /* ----------------------------------------------------------------------
      RENDER — search results, then your shelf, then the sample vlogs
      ---------------------------------------------------------------------- */
+  /** In-app watch history, shaped like videos, freshest first. */
+  function continueWatching() {
+    return MC.youtube.watched().slice(0, 6).map(function (w) {
+      return { id: w.id, title: w.title, author: 'watched here', thumb: MC.youtube.thumb(w.id) };
+    });
+  }
+
   UI.renderShelf = function () {
     var host = $('vlogBody');
     var html = '';
@@ -281,6 +315,13 @@
     if (results.length) {
       html += section('Search results', 'fa-solid fa-magnifying-glass');
       html += results.map(function (v) { return ytCard(v, false); }).join('');
+    }
+
+    // your actual history, not an invented feed — resume in one tap
+    var recent = continueWatching();
+    if (recent.length) {
+      html += section('Continue watching', 'fa-solid fa-clock-rotate-left');
+      html += recent.map(function (v) { return ytCard(v, MC.youtube.isPinned(v.id)); }).join('');
     }
 
     var shelf = MC.youtube.shelf();
@@ -355,7 +396,7 @@
   };
 
   function findVideo(id) {
-    var pools = [results, MC.youtube.shelf()];
+    var pools = [results, MC.youtube.shelf(), continueWatching()];
     for (var i = 0; i < pools.length; i++) {
       for (var j = 0; j < pools[i].length; j++) {
         if (pools[i][j].id === id) return pools[i][j];

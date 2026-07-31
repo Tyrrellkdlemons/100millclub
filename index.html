@@ -87,6 +87,7 @@
      so it has to come later than the rules that set them solid -->
 <link rel="stylesheet" href="css/backdrop.css" />
 <link rel="stylesheet" href="css/youtube.css" />
+<link rel="stylesheet" href="css/feel.css" />
 <link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim layers over everything it decorates -->
@@ -480,6 +481,12 @@
             </button>
           </div>
           <div class="yt-chips" id="ytChips"></div>
+          <!-- jumps into the tabs where the visitor is already signed in.
+               A page cannot read those feeds — browsers forbid it — but it
+               can take you straight to yours. -->
+          <div class="yt-links" id="ytLinks"
+               data-tip="Your own feeds, one tap away"
+               data-tip-desc="These open in tabs where you are already signed in. No site can read those feeds from outside — browsers forbid it — but the watching you do here does feed your YouTube recommendations."></div>
           <div class="vlog-body" id="vlogBody"></div>
         </div>
 
