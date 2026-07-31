@@ -631,8 +631,24 @@
       $('dockOpenTV').classList.toggle('hidden', tab.dataset.dock === 'vlogs');
     });
     $('dockToggle').addEventListener('click', function () {
-      $('dock').classList.toggle('collapsed');
+      var nowOpen = $('dock').classList.toggle('collapsed') === false;
+      MC.store.set('mc_dock_open', nowOpen ? '1' : '');
       setTimeout(function () { State.chart.fit(); }, 300);
+    });
+
+    // A hidden tab burns battery for nobody. Freeze the simulated feed and
+    // the quote poller until the tab is looked at again.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        clearInterval(State.liveTimer);
+        MC.quotes.stopAuto();
+        MC.news.stopAuto();
+      } else {
+        startLive();
+        MC.quotes.startAuto(30);
+        MC.news.startAuto();
+        MC.quotes.refresh();
+      }
     });
 
     /* ---- vlogs ---- */
@@ -662,6 +678,31 @@
       var file = e.target.files && e.target.files[0];
       if (file) readLogoFile(file);
     });
+
+    /* ---- bottom tab bar (phones) ---- */
+    function bnavSelect(name) {
+      $$('.bnav').forEach(function (b) { b.classList.toggle('on', b.dataset.bnav === name); });
+    }
+    MC.on($('bottomNav'), 'click', '.bnav', function (e, btn) {
+      var name = btn.dataset.bnav;
+      if (name === 'markets') {
+        MC.ui.toggleDrawer('left');
+        bnavSelect($('leftPanel').classList.contains('open') ? 'markets' : 'chart');
+        return;
+      }
+      if (name === 'chart') {
+        MC.ui.closeDrawers();
+        bnavSelect('chart');
+        return;
+      }
+      // trade / alerts / folio all live in the right drawer
+      var pane = name === 'trade' ? 'trade' : name === 'alerts' ? 'alerts' : 'folio';
+      openPane(pane);
+      bnavSelect(name);
+      if (name === 'folio') MC.portfolioUI.render();
+    });
+    // closing the drawers by scrim or Esc snaps the bar back to Chart
+    $('scrim').addEventListener('click', function () { bnavSelect('chart'); });
 
     /* ---- mobile drawers ---- */
     $('mobLeft').addEventListener('click', function () { MC.ui.toggleDrawer('left'); });
@@ -769,6 +810,16 @@
     // 4. live TradingView panels — the tape falls back to the simulated
     //    marquee if TradingView cannot be reached
     MC.TV.tickerTape(function () { MC.watchlist.buildFallbackTape(); });
+
+    // Phones: calmer tick rate out of the box, and the dock starts folded
+    // so the chart owns the screen. Opening it once is remembered.
+    var isPhone = window.matchMedia('(max-width: 860px)').matches;
+    if (isPhone) {
+      State.cfg.speed = 3000;
+      var speedSel = $('cfgSpeed');
+      if (speedSel) speedSel.value = '3000';
+      if (!MC.store.get('mc_dock_open')) $('dock').classList.add('collapsed');
+    }
 
     // 5. wire everything, then load the opening market
     wire();

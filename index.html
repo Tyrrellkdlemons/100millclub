@@ -13,6 +13,8 @@
 <meta property="og:description" content="Charts, trades, backtests and vlogs. The grind is the strategy." />
 
 <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="assets/logo.svg" />
 
 <!--
   ===========================================================================
@@ -78,8 +80,10 @@
 <link rel="stylesheet" href="css/youtube.css" />
 <link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
-<!-- gold trim last, so it layers over everything it decorates -->
+<!-- gold trim layers over everything it decorates -->
 <link rel="stylesheet" href="css/gold.css" />
+<!-- phone rules genuinely last: they must out-cascade every sheet above -->
+<link rel="stylesheet" href="css/mobile.css" />
 
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -884,6 +888,15 @@
     </div>
   </aside>
 </main>
+
+<!-- app-style bottom navigation, phones only -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Main">
+  <button class="bnav" data-bnav="markets"><i class="fa-solid fa-list"></i>Markets</button>
+  <button class="bnav on" data-bnav="chart"><i class="fa-solid fa-chart-column"></i>Chart</button>
+  <button class="bnav" data-bnav="trade"><i class="fa-solid fa-bolt"></i>Trade</button>
+  <button class="bnav" data-bnav="alerts"><i class="fa-solid fa-bell"></i>Alerts</button>
+  <button class="bnav" data-bnav="folio"><i class="fa-solid fa-briefcase"></i>Folio</button>
+</nav>
 
 <!-- ======================= OVERLAYS ======================= -->
 <div class="toasts" id="toasts" aria-live="polite"></div>
