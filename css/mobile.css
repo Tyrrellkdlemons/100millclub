@@ -165,3 +165,49 @@ button, a, select, input, .wl-row, .vid, .dock-tab{ touch-action:manipulation; }
 @media (max-width:860px){
   .ctool .tf{ padding:11px 0; font-size:11px; }   /* 36px-tall touch targets */
 }
+
+/* --------------------------------------------------------------------------
+   PHONE LANDSCAPE — height is the scarce resource, so the bottom bar turns
+   into a slim side rail, the tape and tall navbar give their pixels to the
+   chart, and everything pinned to the bottom edge steps back in.
+   -------------------------------------------------------------------------- */
+@media (max-width:940px) and (orientation:landscape) and (max-height:520px){
+  :root{ --nav-h:48px; --tape-h:0px; }
+  .tape{ display:none; }
+
+  /* the five tabs stack into a left rail */
+  .bottom-nav{
+    left:0; right:auto; top:var(--nav-h); bottom:0;
+    width:58px;
+    grid-template-columns:1fr; grid-template-rows:repeat(5,1fr);
+    padding:6px calc(3px + env(safe-area-inset-left, 0px)) 6px 3px;
+    border-top:none; border-right:1px solid rgba(245,197,24,.22);
+    box-shadow:8px 0 24px rgba(0,0,0,.4);
+  }
+  .bnav{ font-size:8.5px; gap:2px; padding:4px 2px; }
+  .bnav i{ font-size:15px; }
+
+  .app{
+    height:calc(100vh - var(--nav-h));
+    margin-left:58px; padding:6px; gap:6px;
+  }
+  .left{ left:58px; top:var(--nav-h); bottom:0; }
+  .right{ top:var(--nav-h); bottom:0; }
+
+  /* the chart fills the first screenful; the dock scrolls in below */
+  .chart-stack{ height:var(--chart-h, calc(100vh - 176px)); min-height:170px; }
+
+  /* navbar slims down */
+  .nav{ padding:0 8px; gap:7px; }
+  .logo-btn{ width:38px; height:38px; border-radius:11px; }
+
+  /* floaters step off the missing bottom bar */
+  .qz-fab{ right:10px; bottom:10px; }
+  .qz-panel{ left:auto; right:10px; width:340px; bottom:62px; max-height:calc(100vh - 76px); }
+  .toasts{ bottom:12px; }
+  .mini-player{ right:8px; bottom:12px; width:280px; }
+
+  /* modals become centred dialogs again — bottom sheets waste width here */
+  .backdrop{ align-items:center; padding:14px; }
+  .modal{ border-radius:16px; max-height:calc(100vh - 28px); }
+}
