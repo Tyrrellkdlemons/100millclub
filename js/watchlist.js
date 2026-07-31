@@ -53,18 +53,67 @@
                'data-tip-desc="Click to load this market. Drag it up or down to reorder, ' +
                               'or drag it onto the chart or the trade panel.">' +
             '<i class="fa-solid fa-grip-vertical wl-grip"></i>' +
-            '<div>' +
-              '<div class="wl-sym">' + a.s + '</div>' +
-              '<div class="wl-name">' + MC.esc(a.n) + '</div>' +
+            '<div class="wl-l1">' +
+              '<span class="wl-sym">' + a.s + '</span>' +
+              '<span class="wl-px ' + dir + '" data-px="' + a.s + '">' + MC.fmtPx(a.p, a.d) + '</span>' +
+              '<span class="wl-chg ' + dir + '" data-chg="' + a.s + '">' + MC.fmtPct(a.chg) + '</span>' +
             '</div>' +
-            '<div class="wl-px ' + dir + '" data-px="' + a.s + '">' + MC.fmtPx(a.p, a.d) + '</div>' +
-            '<div class="wl-chg ' + dir + '" data-chg="' + a.s + '">' + MC.fmtPct(a.chg) + '</div>' +
+            '<div class="wl-l2">' +
+              '<span class="wl-name">' + MC.esc(a.n) + '</span>' +
+              '<canvas class="wl-spark" data-spark="' + a.s + '" width="64" height="20"></canvas>' +
+            '</div>' +
           '</div>';
       });
     });
 
     box.innerHTML = html;
+    drawSparklines();
   };
+
+  /**
+   * A day of hourly closes as a tiny line per row. Deterministic data from
+   * the same seeded generator as the chart, drawn once per render — never on
+   * the tick, so thirty canvases cost nothing at runtime.
+   */
+  function drawSparklines() {
+    var dpr = window.devicePixelRatio || 1;
+    MC.$$('.wl-spark').forEach(function (canvas) {
+      var sym = canvas.getAttribute('data-spark');
+      var asset = MC.MAP[sym];
+      if (!asset) return;
+
+      var closes = MC.genBars(sym, '1h', 24).map(function (b) { return b.close; });
+      var w = 64, h = 20;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      var ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      var hi = Math.max.apply(null, closes), lo = Math.min.apply(null, closes);
+      var span = (hi - lo) || 1;
+      var up = asset.chg >= 0;
+      var color = up ? '#26c96a' : '#ff4d5e';
+      var X = function (i) { return (i / (closes.length - 1)) * (w - 2) + 1; };
+      var Y = function (v) { return h - 2 - ((v - lo) / span) * (h - 4); };
+
+      // soft fill under the line
+      ctx.beginPath();
+      closes.forEach(function (v, i) { i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)); });
+      ctx.lineTo(X(closes.length - 1), h); ctx.lineTo(X(0), h); ctx.closePath();
+      var g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, up ? 'rgba(38,201,106,.28)' : 'rgba(255,77,94,.28)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fill();
+
+      ctx.beginPath();
+      closes.forEach(function (v, i) { i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)); });
+      ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+
+      // the last price, marked
+      ctx.beginPath();
+      ctx.arc(X(closes.length - 1), Y(closes[closes.length - 1]), 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = color; ctx.fill();
+    });
+  }
 
   /**
    * Push one simulated tick into every asset, then repaint just the numbers.

@@ -28,6 +28,7 @@
     badge.textContent = symbol.length <= 4 ? symbol : symbol.slice(0, 3);
     badge.style.fontSize = badge.textContent.length >= 4 ? '8.5px'
                          : badge.textContent.length === 3 ? '10px' : '12px';
+    badge.className = 'sym-badge m-' + asset.m;
     $('symName').textContent = symbol;
     $('symSub').textContent = asset.n;
     $('symMkt').textContent = MC.MKT_LABEL[asset.m];
@@ -445,7 +446,7 @@
       } else {
         MC.TV.refreshInterval();
         MC.TV.syncIfFollowing();
-        MC.ui.toast('Timeframe changed', 'Each bar now covers ' + btn.textContent.trim() + '.', 'info');
+        // no toast: the pressed button already says everything
       }
     });
 

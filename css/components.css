@@ -739,3 +739,29 @@ body.resizing-x *, body.resizing-y *{ user-select:none !important; }
 .left.min, .right.min{ overflow:hidden; }
 @media (max-width:860px){ .panel-min, .rail{ display:none !important; } }
 @media (max-width:1180px){ #minRight, #railRight{ display:none !important; } }
+
+/* --------------------------------------------------------------------------
+   WATCHLIST, TWO-LINE ROWS — price line up top, name + a day of price
+   history below. The column headers went with the columns.
+   -------------------------------------------------------------------------- */
+.wl-cols{ display:none; }
+.wl-row{ display:block; }
+.wl-l1{
+  display:grid; grid-template-columns:minmax(0,1fr) auto auto;
+  gap:8px; align-items:baseline;
+}
+.wl-l2{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:8px; margin-top:3px;
+}
+.wl-l2 .wl-name{ max-width:none; flex:1; }
+.wl-spark{ width:64px; height:20px; flex-shrink:0; opacity:.9; }
+
+/* --------------------------------------------------------------------------
+   THE BADGE WEARS ITS MARKET'S COLOURS
+   -------------------------------------------------------------------------- */
+.sym-badge.m-futures{ background:linear-gradient(145deg,#ffe680,#e0ac12); color:#12100a; box-shadow:0 3px 12px rgba(245,197,24,.3); }
+.sym-badge.m-stocks{ background:linear-gradient(145deg,#6ba0ff,#3d78e8); color:#fff; box-shadow:0 3px 10px rgba(79,140,255,.3); }
+.sym-badge.m-crypto{ background:linear-gradient(145deg,#ffb056,#e07f12); color:#211200; box-shadow:0 3px 10px rgba(255,159,67,.3); }
+.sym-badge.m-forex{ background:linear-gradient(145deg,#4fd8d8,#1f9e9e); color:#03211f; box-shadow:0 3px 10px rgba(43,217,217,.3); }
+.sym-badge.m-indices{ background:linear-gradient(145deg,#e8edf4,#96a1b0); color:#12161c; box-shadow:0 3px 10px rgba(215,221,230,.3); }
