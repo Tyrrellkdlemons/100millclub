@@ -492,6 +492,10 @@
     bindSwitch('cfgGrid', function (on) { State.chart.setGrid(on); });
     bindSwitch('cfgCross', function (on) { State.chart.setCrosshair(on); });
     bindSwitch('cfgLast', function (on) { State.chart.setLastLine(on); });
+    $('cfgResetLayout').addEventListener('click', function () {
+      MC.resize.reset();
+      MC.ui.toast('Layout reset', 'Every panel is back to its standard size.', 'ok');
+    });
     bindSwitch('cfgTvReuse', function (on) {
       MC.store.set('mc_tv_reuse', on ? '1' : '0');
       MC.ui.toast(on ? 'Reusing one tab' : 'New tab each time',
@@ -801,6 +805,7 @@
     MC.radarUI.init();
     MC.portfolioUI.init();
     MC.queezUI.init();
+    MC.resize.init();
     MC.youtubeUI.init();
     MC.quotes.refresh().then(function () { MC.portfolio.snapshot(true); });
     MC.quotes.startAuto(30);

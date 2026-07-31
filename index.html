@@ -14,7 +14,8 @@
 
 <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" href="assets/logo.svg" />
+<!-- iOS ignores SVG here; 180px PNG is the size iPhones actually use -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180.png" />
 
 <!--
   ===========================================================================
@@ -909,19 +910,19 @@
 </div>
 
 <!-- ======================= QUEEZ ======================= -->
-<button class="qz-fab" id="qzFab" aria-label="Ask Queez for help"
-        data-tip="Ask Queez"
-        data-tip-desc="He answers questions about the terminal. He is also insufferable about it.">
+<button class="qz-fab" id="qzFab" aria-label="Ask the Coach for help"
+        data-tip="Ask the Coach"
+        data-tip-desc="He teaches Queez — that is you — how to work this terminal. Correct answers, questionable manners.">
   <span class="qz-fab-face">🎩</span>
-  <span class="qz-fab-label">Ask Queez</span>
+  <span class="qz-fab-label">Yo, Queez</span>
 </button>
 
 <aside class="qz-panel" id="qzPanel" aria-label="Queez help">
   <header class="qz-head">
     <span class="qz-avatar">🎩</span>
     <div>
-      <div class="qz-name">Queez</div>
-      <div class="qz-role">Help desk · permanently unimpressed</div>
+      <div class="qz-name">The Coach</div>
+      <div class="qz-role">Teaching Queez — that is you — since forever</div>
     </div>
     <button class="qz-x" id="qzClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
   </header>
@@ -1164,6 +1165,13 @@
       </div>
       <div class="opt">
         <div>
+          <div class="opt-t">Panel sizes</div>
+          <div class="opt-d">Drag the seams between panels to resize them. This puts everything back.</div>
+        </div>
+        <button class="btn" id="cfgResetLayout" style="flex-shrink:0">Reset layout</button>
+      </div>
+      <div class="opt">
+        <div>
           <div class="opt-t">Reuse one TradingView tab</div>
           <div class="opt-d">Send every handoff to the same tab instead of piling up new ones, so your session stays put</div>
         </div>
@@ -1364,6 +1372,7 @@
 <script src="js/vlogs.js"></script>
 <script src="js/youtube.js"></script>
 <script src="js/dragdrop.js"></script>
+<script src="js/resize.js"></script>
 <script src="js/tour.js"></script>
 <script src="js/queez.js"></script>
 <script src="js/queez-ui.js"></script>

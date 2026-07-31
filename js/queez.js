@@ -1,5 +1,9 @@
 /* ==========================================================================
-   queez.js — Queez, the help desk with an attitude problem
+   queez.js — the Coach, who is stuck teaching Queez
+
+   The visitor IS Queez. Everyone who opens this site is Queez, and the
+   Coach has been teaching Queez how to trade since forever. He calls him
+   bozo, clown, and Machine Gun Kelly, and loves him anyway.
 
    Queez answers questions about the terminal. There is no backend and no
    model behind him: he is a keyword matcher over a hand-written knowledge
@@ -21,59 +25,59 @@
      VOICE
      ---------------------------------------------------------------------- */
   var OPENERS = [
-    'Alright, listen up.',
-    'Oh, this one. Fine.',
-    'You again. Love that for us.',
+    'Alright Queez, listen up.',
+    'Oh, this one. Fine, Queez.',
+    'Queez. My guy. Again.',
     'Buckle up, champ.',
-    'Great question. Genuinely. I am as shocked as you are.',
-    'Right, gather round.',
-    'Okay so.',
-    'Deep breath. Here we go.'
+    'A real question, Queez. I am as shocked as you are.',
+    'Gather round, clown. Class is on.',
+    'Okay Queez, here we go.',
+    'Deep breath, bozo. It gets easier.'
   ];
 
   var CLOSERS = [
     'Do you get it now, bozo?',
-    'Crystal clear? Cool. Cool cool cool.',
-    'Nod if that landed.',
-    'And that, as they say, is that.',
-    'Try it. I will wait. I have nothing else going on.',
-    'You are welcome. No, really, you are.',
-    'Go on then. Press the thing.',
-    'That will be five dollars.'
+    'Crystal clear, Queez? Cool. Cool cool cool.',
+    'Nod if that landed, clown.',
+    'And that, Queez, is that.',
+    'Try it. I will wait. Teaching you is my whole life.',
+    'You are welcome, Queez. No, really.',
+    'Go on then, bozo. Press the thing.',
+    'That will be five dollars, Queez.'
   ];
 
   /** Quips fired by things you do, rather than things you ask. */
   var QUIPS = {
     fastOrders: [
-      'Are you Machine Gun Kelly with that buy button? Slow down, drummer.',
-      'Three orders in ten seconds. This is a trading terminal, not a fidget toy.',
-      'Easy, trigger finger. The market will still be there in a minute.'
+      'Are you Machine Gun Kelly with that buy button, Queez? Slow down, drummer.',
+      'Three orders in ten seconds. It is a trading terminal, Queez, not a fidget toy.',
+      'Easy, trigger finger. The market will still be there in a minute, bozo.'
     ],
     bigWin: [
-      'Look at you. Absolutely no notes. Terrifying.',
-      'Green. Actual green. Screenshot it before it changes its mind.',
+      'Look at you, Queez. Absolutely no notes. Terrifying.',
+      'Green. Actual green, Queez. Screenshot it before it changes its mind.',
       'Okay, moneybags. Do not let it go to your head. Too late.'
     ],
     bigLoss: [
-      'Ouch. We do not talk about that one.',
-      'That is what we in the business call "tuition".',
-      'The line went the wrong way. Happens. Mostly to you, apparently.'
+      'Ouch, Queez. We do not talk about that one.',
+      'That is what we in the business call "tuition", bozo.',
+      'The line went the wrong way. Happens. Mostly to you, Queez.'
     ],
     clearedAll: [
-      'Wiped the whole chart. Bold. Minimalist. Slightly concerning.',
-      'Nothing on the chart now. Very zen. Very unhelpful.'
+      'Wiped the whole chart, Queez. Bold. Minimalist. Slightly concerning.',
+      'Nothing on the chart now, clown. Very zen. Very unhelpful.'
     ],
     manyIndicators: [
-      'Six indicators. At this point just ask a psychic.',
-      'That chart has more lines than a motorway junction. Can you actually read it?'
+      'Six indicators, Queez. At this point just ask a psychic.',
+      'That chart has more lines than a motorway junction, bozo. Can you actually read it?'
     ],
     repeatHelp: [
-      'Third time opening help. Do you get it now, bozo? No? Same.',
-      'Back again. At this rate I am charging rent.',
-      'You keep coming back. I am flattered and worried.'
+      'Third time opening help. Do you get it now, bozo? No? Same, Queez. Same.',
+      'Back again, Queez. At this rate I am charging you rent.',
+      'You keep coming back, clown. I am flattered and worried.'
     ],
     firstOrder: [
-      'First order in. Nothing real happened, obviously. But well done, sport.'
+      'First order in, Queez. Nothing real happened, obviously. But well done, sport.'
     ]
   };
 
@@ -223,33 +227,34 @@
   Q.ask = function (question) {
     var text = (question || '').trim();
     if (!text) {
-      return { text: 'You pressed send with an empty box. Iconic. Try typing words.', topic: null };
+      return { text: 'You pressed send with an empty box, Queez. Iconic. Try typing words.', topic: null };
     }
 
     if (/^(hi|hey|hello|yo|sup|hiya)\b/i.test(text)) {
       return {
-        text: 'Hello to you too. I am Queez. I know everything about this terminal and almost nothing else. ' +
-              'Ask me something useful.',
+        text: 'Hello to you too, Queez. I am the Coach — I know everything about this terminal ' +
+              'and I have been assigned to you, of all people. Ask me something useful.',
         topic: null
       };
     }
 
     if (/thank|cheers|nice one|legend/i.test(text)) {
-      return { text: 'Manners. In this economy. Genuinely moved.', topic: null };
+      return { text: 'Manners, Queez? In this economy? Genuinely moved.', topic: null };
     }
 
     if (/who are you|what are you|your name/i.test(text)) {
       return {
-        text: 'Queez. I live in this help panel and I answer questions about the terminal. ' +
-              'I am not an oracle, I will not pick your trades, and if I could I would charge you.',
+        text: 'I am the <b>Coach</b>. You are <b>Queez</b> — everyone who walks in here is Queez to me, ' +
+              'and every Queez needs teaching. I answer questions about the terminal. I am not an oracle, ' +
+              'I will not pick your trades, and if I could I would charge you.',
         topic: null
       };
     }
 
     if (/should i (buy|sell)|what should i trade|will .* go up|price prediction|moon/i.test(text)) {
       return {
-        text: 'Absolutely not. I am a help button, not your financial adviser, and neither of us is qualified. ' +
-              'What I <i>can</i> do is show you how to backtest the idea before it costs you anything — ask me about backtesting.',
+        text: 'Absolutely not, Queez. I am your coach, not your financial adviser, and neither of us is qualified. ' +
+              'What I <i>can</i> do is show you how to backtest the idea before it costs you anything — ask me about backtesting, bozo.',
         topic: null
       };
     }
@@ -257,7 +262,7 @@
     var topic = findTopic(text);
     if (!topic) {
       return {
-        text: 'No idea what you are asking, and I say that with love. Try one of the buttons below, or use ' +
+        text: 'No idea what you are asking, Queez, and I say that with love. Try one of the buttons below, or use ' +
               'words like <b>alerts</b>, <b>portfolio</b>, <b>indicators</b>, <b>backtest</b> or <b>prices</b>.',
         topic: null
       };

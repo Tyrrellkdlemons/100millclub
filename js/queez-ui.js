@@ -39,9 +39,9 @@
 
     // opening line, written once per visit
     say('queez',
-      'I am <b>Queez</b>. I run the help desk around here, which mostly means answering ' +
-      'the same six questions forever. Ask me anything about this terminal — or press a button below ' +
-      'if typing is too much effort.');
+      'There you are. I am the <b>Coach</b>, and you — you are <b>Queez</b>. Everyone who walks in ' +
+      'here is. My whole job is teaching Queez how to work this terminal, so ask me anything — or ' +
+      'press a button below if typing is too much effort, bozo.');
   };
 
   UI.toggle = function () { open ? UI.close() : UI.show(); };
@@ -106,7 +106,7 @@
     say('queez', text);
     if (!open) {
       $('qzFab').classList.add('has-news');
-      MC.ui.toast('Queez says', stripTags(text), 'gold');
+      MC.ui.toast('Coach says', stripTags(text), 'gold');
       setTimeout(function () { $('qzFab').classList.remove('has-news'); }, 6000);
     }
   };

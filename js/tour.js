@@ -19,17 +19,17 @@
   var STEPS = [
     {
       target: null,
-      title: 'Right. You must be the new one.',
-      body: 'I am <b>Queez</b>. I run the help desk, which is a generous way of describing what I do. ' +
-            'This is a full trading terminal and none of it risks real money, so you can mash every button ' +
-            'you like and the worst that happens is I judge you. Sixty seconds. Try to keep up.'
+      title: 'Right. You must be Queez.',
+      body: 'Everyone who walks in here is Queez, and I am the <b>Coach</b> — the one stuck teaching you. ' +
+            'This is a full trading terminal and none of it risks real money, so mash every button you like ' +
+            'and the worst that happens is I judge you. Sixty seconds, bozo. Try to keep up.'
     },
     {
       target: '#leftPanel',
       title: 'Your shopping list',
       body: 'Everything you can look at lives here. <b>Click a row</b> to load it. You can also ' +
             '<b>drag rows around</b> to put your favourites at the top, which it remembers, because it is ' +
-            'more organised than you are.'
+            'more organised than you are, Queez.'
     },
     {
       target: '.search',
@@ -86,10 +86,11 @@
     },
     {
       target: '#qzFab',
-      title: 'And when it all goes wrong',
-      body: 'That is me. Press it and ask me anything about this place — alerts, portfolio, why it cannot log you ' +
-            'into TradingView, whatever. I answer properly, I just complain while doing it. ' +
-            '<br><br>Do you get it now, bozo? Good. Go make some money.'
+      title: 'And when it all goes wrong, Queez',
+      body: 'That button is me, the Coach. Press it and ask me anything about this place — alerts, portfolio, ' +
+            'why it cannot log you into TradingView, whatever. I answer properly, I just complain while doing it. ' +
+            'And if you start slapping that buy button like you are Machine Gun Kelly on a drum solo, I will hear about it. ' +
+            '<br><br>Do you get it now, bozo? Good. Go make some money, Queez.'
     }
   ];
 

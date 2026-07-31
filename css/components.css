@@ -603,3 +603,29 @@ input[type=date].input::-webkit-calendar-picker-indicator{ filter:invert(.6); cu
   background:linear-gradient(0deg,rgba(7,9,11,.95),transparent);
   pointer-events:none;
 }
+
+/* --------------------------------------------------------------------------
+   PANEL GRIPS — drag the seams to resize the watchlist, trade panel and dock.
+   The chart is protected by clamps in resize.js: it always stays the largest
+   region no matter how far a grip travels. Double-click a grip to reset.
+   -------------------------------------------------------------------------- */
+.panel-grip{
+  position:absolute; z-index:30;
+  touch-action:none; user-select:none;
+}
+.panel-grip::after{
+  content:""; position:absolute; border-radius:3px;
+  background:rgba(245,197,24,0); transition:background .15s var(--ease);
+}
+.panel-grip.grip-right{ top:0; bottom:0; right:-5px; width:10px; cursor:col-resize; }
+.panel-grip.grip-left{ top:0; bottom:0; left:-5px; width:10px; cursor:col-resize; }
+.panel-grip.grip-top{ left:0; right:0; top:-5px; height:10px; cursor:row-resize; }
+.panel-grip.grip-right::after,
+.panel-grip.grip-left::after{ top:12%; bottom:12%; left:4px; width:2px; }
+.panel-grip.grip-top::after{ left:12%; right:12%; top:4px; height:2px; }
+.panel-grip:hover::after,
+.panel-grip.dragging::after{ background:rgba(245,197,24,.55); box-shadow:0 0 8px rgba(245,197,24,.4); }
+body.resizing-x{ cursor:col-resize; }
+body.resizing-y{ cursor:row-resize; }
+body.resizing-x *, body.resizing-y *{ user-select:none !important; }
+@media (max-width:860px){ .panel-grip{ display:none; } }
