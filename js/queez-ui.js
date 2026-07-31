@@ -24,6 +24,9 @@
     MC.on($('qzChips'), 'click', '.qz-chip', function (e, chip) {
       UI.send(chip.textContent);
     });
+    MC.on($('qzLog'), 'click', '.qz-rel-chip', function (e, chip) {
+      UI.send(chip.getAttribute('data-qztopic'), true);
+    });
 
     $('qzChips').innerHTML = MC.queez.suggestions()
       .map(function (s) { return '<button class="qz-chip">' + MC.esc(s) + '</button>'; }).join('');
@@ -65,16 +68,29 @@
   UI.isOpen = function () { return open; };
 
   /** Ask a question and print both sides of it. */
-  UI.send = function (text) {
+  UI.send = function (text, asTopic) {
     say('you', MC.esc(text));
     var typing = say('queez', '<span class="qz-typing"><i></i><i></i><i></i></span>');
 
     // a beat before answering, so it reads like a reply rather than a lookup
     setTimeout(function () {
-      var res = MC.queez.ask(text);
+      var res = asTopic ? MC.queez.askTopic(text) : MC.queez.ask(text);
       typing.innerHTML = res.text;
+
+      // the Coach always leaves Queez with a concrete next move
+      if (res.next) {
+        typing.insertAdjacentHTML('beforeend',
+          '<span class="qz-next"><i class="fa-solid fa-arrow-right"></i><b>Next move:</b> ' + res.next + '</span>');
+      }
       if (res.topic) {
         typing.insertAdjacentHTML('beforeend', '<span class="qz-topic">' + MC.esc(res.topic) + '</span>');
+      }
+      // related topics become tappable follow-ups
+      if (res.related && res.related.length) {
+        typing.insertAdjacentHTML('beforeend',
+          '<span class="qz-rel">' + res.related.map(function (r) {
+            return '<button class="qz-rel-chip" data-qztopic="' + MC.esc(r) + '">' + MC.esc(r) + '</button>';
+          }).join('') + '</span>');
       }
       scroll();
     }, 420);
