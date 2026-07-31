@@ -242,6 +242,28 @@
 .scrim.on{ display:block; }
 
 /* --------------------------------------------------------------------------
+   RESPONSIVE — short windows first: the chart is the hero, so when height
+   runs out it is the dock that gives way, never the chart. Without these,
+   a 630px-tall window left the chart 104px high under a 379px dock.
+   -------------------------------------------------------------------------- */
+@media (max-height:780px){ :root{ --dock-h:240px; } }
+@media (max-height:680px){
+  :root{ --dock-h:140px; }
+  /* the toolbar may wrap to two rows here; the chart keeps its 180px min
+     and the dock shrinks to make the sums work (103 + 183 + 197 = 493) */
+  .ctool{ padding:7px 12px; row-gap:4px; }
+  .vid{ width:178px; }
+  .vtitle{ -webkit-line-clamp:1; line-clamp:1; min-height:16px; }
+  .dock .yt-chips{ display:none; }
+}
+/* Very short windows: the dock folds to its header row. Every panel is
+   still one click away; the chart simply refuses to be the thing that dies. */
+@media (max-height:560px){
+  .dock .dock-body{ display:none; }
+  .dock .dock-caret{ transform:rotate(-90deg); }
+}
+
+/* --------------------------------------------------------------------------
    RESPONSIVE — desktop → tablet → mobile
    -------------------------------------------------------------------------- */
 @media (max-width:1400px){
