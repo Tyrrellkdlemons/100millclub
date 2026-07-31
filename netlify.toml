@@ -24,13 +24,23 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# Fingerprint-free static assets: short cache, still revalidated.
+# The CSS and JS filenames carry no content hash, because there is no build
+# step to add one. Caching them for any length of time therefore pairs a
+# freshly revalidated index.html with stale scripts, and the app breaks with
+# "x is not a function" until the cache expires. Revalidate them too —
+# Netlify sends ETags, so an unchanged file costs a 304 and no body.
 [[headers]]
   for = "/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# The logo does not change, so it can be cached properly.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
