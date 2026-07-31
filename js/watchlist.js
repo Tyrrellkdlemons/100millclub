@@ -6,7 +6,7 @@
 
   var MC = window.MC = window.MC || {};
   var WL = MC.watchlist = {};
-  var ORDER = ['stocks', 'crypto', 'forex', 'indices'];
+  var ORDER = ['futures', 'stocks', 'crypto', 'forex', 'indices'];
 
   /** Apply the active market tab and the search box to the full asset list. */
   function visibleAssets() {

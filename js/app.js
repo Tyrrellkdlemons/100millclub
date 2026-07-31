@@ -593,13 +593,17 @@
       openPane('test');
       MC.ui.toast('Strategy tester', 'Pick a rule set and a date range, then run it.', 'info');
     });
+    // Vlogs takes you TO the videos — show, open the tab, scroll it into view.
+    // Hiding lives on the dock's own caret, where hiding belongs.
     $('navVlogs').addEventListener('click', function () {
       var dock = $('dock');
-      var hiding = !dock.classList.contains('hidden');
-      dock.classList.toggle('hidden', hiding);
-      $('navVlogs').classList.toggle('on', !hiding);
-      if (!hiding) openDockTab('vlogs');
-      setTimeout(function () { State.chart.fit(); }, 300);
+      dock.classList.remove('hidden');
+      dock.classList.remove('collapsed');
+      $('navVlogs').classList.add('on');
+      openDockTab('vlogs');
+      setTimeout(function () {
+        dock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
     });
     /* ---- help menu ---- */
     $('helpBtn').addEventListener('click', function (e) {
@@ -791,8 +795,16 @@
       State.chartStyle = savedStyle;
       $$('.cstyle').forEach(function (b) { b.classList.toggle('on', b.dataset.cstyle === savedStyle); });
     }
+    // One-time flip: the terminal now opens on the micros. After this visit
+    // the last-viewed market is remembered again as usual.
     var savedSymbol = MC.store.get('mc_symbol');
-    if (savedSymbol && MC.MAP[savedSymbol]) State.symbol = savedSymbol;
+    if (!MC.store.get('mc_default_micros')) {
+      MC.store.set('mc_default_micros', '1');
+      State.symbol = 'MES';
+      MC.store.set('mc_symbol', 'MES');
+    } else if (savedSymbol && MC.MAP[savedSymbol]) {
+      State.symbol = savedSymbol;
+    }
     MC.dragdrop.applySavedOrder();      // their own watchlist arrangement
 
     // 3. populate the static bits of the UI

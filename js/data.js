@@ -13,6 +13,22 @@
      tv = TradingView ticker used by the live widgets
      ---------------------------------------------------------------------- */
   MC.ASSETS = [
+    /* ---- Futures: the micros ----
+       CME's delayed feed resolves on the scanner but the embedded widget
+       refuses it outright ("only available on TradingView") — verified by
+       loading it, not assumed. So the live chart tracks each micro's free
+       proxy with the gold "via" chip owning up to it, while `tvPro` carries
+       the genuine continuous contract for the TradingView handoff. Prices
+       are seeded from the actual CME closes read off the scanner. */
+    { s: 'MES',  n: 'Micro E-mini S&P 500',    m: 'futures', p: 7470.00,  d: 2, v: 0.011,
+      tv: 'AMEX:SPY',   tvPro: 'CME_MINI:MES1!', tvProxy: 'SPY ETF' },
+    { s: 'MNQ',  n: 'Micro E-mini Nasdaq-100', m: 'futures', p: 28264.25, d: 2, v: 0.015,
+      tv: 'NASDAQ:QQQ', tvPro: 'CME_MINI:MNQ1!', tvProxy: 'QQQ ETF' },
+    { s: 'MYM',  n: 'Micro E-mini Dow',        m: 'futures', p: 52430,    d: 0, v: 0.010,
+      tv: 'TVC:DJI',    tvPro: 'CBOT_MINI:MYM1!', tvProxy: 'DJI index' },
+    { s: 'M2K',  n: 'Micro E-mini Russell',    m: 'futures', p: 2928.9,   d: 1, v: 0.016,
+      tv: 'TVC:RUT',    tvPro: 'CME_MINI:M2K1!', tvProxy: 'RUT index' },
+
     /* ---- Stocks ---- */
     { s: 'AAPL',  n: 'Apple Inc.',              m: 'stocks',  p: 227.52,   d: 2, v: 0.018, tv: 'NASDAQ:AAPL' },
     { s: 'NVDA',  n: 'NVIDIA Corporation',      m: 'stocks',  p: 131.26,   d: 2, v: 0.034, tv: 'NASDAQ:NVDA' },
@@ -78,7 +94,7 @@
     MC.MAP[a.s] = a;
   });
 
-  MC.MKT_LABEL = { stocks: 'Stocks', crypto: 'Crypto', forex: 'Forex', indices: 'Indices' };
+  MC.MKT_LABEL = { futures: 'Futures', stocks: 'Stocks', crypto: 'Crypto', forex: 'Forex', indices: 'Indices' };
 
   /** Seconds covered by one bar, per timeframe. */
   MC.TF_SEC = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400, '1w': 604800 };
@@ -133,7 +149,7 @@
      SHARED STATE — every module reads and writes this one object
      ---------------------------------------------------------------------- */
   MC.State = {
-    symbol: 'AAPL',
+    symbol: 'MES',
     tf: '1h',
     market: 'all',
     query: '',
