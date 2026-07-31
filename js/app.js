@@ -103,112 +103,71 @@
   /* ======================================================================
      INDICATORS
      ====================================================================== */
+  /**
+   * Draw every active indicator.
+   * Overlay-type ones go straight onto the candles; oscillator-type ones get
+   * their own strip underneath. Both come from the same registry definition,
+   * so a custom-built indicator behaves exactly like a built-in one.
+   */
   function applyIndicators() {
-    var closes = State.bars.map(function (b) { return b.close; });
     var legend = [];
-    var T = MC.THEME;
+    var seenOverlays = {};
+    var seenPanes = {};
 
-    if (State.ind.sma) {
-      var smaValues = MC.ind.sma(closes, 20);
-      State.chart.setOverlay('sma', smaValues, T.sma);
-      legend.push(['SMA 20', T.sma, smaValues[smaValues.length - 1]]);
-    } else {
-      State.chart.removeOverlay('sma');
-    }
+    State.activeIndicators.forEach(function (entry) {
+      var def = MC.registry.get(entry.id);
+      if (!def) return;
 
-    if (State.ind.ema) {
-      var emaValues = MC.ind.ema(closes, 50);
-      State.chart.setOverlay('ema', emaValues, T.ema);
-      legend.push(['EMA 50', T.ema, emaValues[emaValues.length - 1]]);
-    } else {
-      State.chart.removeOverlay('ema');
-    }
+      var spec;
+      try {
+        spec = def.calc(State.bars, entry.params);
+      } catch (err) {
+        // a broken custom formula must not take the whole chart down
+        console.warn('Indicator "' + entry.id + '" failed:', err.message);
+        return;
+      }
+      if (!spec || !spec.plots || !spec.plots.length) return;
 
-    if (State.ind.bb) {
-      var bands = MC.ind.bbands(closes, 20, 2);
-      State.chart.setOverlay('bbUpper', bands.upper, T.bb);
-      State.chart.setOverlay('bbLower', bands.lower, T.bb);
-      legend.push(['Bollinger 20, 2', T.bb, null]);
-    } else {
-      State.chart.removeOverlay('bbUpper');
-      State.chart.removeOverlay('bbLower');
-    }
+      if (def.pane === 'main') {
+        spec.plots.forEach(function (plot) {
+          var key = entry.uid + ':' + plot.key;
+          seenOverlays[key] = true;
+          State.chart.setOverlay(key, plot.data, plot.color);
+        });
+        var lead = spec.plots[0];
+        var last = lastValue(lead.data);
+        legend.push([def.name, lead.color, last]);
+      } else {
+        seenPanes[entry.uid] = true;
+        MC.panes.set(entry.uid, def, spec, State.bars);
+      }
+    });
 
-    State.chart.setVolume(State.ind.vol);
+    // drop overlays belonging to indicators that are no longer active
+    Object.keys(activeOverlayKeys).forEach(function (key) {
+      if (!seenOverlays[key]) State.chart.removeOverlay(key);
+    });
+    activeOverlayKeys = seenOverlays;
+
+    State.chart.setVolume(State.showVolume);
 
     $('legend').innerHTML = legend.map(function (l) {
       return '<div class="leg" style="color:' + l[1] + '">' +
-        l[0] + (l[2] != null ? '  ' + MC.fmtPx(l[2], State.asset.d) : '') + '</div>';
+        MC.esc(l[0]) + (l[2] != null ? '  ' + MC.fmtPx(l[2], State.asset.d) : '') + '</div>';
     }).join('');
 
-    renderRsi(closes);
+    $('panes').classList.toggle('on', Object.keys(seenPanes).length > 0);
+    $('btnInd').classList.toggle('on', State.activeIndicators.length > 0);
 
-    // any indicator active (volume aside) lights up the toolbar button
-    $('btnInd').classList.toggle(
-      'on',
-      State.ind.sma || State.ind.ema || State.ind.bb || State.ind.rsi
-    );
+    setTimeout(function () { State.chart.fit(); MC.panes.resize(); }, 60);
   }
+  MC.applyIndicators = applyIndicators;
 
-  /** RSI lives in its own pane under the chart, time-synced to the main one. */
-  function renderRsi(closes) {
-    $('rsiWrap').classList.toggle('on', State.ind.rsi);
-    if (!State.ind.rsi) return;
+  var activeOverlayKeys = {};
 
-    var values = MC.ind.rsi(closes, 14);
-
-    if (!MC.HAS_LWC) {
-      var latest = values[values.length - 1];
-      $('rsi').innerHTML =
-        '<div style="padding:34px 12px;text-align:center;color:var(--dim);font-size:11px">' +
-        'RSI needs the chart library — currently offline. Latest reading: ' +
-        '<b style="color:var(--accent)">' + (latest != null ? latest.toFixed(1) : '–') + '</b></div>';
-      return;
-    }
-
-    if (!State.rsiChart) {
-      State.rsiChart = LightweightCharts.createChart($('rsi'), {
-        autoSize: true,
-        layout: {
-          background: { type: 'solid', color: 'transparent' },
-          textColor: MC.THEME.text, fontFamily: 'Inter, sans-serif', fontSize: 10
-        },
-        grid: { vertLines: { visible: false }, horzLines: { color: MC.THEME.grid } },
-        rightPriceScale: { borderColor: MC.THEME.border },
-        timeScale: { visible: false, borderColor: MC.THEME.border },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        handleScroll: false,
-        handleScale: false
-      });
-
-      State.rsiSeries = State.rsiChart.addLineSeries({
-        color: MC.THEME.rsi, lineWidth: 1.6, priceLineVisible: false
-      });
-      // 70 / 30 guide rails
-      State.rsiSeries.createPriceLine({ price: 70, color: 'rgba(255,77,94,.55)', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: '' });
-      State.rsiSeries.createPriceLine({ price: 30, color: 'rgba(38,201,106,.55)', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: '' });
-      State.rsiChart.priceScale('right').applyOptions({ autoScale: false, scaleMargins: { top: 0.1, bottom: 0.1 } });
-
-      // keep both time axes in step (the flag stops the two feeding each other)
-      var syncing = false;
-      if (State.chart.chart) {
-        State.chart.chart.timeScale().subscribeVisibleLogicalRangeChange(function (range) {
-          if (syncing || !range || !State.rsiChart) return;
-          syncing = true;
-          State.rsiChart.timeScale().setVisibleLogicalRange(range);
-          syncing = false;
-        });
-      }
-    }
-
-    State.rsiSeries.setData(State.bars
-      .map(function (b, i) { return values[i] == null ? null : { time: b.time, value: values[i] }; })
-      .filter(Boolean));
-
-    if (State.chart.chart) {
-      var visible = State.chart.chart.timeScale().getVisibleLogicalRange();
-      if (visible) State.rsiChart.timeScale().setVisibleLogicalRange(visible);
-    }
+  function lastValue(data) {
+    for (var i = data.length - 1; i >= 0; i--) if (data[i] != null) return data[i];
+    return null;
   }
 
   /* ======================================================================
@@ -223,7 +182,7 @@
     $('chart').classList.toggle('hidden', live);
     $('legend').classList.toggle('hidden', live);
     $('statStrip').classList.toggle('hidden', live);
-    $('rsiWrap').classList.toggle('hidden', live);
+    $('panes').classList.toggle('hidden', live);
 
     // The header price comes from the simulated feed, so it would contradict
     // the real quote inside the TradingView chart. Hide it in live mode —
@@ -270,7 +229,8 @@
     MC.watchlist.updateFallbackTape();
     MC.trade.updatePositions();
 
-    if (State.ind.sma || State.ind.ema || State.ind.bb) applyIndicators();
+    if (State.activeIndicators.length) applyIndicators();
+    MC.alerts.check();
   }
 
   function startLive() {
@@ -471,15 +431,11 @@
     });
 
     /* ---- indicator switches ---- */
-    var SWITCHES = { swSma: 'sma', swEma: 'ema', swBb: 'bb', swRsi: 'rsi', swVol: 'vol' };
-    Object.keys(SWITCHES).forEach(function (id) {
-      $(id).addEventListener('click', function () {
-        var key = SWITCHES[id];
-        State.ind[key] = !State.ind[key];
-        $(id).classList.toggle('on', State.ind[key]);
-        applyIndicators();
-        setTimeout(function () { State.chart.fit(); }, 280);
-      });
+    $('swVol').addEventListener('click', function () {
+      State.showVolume = !State.showVolume;
+      $('swVol').classList.toggle('on', State.showVolume);
+      MC.store.set('mc_volume', State.showVolume ? '1' : '0');
+      applyIndicators();
     });
 
     /* ---- drawing ---- */
@@ -724,6 +680,8 @@
     // 1. simulated chart engine (Lightweight Charts, or the canvas fallback)
     State.chart = MC.createChart($('chart'), updateOHLC);
     if (State.chart.onClick) State.chart.onClick(onChartClick);
+    MC.panes.init($('panes'), State.chart);
+    MC.onRemoveIndicator = function (uid) { MC.indicatorUI.removeUid(uid); };
 
     // 2. restore anything the user personalised last visit
     var savedLogo = MC.store.get('mc_logo');
@@ -740,10 +698,19 @@
     $('bTo').value = MC.todayISO(0);
     $('stratNote').textContent = MC.STRAT_NOTE.sma;
 
+    State.showVolume = MC.store.get('mc_volume') !== '0';
+    $('swVol').classList.toggle('on', State.showVolume);
+
     MC.ui.initTooltips();
     MC.ui.initModals();
     MC.watchlist.render();
     MC.vlogs.render();
+
+    // indicator library + alerts
+    MC.indicatorUI.restore();
+    MC.indicatorUI.init();
+    MC.indicatorUI.render();
+    MC.alertsUI.init();
 
     // 4. live TradingView panels — the tape falls back to the simulated
     //    marquee if TradingView cannot be reached

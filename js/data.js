@@ -139,9 +139,11 @@
     side: 'buy',
     positions: [],
     chart: null,
-    rsiChart: null,
-    rsiSeries: null,
-    ind: { sma: false, ema: false, bb: false, rsi: false, vol: true },
+
+    /** Indicators currently on the chart: [{ uid, id, params }]. */
+    activeIndicators: [],
+    showVolume: true,
+
     cfg: { live: true, speed: 1500 },
     draw: null,
     drawPts: [],

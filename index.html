@@ -69,6 +69,7 @@
 <link rel="stylesheet" href="css/base.css" />
 <link rel="stylesheet" href="css/layout.css" />
 <link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/indicators.css" />
 <link rel="stylesheet" href="css/help.css" />
 
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -327,10 +328,8 @@
         </div>
       </div>
 
-      <div class="rsi-wrap" id="rsiWrap">
-        <span class="rsi-tag">RSI 14</span>
-        <div id="rsi"></div>
-      </div>
+      <!-- one strip per oscillator-style indicator, time-synced to the chart -->
+      <div class="panes" id="panes"></div>
     </div>
 
     <!-- ---------------- DOCK: vlogs + live market panels ---------------- -->
@@ -409,7 +408,10 @@
   <aside class="card col right" id="rightPanel" aria-label="Trade and backtest">
     <div class="rtabs" role="tablist">
       <button class="rtab on" data-pane="trade"><i class="fa-solid fa-bolt"></i> Trade</button>
-      <button class="rtab" data-pane="test"><i class="fa-solid fa-flask"></i> Test a strategy</button>
+      <button class="rtab" data-pane="test"><i class="fa-solid fa-flask"></i> Test</button>
+      <button class="rtab" data-pane="alerts">
+        <i class="fa-solid fa-bell"></i> Alerts <span class="pill" id="alertCount" style="padding:1px 5px">0</span>
+      </button>
     </div>
 
     <div class="rbody">
@@ -580,6 +582,98 @@
         </div>
       </div>
 
+      <!-- ===== ALERTS ===== -->
+      <div class="pane" id="pane-alerts">
+        <div class="field">
+          <div class="label">Watch this market</div>
+          <select class="input" id="alSym"></select>
+        </div>
+
+        <div class="field">
+          <div class="label">Tell me when
+            <i class="fa-solid fa-circle-question q"
+               data-tip="What has to happen"
+               data-tip-desc="An alert only fires when the condition actually flips from false to true, so setting one that is already true will not fire it straight away."></i>
+          </div>
+          <select class="input" id="alCond"></select>
+        </div>
+
+        <div class="field">
+          <div class="label" id="alValueLabel">Price</div>
+          <div class="input-wrap">
+            <input class="input mono" id="alValue" type="number" step="any" />
+            <span class="suffix" id="alValueSuffix"></span>
+          </div>
+          <div class="qbtns">
+            <button class="qbtn" id="alUseLast">Use last price</button>
+            <button class="qbtn" data-alpct="2">+2%</button>
+            <button class="qbtn" data-alpct="-2">-2%</button>
+          </div>
+        </div>
+
+        <button class="run-btn" id="alAdd"><i class="fa-solid fa-bell"></i> Create alert</button>
+
+        <div class="sec-title">Delivery
+          <i class="fa-solid fa-circle-question q"
+             data-tip="Copy-trade forwarding"
+             data-tip-desc="Point this at a Telegram channel, a Discord channel or your own webhook and every triggered alert is posted there automatically."></i>
+        </div>
+
+        <div class="field">
+          <div class="label">Send signals to</div>
+          <select class="input" id="alChannel">
+            <option value="none">Nowhere — just show them here</option>
+            <option value="telegram">Telegram</option>
+            <option value="discord">Discord</option>
+            <option value="webhook">My own webhook</option>
+          </select>
+        </div>
+
+        <div id="alTelegram" class="hidden">
+          <div class="field">
+            <div class="label">Bot token</div>
+            <input class="input mono" id="alTgToken" type="password" placeholder="from @BotFather" autocomplete="off" />
+          </div>
+          <div class="field">
+            <div class="label">Chat ID</div>
+            <input class="input mono" id="alTgChat" type="text" placeholder="-100123456789" autocomplete="off" />
+          </div>
+        </div>
+
+        <div id="alWebhook" class="hidden">
+          <div class="field">
+            <div class="label">Webhook URL</div>
+            <input class="input mono" id="alHookUrl" type="url" placeholder="https://…" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="opt">
+          <div><div class="opt-t">Sound</div><div class="opt-d">Play a chime when one fires</div></div>
+          <div class="sw on" id="alSound" role="switch"></div>
+        </div>
+        <div class="opt">
+          <div><div class="opt-t">Desktop notifications</div><div class="opt-d">Pop up even when this tab is hidden</div></div>
+          <div class="sw" id="alDesktop" role="switch"></div>
+        </div>
+
+        <div class="qbtns" style="margin-top:10px">
+          <button class="qbtn" id="alTest"><i class="fa-solid fa-paper-plane"></i> Send a test signal</button>
+        </div>
+
+        <div class="note">
+          Your token or webhook URL is stored only in this browser and is sent straight to the service
+          you picked — it never passes through this site. Treat a bot token like a password.
+        </div>
+
+        <div class="sec-title">Active alerts</div>
+        <div id="alList"></div>
+
+        <div class="sec-title">Recently triggered
+          <button class="qbtn" id="alClearLog" style="flex:0 0 auto;padding:3px 8px">Clear</button>
+        </div>
+        <div id="alLog"></div>
+      </div>
+
     </div>
   </aside>
 </main>
@@ -603,36 +697,136 @@
   </div>
 </div>
 
-<!-- indicators -->
+<!-- indicator library -->
 <div class="backdrop" id="mdInd">
-  <div class="modal">
+  <div class="modal wide">
     <div class="m-head">
       <i class="fa-solid fa-wave-square"></i><h3>Indicators</h3>
+      <button class="btn btn-accent" id="btnNewIndicator" style="margin-left:auto">
+        <i class="fa-solid fa-plus"></i> Create an indicator
+      </button>
       <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="m-body">
-      <div class="opt">
-        <div><div class="opt-t">SMA 20 — simple average</div><div class="opt-d">A smooth line showing the average of the last 20 bars</div></div>
-        <div class="sw" id="swSma" role="switch"></div>
-      </div>
-      <div class="opt">
-        <div><div class="opt-t">EMA 50 — weighted average</div><div class="opt-d">Reacts faster than SMA because it leans on recent prices</div></div>
-        <div class="sw" id="swEma" role="switch"></div>
-      </div>
-      <div class="opt">
-        <div><div class="opt-t">Bollinger Bands</div><div class="opt-d">Shows when price is stretched unusually far from normal</div></div>
-        <div class="sw" id="swBb" role="switch"></div>
-      </div>
-      <div class="opt">
-        <div><div class="opt-t">RSI 14 — momentum meter</div><div class="opt-d">Adds a panel below. Over 70 is hot, under 30 is cold</div></div>
-        <div class="sw" id="swRsi" role="switch"></div>
-      </div>
-      <div class="opt">
-        <div><div class="opt-t">Volume bars</div><div class="opt-d">How much traded during each bar</div></div>
+
+    <div class="lib-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="indSearch" class="input" type="text" placeholder="Search indicators — try RSI, volume, trend…" autocomplete="off" />
+    </div>
+
+    <div class="lib-active" id="indActive"></div>
+
+    <div class="m-body lib-body">
+      <div class="lib-list" id="indList"></div>
+    </div>
+
+    <div class="m-foot">
+      <div class="opt" style="margin-right:auto;padding:0;border:none;gap:10px">
+        <div><div class="opt-t">Volume bars</div><div class="opt-d">Turnover under the candles</div></div>
         <div class="sw on" id="swVol" role="switch"></div>
       </div>
+      <button class="btn" id="indClearAll">Remove all</button>
+      <button class="btn btn-accent" data-close>Done</button>
     </div>
-    <div class="m-foot"><button class="btn btn-accent" data-close>Done</button></div>
+  </div>
+</div>
+
+<!-- indicator builder -->
+<div class="backdrop" id="mdBuild">
+  <div class="modal wide">
+    <div class="m-head">
+      <i class="fa-solid fa-flask-vial"></i><h3>Create an indicator</h3>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="build-tabs">
+      <button class="build-tab on" data-build="guided"><i class="fa-solid fa-wand-magic-sparkles"></i> Guided</button>
+      <button class="build-tab" data-build="formula"><i class="fa-solid fa-code"></i> Write a formula</button>
+    </div>
+
+    <div class="m-body">
+      <div class="field">
+        <div class="label">Name it</div>
+        <input class="input" id="bName" type="text" placeholder="My momentum line" maxlength="40" />
+      </div>
+
+      <!-- GUIDED -->
+      <div class="build-pane on" id="build-guided">
+        <div class="field">
+          <div class="label">What should it do?</div>
+          <select class="input" id="bRecipe"></select>
+          <div class="note" id="bRecipeHint" style="margin-top:7px"></div>
+        </div>
+        <div class="row2">
+          <div class="field" id="wrapMaType">
+            <div class="label">Average type</div>
+            <select class="input" id="bMaType">
+              <option value="sma">Simple (SMA)</option>
+              <option value="ema" selected>Exponential (EMA)</option>
+              <option value="wma">Weighted (WMA)</option>
+              <option value="hma">Hull (HMA)</option>
+            </select>
+          </div>
+          <div class="field" id="wrapSource">
+            <div class="label">Price to use</div>
+            <select class="input" id="bSource"></select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field" id="wrapPeriodA">
+            <div class="label">Bars</div>
+            <input class="input mono" id="bPeriodA" type="number" min="1" max="500" value="12" />
+          </div>
+          <div class="field" id="wrapPeriodB">
+            <div class="label">Second bars</div>
+            <input class="input mono" id="bPeriodB" type="number" min="1" max="500" value="26" />
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMULA -->
+      <div class="build-pane" id="build-formula">
+        <div class="field">
+          <div class="label">Formula</div>
+          <textarea class="input build-code" id="bFormula" rows="3"
+                    placeholder="ema(close,12) - ema(close,26)" spellcheck="false"></textarea>
+        </div>
+        <div class="build-help">
+          <div class="build-help-t">Prices you can use</div>
+          <div class="chips" id="bChipsSrc"></div>
+          <div class="build-help-t">Functions</div>
+          <div class="chips" id="bChipsFn"></div>
+          <div class="build-help-t">Examples</div>
+          <div class="chips" id="bChipsEx"></div>
+        </div>
+      </div>
+
+      <div class="row2" style="margin-top:4px">
+        <div class="field">
+          <div class="label">Where to draw it</div>
+          <select class="input" id="bPane">
+            <option value="sub">In its own panel below</option>
+            <option value="main">Over the candles</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">Style</div>
+          <select class="input" id="bPlotType">
+            <option value="line">Line</option>
+            <option value="histogram">Bars</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="build-preview" id="bPreview">
+        <span class="build-status" id="bStatus">Fill it in and press Check.</span>
+        <canvas id="bCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="m-foot">
+      <button class="btn" id="bCheck"><i class="fa-solid fa-circle-check"></i> Check it</button>
+      <button class="btn btn-accent" id="bSave"><i class="fa-solid fa-plus"></i> Add to chart</button>
+    </div>
   </div>
 </div>
 
@@ -833,15 +1027,21 @@
 <script src="js/utils.js"></script>
 <script src="js/data.js"></script>
 <script src="js/indicators.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/registry.js"></script>
 <script src="js/chart.js"></script>
+<script src="js/panes.js"></script>
 <script src="js/tradingview.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/watchlist.js"></script>
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
+<script src="js/alerts.js"></script>
 <script src="js/vlogs.js"></script>
 <script src="js/dragdrop.js"></script>
 <script src="js/tour.js"></script>
+<script src="js/indicator-ui.js"></script>
+<script src="js/alerts-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

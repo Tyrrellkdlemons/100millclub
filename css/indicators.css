@@ -1,0 +1,195 @@
+/* ==========================================================================
+   indicators.css — oscillator strips, the indicator library, the builder
+   and the alerts panel
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   OSCILLATOR STRIPS under the chart
+   -------------------------------------------------------------------------- */
+.panes{ flex-shrink:0; max-height:0; overflow:hidden; transition:max-height .28s var(--ease); }
+.panes.on{ max-height:60vh; overflow-y:auto; }
+.panes.hidden{ display:none; }
+
+.pane-strip{ height:118px; border-top:1px solid var(--border); position:relative; }
+.pane-head{
+  display:flex; align-items:center; gap:8px;
+  padding:4px 10px 2px; position:relative; z-index:3; pointer-events:none;
+}
+.pane-name{ font-size:10.5px; font-weight:800; letter-spacing:.4px; color:var(--muted); white-space:nowrap; }
+.pane-vals{
+  font-size:10.5px; font-variant-numeric:tabular-nums; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pane-vals b{ font-weight:700; }
+.pane-sep{ color:var(--dim); margin:0 6px; }
+.pane-x{
+  margin-left:auto; pointer-events:auto;
+  width:20px; height:20px; border-radius:5px; flex-shrink:0;
+  display:grid; place-items:center; font-size:10px;
+  color:var(--dim); transition:.15s var(--ease);
+}
+.pane-x:hover{ background:var(--panel-3); color:var(--red); }
+.pane-plot{ position:absolute; inset:20px 0 0; }
+
+/* --------------------------------------------------------------------------
+   INDICATOR LIBRARY
+   -------------------------------------------------------------------------- */
+.lib-search{ position:relative; padding:12px 18px 0; }
+.lib-search > i{
+  position:absolute; left:29px; top:50%; transform:translateY(-45%);
+  color:var(--dim); font-size:12px; pointer-events:none;
+}
+.lib-search .input{ padding-left:32px; }
+
+.lib-active{ padding:11px 18px 0; }
+.lib-active-t{
+  font-size:9.5px; font-weight:800; letter-spacing:1px;
+  text-transform:uppercase; color:var(--dim); margin-bottom:7px;
+}
+.lib-chip{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:7px 9px; margin-bottom:6px; border-radius:9px;
+  background:var(--panel-2); border:1px solid var(--border);
+}
+.lib-chip-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.lib-chip-n{ font-size:12px; font-weight:700; margin-right:auto; }
+.lib-chip .ip{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--dim); }
+.lib-chip .ip input{
+  width:52px; height:25px; padding:0 6px; border-radius:6px;
+  background:var(--panel-3); border:1px solid var(--border-2); color:var(--text);
+  font-size:11px; font-weight:700; font-variant-numeric:tabular-nums;
+}
+.lib-chip .ip input:focus{ outline:none; border-color:var(--accent); }
+.lib-chip-x{
+  width:22px; height:22px; border-radius:6px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px;
+  color:var(--dim); transition:.15s var(--ease);
+}
+.lib-chip-x:hover{ background:rgba(255,77,94,.15); color:var(--red); }
+
+.lib-body{ padding-top:12px; }
+.lib-list{ max-height:44vh; overflow-y:auto; margin:0 -4px; padding:0 4px; }
+.lib-group{
+  position:sticky; top:0; z-index:2;
+  padding:11px 4px 6px; background:var(--panel);
+  font-size:9.5px; font-weight:800; letter-spacing:1.1px;
+  text-transform:uppercase; color:var(--gold-deep);
+}
+.lib-row{
+  display:flex; align-items:center; gap:11px;
+  padding:9px 10px; margin-bottom:4px; border-radius:10px;
+  cursor:pointer; border:1px solid transparent;
+  transition:.15s var(--ease);
+}
+.lib-row:hover{ background:var(--panel-2); border-color:var(--border); }
+.lib-row.on{ background:var(--accent-soft); border-color:var(--accent-line); }
+.lib-row-main{ min-width:0; flex:1; }
+.lib-row-n{ font-size:12.5px; font-weight:700; margin-bottom:2px; }
+.lib-row-d{ font-size:11px; color:var(--dim); line-height:1.45; }
+.lib-row-btn{
+  width:26px; height:26px; border-radius:7px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px;
+  background:var(--panel-3); color:var(--muted); border:1px solid var(--border-2);
+}
+.lib-row.on .lib-row-btn{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.lib-tag{
+  font-size:8.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase;
+  padding:2px 5px; border-radius:4px; margin-left:4px;
+  background:rgba(245,197,24,.14); color:var(--gold); border:1px solid rgba(245,197,24,.3);
+}
+.lib-tag.alt{ background:var(--panel-3); color:var(--dim); border-color:var(--border-2); }
+.lib-del{
+  width:24px; height:24px; border-radius:6px; flex-shrink:0;
+  display:grid; place-items:center; font-size:10px; color:var(--dim);
+}
+.lib-del:hover{ background:rgba(255,77,94,.15); color:var(--red); }
+.lib-empty{ padding:26px 14px; text-align:center; color:var(--dim); font-size:12px; }
+
+/* --------------------------------------------------------------------------
+   BUILDER
+   -------------------------------------------------------------------------- */
+.build-tabs{ display:flex; gap:5px; padding:11px 18px 0; }
+.build-tab{
+  display:flex; align-items:center; gap:7px;
+  padding:9px 14px; border-radius:9px;
+  font-size:12px; font-weight:700; color:var(--muted);
+  background:var(--panel-2); transition:.16s var(--ease);
+}
+.build-tab:hover{ color:var(--text); background:var(--panel-3); }
+.build-tab.on{ background:var(--accent); color:#fff; }
+.build-pane{ display:none; }
+.build-pane.on{ display:block; animation:fade .2s var(--ease); }
+
+.build-code{
+  height:auto; min-height:70px; padding:11px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px; line-height:1.6; resize:vertical;
+}
+.build-help{
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:11px; padding:11px 12px;
+}
+.build-help-t{
+  font-size:9.5px; font-weight:800; letter-spacing:.9px;
+  text-transform:uppercase; color:var(--dim); margin:9px 0 6px;
+}
+.build-help-t:first-child{ margin-top:0; }
+.chips{ display:flex; flex-wrap:wrap; gap:5px; }
+.chip-ins{
+  padding:4px 8px; border-radius:6px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px; font-weight:600;
+  background:var(--panel-3); color:var(--silver);
+  border:1px solid var(--border-2); transition:.14s var(--ease);
+}
+.chip-ins:hover{ border-color:var(--accent); color:var(--accent); transform:translateY(-1px); }
+
+.build-preview{
+  margin-top:13px; padding:11px;
+  background:var(--panel-2); border:1px solid var(--border); border-radius:11px;
+}
+.build-status{ display:block; font-size:11.5px; line-height:1.5; color:var(--muted); }
+.build-status b{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--text); font-size:11px;
+}
+.build-status.good{ color:var(--green); }
+.build-status.bad{ color:var(--red); }
+#bCanvas{ width:100%; height:58px; display:block; margin-top:8px; }
+
+/* --------------------------------------------------------------------------
+   ALERTS
+   -------------------------------------------------------------------------- */
+.al-row{
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:10px; padding:9px 10px; margin-bottom:7px;
+  animation:fade .25s var(--ease);
+}
+.al-row.off{ opacity:.55; }
+.al-row.done{ border-color:rgba(245,197,24,.4); background:rgba(245,197,24,.06); }
+.al-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+.al-sym{ font-size:12px; font-weight:800; }
+.al-state{ font-size:9.5px; font-weight:700; color:var(--dim); display:flex; align-items:center; gap:5px; }
+.al-row.done .al-state{ color:var(--gold); }
+.al-cond{ font-size:11px; color:var(--muted); }
+.al-cond b{ color:var(--text); font-variant-numeric:tabular-nums; }
+.al-acts{ display:flex; gap:6px; margin-top:7px; }
+.al-acts button{
+  flex:1; padding:4px; border-radius:6px;
+  font-size:10.5px; font-weight:700; color:var(--dim);
+  background:var(--panel-3); border:1px solid var(--border); transition:.15s var(--ease);
+}
+.al-acts button:hover{ color:var(--text); border-color:var(--border-2); }
+.al-acts button[data-al-del]:hover{ color:var(--red); border-color:rgba(255,77,94,.4); }
+
+.al-log{
+  font-size:10.5px; color:var(--muted); line-height:1.5;
+  padding:6px 9px; border-bottom:1px solid var(--border);
+}
+.al-log:last-child{ border-bottom:none; }
+.al-log b{ color:var(--gold); font-variant-numeric:tabular-nums; margin-right:5px; }
+
+/* the alerts tab is narrow — let the three tabs shrink gracefully */
+@media (max-width:1400px){
+  .rtab{ font-size:11.5px; padding:9px 6px; gap:4px; }
+}
