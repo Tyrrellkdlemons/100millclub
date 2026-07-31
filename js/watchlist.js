@@ -73,6 +73,21 @@
    */
   WL.tick = function () {
     MC.ASSETS.forEach(function (a) {
+      // Symbols on a real feed are owned by that feed — nudging them would
+      // overwrite a genuine quote with noise.
+      if (MC.quotes && !MC.quotes.shouldSimulate(a.s)) {
+        var el = document.querySelector('[data-px="' + a.s + '"]');
+        if (el) {
+          el.textContent = MC.fmtPx(a.p, a.d);
+          el.className = 'wl-px ' + (a.chg >= 0 ? 'up' : 'down');
+        }
+        var cg0 = document.querySelector('[data-chg="' + a.s + '"]');
+        if (cg0) {
+          cg0.textContent = MC.fmtPct(a.chg);
+          cg0.className = 'wl-chg ' + (a.chg >= 0 ? 'up' : 'down');
+        }
+        return;
+      }
       var move = (Math.random() - 0.5) * a.v * a.p * 0.16;
       var next = Math.max(a.p + move, a.p * 0.5);
       var rising = next > a.p;

@@ -71,6 +71,7 @@
 <link rel="stylesheet" href="css/components.css" />
 <link rel="stylesheet" href="css/indicators.css" />
 <link rel="stylesheet" href="css/radar.css" />
+<link rel="stylesheet" href="css/portfolio.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim last, so it layers over everything it decorates -->
 <link rel="stylesheet" href="css/gold.css" />
@@ -461,6 +462,7 @@
       <button class="rtab" data-pane="alerts">
         <i class="fa-solid fa-bell"></i> Alerts <span class="pill" id="alertCount" style="padding:1px 5px">0</span>
       </button>
+      <button class="rtab" data-pane="folio"><i class="fa-solid fa-briefcase"></i> Folio</button>
     </div>
 
     <div class="rbody">
@@ -721,6 +723,102 @@
           <button class="qbtn" id="alClearLog" style="flex:0 0 auto;padding:3px 8px">Clear</button>
         </div>
         <div id="alLog"></div>
+      </div>
+
+      <!-- ===== PORTFOLIO ===== -->
+      <div class="pane" id="pane-folio">
+        <div class="pf-hero">
+          <div class="pf-hero-l">Portfolio value</div>
+          <div class="pf-hero-v mono" id="pfValue">$0.00</div>
+          <div class="pf-hero-sub">
+            <span class="mono" id="pfTotalPL">–</span>
+            <span class="pf-dot">·</span>
+            <span class="mono" id="pfTotalPct">–</span>
+            <span class="pf-since" id="pfLiveTag"></span>
+          </div>
+        </div>
+
+        <div class="pf-grid">
+          <div class="pf-cell"><b>Unrealised</b><span class="mono" id="pfUnreal">–</span></div>
+          <div class="pf-cell"><b>Realised</b><span class="mono" id="pfReal">–</span></div>
+          <div class="pf-cell"><b>Cost basis</b><span class="mono" id="pfCost">–</span></div>
+          <div class="pf-cell"><b>Today</b><span class="mono" id="pfDay">–</span></div>
+        </div>
+
+        <div class="eq-wrap" style="margin-top:9px">
+          <b>Profit and loss over time <span id="pfCurveNote"></span></b>
+          <canvas id="pfCanvas"></canvas>
+        </div>
+
+        <div class="sec-title">Holdings <span class="pill" id="pfCount">0</span></div>
+        <div id="pfHoldings"></div>
+
+        <div class="sec-title">Record a trade</div>
+        <div class="side-toggle">
+          <button class="side buy on" id="pfBuy" aria-pressed="true">BOUGHT</button>
+          <button class="side sell" id="pfSell" aria-pressed="false">SOLD</button>
+        </div>
+        <div class="field">
+          <div class="label">Market</div>
+          <select class="input" id="pfSym"></select>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <div class="label">How many</div>
+            <input class="input mono" id="pfQty" type="number" min="0" step="any" placeholder="0" />
+          </div>
+          <div class="field">
+            <div class="label">Price each</div>
+            <div class="input-wrap">
+              <input class="input mono" id="pfPrice" type="number" min="0" step="any" placeholder="0.00" />
+            </div>
+            <div class="qbtns"><button class="qbtn" id="pfUseLast" style="flex:1">Use last price</button></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">When
+            <i class="fa-solid fa-circle-question q"
+               data-tip="Trade date"
+               data-tip-desc="Used to order your ledger. Leave it as today if you are recording something you just did."></i>
+          </div>
+          <input class="input mono" id="pfDate" type="date" />
+        </div>
+        <button class="run-btn" id="pfAdd"><i class="fa-solid fa-plus"></i> Add to portfolio</button>
+
+        <div class="qbtns" style="margin-top:8px">
+          <button class="qbtn" id="pfImport"><i class="fa-solid fa-file-import"></i> Import my paper trades</button>
+          <button class="qbtn" id="pfReset"><i class="fa-solid fa-trash"></i> Clear all</button>
+        </div>
+
+        <div class="sec-title">Ledger</div>
+        <div id="pfLedger"></div>
+
+        <div class="sec-title">Price data</div>
+        <div class="field">
+          <div class="label">Stocks and indices
+            <i class="fa-solid fa-circle-question q"
+               data-tip="Real stock prices need a key"
+               data-tip-desc="Crypto and forex are already real and need nothing. No free stock feed works from a browser without a key, so paste a free one to switch stocks over."></i>
+          </div>
+          <select class="input" id="qProvider"></select>
+          <div class="note" id="qProviderNote" style="margin-top:7px"></div>
+        </div>
+        <div class="field hidden" id="qKeyWrap">
+          <div class="label">API key</div>
+          <input class="input mono" id="qKey" type="password" placeholder="paste your free key" autocomplete="off" />
+        </div>
+        <div class="opt">
+          <div><div class="opt-t">Live crypto</div><div class="opt-d">Real prices from Binance, no key needed</div></div>
+          <div class="sw on" id="qCrypto" role="switch"></div>
+        </div>
+        <div class="opt">
+          <div><div class="opt-t">Live forex</div><div class="opt-d">European Central Bank reference rates</div></div>
+          <div class="sw on" id="qForex" role="switch"></div>
+        </div>
+        <div class="qbtns" style="margin-top:9px">
+          <button class="qbtn" id="qRefresh"><i class="fa-solid fa-rotate"></i> Refresh prices now</button>
+        </div>
+        <div class="note" id="qStatus"></div>
       </div>
 
     </div>
@@ -1105,6 +1203,8 @@
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
 <script src="js/alerts.js"></script>
+<script src="js/quotes.js"></script>
+<script src="js/portfolio.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/news.js"></script>
 <script src="js/vlogs.js"></script>
@@ -1113,6 +1213,7 @@
 <script src="js/indicator-ui.js"></script>
 <script src="js/alerts-ui.js"></script>
 <script src="js/radar-ui.js"></script>
+<script src="js/portfolio-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

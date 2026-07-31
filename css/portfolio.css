@@ -1,0 +1,94 @@
+/* ==========================================================================
+   portfolio.css — the Folio tab
+   ========================================================================== */
+
+.pf-hero{
+  padding:14px 13px 12px; border-radius:13px; margin-bottom:9px;
+  background:linear-gradient(160deg, rgba(245,197,24,.10), rgba(19,25,32,.9) 55%);
+  border:1px solid rgba(245,197,24,.26);
+  position:relative; overflow:hidden;
+}
+.pf-hero::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,230,128,.9), transparent);
+}
+.pf-hero-l{
+  font-size:9.5px; font-weight:800; letter-spacing:1.1px;
+  text-transform:uppercase; color:var(--gold-deep);
+}
+.pf-hero-v{
+  font-size:26px; font-weight:900; letter-spacing:-.8px; margin:4px 0 3px;
+  background:linear-gradient(180deg,#fff8c9,#f5c518 55%,#c08d15);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.pf-hero-sub{ display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; flex-wrap:wrap; }
+.pf-dot{ color:var(--dim); }
+.pf-since{
+  margin-left:auto; font-size:9.5px; font-weight:700;
+  letter-spacing:.4px; text-transform:uppercase; color:var(--dim);
+}
+
+.pf-grid{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.pf-cell{
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:10px; padding:9px 10px;
+}
+.pf-cell b{
+  display:block; margin-bottom:3px;
+  font-size:9.5px; font-weight:700; letter-spacing:.7px;
+  text-transform:uppercase; color:var(--dim);
+}
+.pf-cell span{ font-size:14px; font-weight:800; }
+
+/* ---- holdings ---- */
+.pf-row{
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:10px; padding:9px 10px; margin-bottom:7px;
+}
+.pf-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.pf-sym{ font-size:12.5px; font-weight:800; display:flex; align-items:center; gap:6px; }
+.pf-val{ font-size:13px; font-weight:800; }
+.pf-live,.pf-demo{
+  font-size:8px; font-weight:800; letter-spacing:.5px; text-transform:uppercase;
+  padding:1.5px 5px; border-radius:4px; border:1px solid;
+}
+.pf-live{ color:var(--green); border-color:rgba(38,201,106,.4); background:rgba(38,201,106,.12); }
+.pf-demo{ color:var(--dim); border-color:var(--border-2); background:var(--panel-3); }
+.pf-mid{ display:flex; justify-content:space-between; gap:8px; font-size:11px; color:var(--muted); }
+.pf-mid span{ font-variant-numeric:tabular-nums; }
+.pf-sub{ font-size:10px; color:var(--dim); margin-top:4px; }
+.pf-bar{ height:4px; margin-top:6px; background:var(--panel-3); border-radius:3px; overflow:hidden; }
+.pf-bar i{
+  display:block; height:100%; border-radius:3px;
+  background:linear-gradient(90deg, var(--gold), var(--grind));
+  transition:width .5s var(--ease);
+}
+
+/* ---- ledger ---- */
+.pf-tx{
+  display:flex; align-items:center; gap:8px;
+  padding:6px 8px; border-bottom:1px solid var(--border); font-size:11px;
+}
+.pf-tx:last-child{ border-bottom:none; }
+.pf-tx-side{
+  font-size:8.5px; font-weight:800; letter-spacing:.4px;
+  padding:2px 5px; border-radius:4px; flex-shrink:0;
+}
+.pf-tx-side.b{ background:rgba(38,201,106,.15); color:var(--green); }
+.pf-tx-side.s{ background:rgba(255,77,94,.15); color:var(--red); }
+.pf-tx-main{ flex:1; min-width:0; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pf-tx-date{ font-size:10px; color:var(--dim); flex-shrink:0; }
+.pf-tx button{
+  width:20px; height:20px; border-radius:5px; flex-shrink:0;
+  display:grid; place-items:center; font-size:10px; color:var(--dim);
+}
+.pf-tx button:hover{ background:rgba(255,77,94,.15); color:var(--red); }
+
+#pfCanvas{ width:100%; height:74px; display:block; margin-top:5px; }
+
+/* four right-hand tabs need to breathe */
+.rtab{ gap:5px; }
+@media (max-width:1400px){
+  .rtab{ font-size:10.5px; padding:8px 4px; }
+  .rtab i{ font-size:10px; }
+}

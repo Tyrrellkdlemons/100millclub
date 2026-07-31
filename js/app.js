@@ -232,6 +232,8 @@
     if (State.activeIndicators.length) applyIndicators();
     MC.alerts.check();
     MC.calendar.check();
+    MC.portfolio.snapshot();
+    if (document.getElementById('pane-folio').classList.contains('on')) MC.portfolioUI.render();
   }
 
   function startLive() {
@@ -719,6 +721,9 @@
     MC.indicatorUI.render();
     MC.alertsUI.init();
     MC.radarUI.init();
+    MC.portfolioUI.init();
+    MC.quotes.refresh().then(function () { MC.portfolio.snapshot(true); });
+    MC.quotes.startAuto(30);
     MC.news.refresh().then(function () { MC.news.primeSeen(); });
     MC.news.startAuto();
 
