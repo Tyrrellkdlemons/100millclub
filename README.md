@@ -1,5 +1,7 @@
 # 100MillClub — City of Grind
 
+**Live: https://100millclub.netlify.app**
+
 A trading terminal that pairs **real live TradingView market data** with a fully
 simulated practice environment: watchlists, order entry, position tracking and a
 working strategy backtester — plus a creator vlog row with social sharing.
@@ -90,24 +92,29 @@ npx serve .
 
 ## Deploy
 
-### Netlify — drag and drop
+The site is live at **https://100millclub.netlify.app**
+(Netlify project `100millclub`, admin: https://app.netlify.com/projects/100millclub).
 
-1. Open https://app.netlify.com/drop
-2. Drag this folder onto the page.
-
-### Netlify — from GitHub (auto-deploys on every push)
-
-**Add new site → Import an existing project → GitHub** → pick the repo.
-Leave the build command empty; `netlify.toml` already sets the publish root,
-the SPA redirect and the security headers.
-
-### Netlify CLI
+This folder is already linked to that project, so redeploying is one command:
 
 ```bash
-npm i -g netlify-cli && netlify deploy --prod --dir .
+netlify deploy --prod --dir .
 ```
 
-### GitHub Pages
+`netlify.toml` supplies the publish root, the SPA redirect (so `/vlog/v1` share
+links resolve) and the security headers — no build command needed.
+
+### Optional: auto-deploy on every push
+
+Right now deploys are manual via the CLI. To have every `git push` deploy itself,
+connect the repo once in the Netlify UI:
+
+**Project → Build & deploy → Link repository → GitHub → `Tyrrellkdlemons/100millclub`**
+
+Approve the GitHub authorization popup, leave the build command empty and set the
+publish directory to `.`.
+
+### Alternative: GitHub Pages
 
 Repo → **Settings → Pages → Source: Deploy from a branch → `main` / `root`**.
 
