@@ -623,6 +623,13 @@
         <div class="sec-title">Open positions <span class="pill" id="posCount">0</span></div>
         <div id="positions"></div>
 
+        <button class="btn" id="reviewBtn" style="width:100%;justify-content:center;margin-top:10px"
+                data-tip="The Coach grades your closed trades"
+                data-tip-desc="Discipline, edge, patience and exits — each graded from your actual trade history, with what went wrong and what to do about it.">
+          <i class="fa-solid fa-clipboard-check" style="color:var(--gold)"></i> Coach, grade my trading
+        </button>
+        <div class="rv-wrap" id="reviewWrap"><div id="reviewBody"></div></div>
+
         <div class="note">
           <i class="fa-solid fa-circle-info"></i> Practice mode. Orders fill instantly against the
           simulated feed — no real money and no broker connected.
@@ -1387,6 +1394,7 @@
 <script src="js/watchlist.js"></script>
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
+<script src="js/review.js"></script>
 <script src="js/alerts.js"></script>
 <script src="js/quotes.js"></script>
 <script src="js/portfolio.js"></script>

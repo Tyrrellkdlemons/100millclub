@@ -561,6 +561,14 @@
       MC.trade.place();
       MC.queezUI.remark(MC.queez.noteOrder());
     });
+    $('reviewBtn').addEventListener('click', function () {
+      var section = $('reviewWrap');
+      section.classList.toggle('on');
+      if (section.classList.contains('on')) {
+        MC.review.render();
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
     MC.on($('positions'), 'click', '[data-close-pos]', function (e, btn) {
       MC.trade.close(btn.getAttribute('data-close-pos'));
     });
@@ -666,7 +674,13 @@
         else MC.vlogs.shareTo(shareBtn.dataset.plat, video);
         return;
       }
-      MC.ui.toast('Now playing', video.t + ' · ' + video.dur, 'gold');
+      // any click that is not a share button plays the real video, floating
+      MC.youtubeUI.play({
+        id: video.yt,
+        title: video.t,
+        author: video.by,
+        thumb: 'https://i.ytimg.com/vi/' + video.yt + '/hqdefault.jpg'
+      });
     });
     $$('[data-share]').forEach(function (b) {
       b.addEventListener('click', function () {

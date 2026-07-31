@@ -9,6 +9,39 @@
   var MC = window.MC = window.MC || {};
   var Trade = MC.trade = {};
 
+  var HISTORY_KEY = 'mc_trade_history';
+
+  /** Closed trades, newest first — the raw material for the Coach's report. */
+  Trade.history = function () {
+    try {
+      var v = JSON.parse(MC.store.get(HISTORY_KEY) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  };
+
+  Trade.clearHistory = function () { MC.store.set(HISTORY_KEY, '[]'); };
+
+  function recordClose(position, exitPrice, reason) {
+    var direction = position.side === 'buy' ? 1 : -1;
+    var pnl = (exitPrice - position.entry) * position.qty * direction;
+    var list = Trade.history();
+    list.unshift({
+      sym: position.sym,
+      side: position.side,
+      qty: position.qty,
+      entry: position.entry,
+      exit: exitPrice,
+      pnl: Math.round(pnl * 100) / 100,
+      pct: position.entry ? Math.round(((exitPrice - position.entry) / position.entry) * direction * 10000) / 100 : 0,
+      hadSl: !!position.sl,
+      hadTp: !!position.tp,
+      openedAt: position.at ? +new Date(position.at) : null,
+      closedAt: Date.now(),
+      reason: reason
+    });
+    MC.store.set(HISTORY_KEY, JSON.stringify(list.slice(0, 200)));
+  }
+
   /* ----------------------------------------------------------------------
      ORDER TICKET
      ---------------------------------------------------------------------- */
@@ -184,6 +217,9 @@
   };
 
   function autoClose(position, hitTarget) {
+    var asset = MC.MAP[position.sym];
+    recordClose(position, hitTarget ? (position.tp || asset.p) : (position.sl || asset.p),
+                hitTarget ? 'target' : 'stop');
     MC.State.positions = MC.State.positions.filter(function (x) { return x.id !== position.id; });
     Trade.renderPositions();
     MC.ui.toast(
@@ -198,6 +234,7 @@
     var position = MC.State.positions.filter(function (x) { return x.id === id; })[0];
     if (!position) return;
     var pnl = pnlOf(position);
+    recordClose(position, MC.MAP[position.sym].p, 'manual');
     MC.State.positions = MC.State.positions.filter(function (x) { return x.id !== id; });
     Trade.renderPositions();
     MC.ui.toast(

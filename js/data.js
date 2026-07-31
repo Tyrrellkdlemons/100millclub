@@ -107,15 +107,18 @@
   /* ----------------------------------------------------------------------
      VLOGS — sample creator content
      ---------------------------------------------------------------------- */
+  /* Each tape fronts a real, embeddable YouTube video (every id verified via
+     oEmbed before it went in) — clicking a card genuinely plays it in the
+     mini-player, and `by` credits the actual creator. */
   MC.VLOGS = [
-    { id: 'v1', t: 'How I turned $1K into $10K — the full City of Grind breakdown', tag: 'New', dur: '18:42', views: '184K', date: '2 days ago',   seed: 'grind1' },
-    { id: 'v2', t: 'Reading candles like a pro: the only 3 patterns that matter',        tag: '',    dur: '12:05', views: '96K',  date: '5 days ago',   seed: 'grind2' },
-    { id: 'v3', t: 'Risk management 101 — never blow an account again',             tag: 'Hot', dur: '22:17', views: '241K', date: '1 week ago',   seed: 'grind3' },
-    { id: 'v4', t: 'Backtesting a moving average crossover live on stream',              tag: '',    dur: '31:08', views: '58K',  date: '2 weeks ago',  seed: 'grind4' },
-    { id: 'v5', t: 'Crypto vs stocks — where the grind actually pays in 2026',      tag: '',    dur: '15:33', views: '127K', date: '3 weeks ago',  seed: 'grind5' },
-    { id: 'v6', t: 'My morning routine before the bell rings (full walkthrough)',        tag: '',    dur: '09:51', views: '72K',  date: '1 month ago',  seed: 'grind6' },
-    { id: 'v7', t: 'Forex sessions explained — when to trade and when to sit out',  tag: '',    dur: '14:26', views: '83K',  date: '1 month ago',  seed: 'grind7' },
-    { id: 'v8', t: 'From broke to break-even: year one of the 100MillClub journey',      tag: 'Doc', dur: '44:12', views: '312K', date: '2 months ago', seed: 'grind8' }
+    { id: 'v1', t: 'How I turned $1K into $10K — the grind breakdown',        tag: 'New', yt: '26k11QP0hk8', by: 'kentrell hill' },
+    { id: 'v2', t: 'The only candlestick pattern guide you will ever need',   tag: '',    yt: 'tW13N4Hll88', by: 'TradingLab' },
+    { id: 'v3', t: 'Risk management — never blow an account again',           tag: 'Hot', yt: '94GFz7tPKVE', by: 'Justin Werlein' },
+    { id: 'v4', t: 'How to backtest a strategy the right way',                tag: '',    yt: 'FNTRAIkLvek', by: 'Jooviers Gems' },
+    { id: 'v5', t: 'Crypto vs stocks — where should the money go?',           tag: '',    yt: 'Gg61BMUilBw', by: 'VP Motion' },
+    { id: 'v6', t: 'The 6AM routine before the bell rings',                   tag: '',    yt: 'MvvXipgWYnY', by: 'Day Trading Addict' },
+    { id: 'v7', t: 'Forex sessions explained — when to trade, when to sit',   tag: '',    yt: 'znpD7T_9fMQ', by: 'SimulationFX' },
+    { id: 'v8', t: 'Day trading results from a real first year',              tag: 'Doc', yt: 'u7OYK0EcXSc', by: 'James Rich Young' }
   ];
 
   /** Plain-English description shown under the strategy dropdown. */

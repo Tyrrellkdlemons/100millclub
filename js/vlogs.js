@@ -33,15 +33,14 @@
   function cardHtml(v) {
       return '<article class="vid" data-vid="' + v.id + '">' +
         '<div class="thumb">' +
-          '<img loading="lazy" alt="" src="https://picsum.photos/seed/' + v.seed + '/480/270" ' +
+          '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.yt + '/hqdefault.jpg" ' +
                'onerror="this.style.display=\'none\'">' +
           (v.tag ? '<span class="badge-tag">' + MC.esc(v.tag) + '</span>' : '') +
-          '<span class="dur">' + v.dur + '</span>' +
           '<span class="play"><i class="fa-solid fa-play"></i></span>' +
         '</div>' +
         '<div class="vinfo">' +
           '<div class="vtitle">' + MC.esc(v.t) + '</div>' +
-          '<div class="vmeta"><i class="fa-solid fa-eye"></i>' + v.views + ' views · ' + v.date + '</div>' +
+          '<div class="vmeta"><i class="fa-brands fa-youtube" style="color:#f00"></i>' + MC.esc(v.by) + '</div>' +
           '<div class="shares">' +
             btn('yt', 'youtube',   'fa-brands fa-youtube',   'Share to YouTube') +
             btn('tt', 'tiktok',    'fa-brands fa-tiktok',    'Share to TikTok') +
