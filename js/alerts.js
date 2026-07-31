@@ -61,7 +61,9 @@
   A.config = function () {
     return readJSON(STORE_CFG, {
       channel: 'none', telegramToken: '', telegramChat: '',
-      webhookUrl: '', sound: true, desktop: false
+      webhookUrl: '', sound: true, desktop: false,
+      emailOn: false, email: '',
+      smsOn: false, smsNumber: '', smsKey: ''
     });
   };
 
@@ -203,12 +205,11 @@
     if (cfg.sound) beep();
     if (cfg.desktop) desktopNotify(al.sym + ' alert', text);
 
-    A.deliver(text, cfg).then(function (result) {
-      if (result && result.sent) {
-        MC.ui.toast('Signal forwarded', 'Sent to ' + result.where + '.', 'ok');
-      } else if (result && result.error) {
-        MC.ui.toast('Could not forward the signal', result.error, 'err');
-      }
+    A.deliverAll(text, cfg).then(function (results) {
+      results.forEach(function (result) {
+        if (result.sent) MC.ui.toast('Signal forwarded', 'Sent to ' + result.where + '.', 'ok');
+        else if (result.error) MC.ui.toast('Could not forward the signal', result.error, 'err');
+      });
     });
 
     if (MC.onAlertFired) MC.onAlertFired();
@@ -289,6 +290,70 @@
     return Promise.resolve(null);      // channel 'none'
   };
 
+  /**
+   * Email, via ntfy.sh's mail bridge — publish with an X-Email header and
+   * ntfy forwards the message to that address. CORS-open by design; the
+   * free tier allows a small number of emails per day, so this is for the
+   * alerts that matter, not a firehose.
+   */
+  function deliverEmail(text, cfg) {
+    if (!cfg.emailOn || !cfg.email) return Promise.resolve(null);
+    return fetch('https://ntfy.sh/mc-' + hashTopic(cfg.email), {
+      method: 'POST',
+      headers: {
+        'Title': '100MillClub alert',
+        'X-Email': cfg.email,
+        'Tags': 'chart_with_upwards_trend'
+      },
+      body: text
+    }).then(function (r) {
+      return r.ok ? { sent: true, where: 'email' }
+                  : { error: 'ntfy returned ' + r.status + ' — the free email quota may be used up for today.' };
+    }).catch(function (e) { return { error: 'email: ' + e.message }; });
+  }
+
+  /**
+   * SMS via Textbelt, which allows browser calls on purpose. The shared
+   * free key sends ONE text per day per IP; a paid key from textbelt.com
+   * removes the limit. Honest, but real.
+   */
+  function deliverSms(text, cfg) {
+    if (!cfg.smsOn || !cfg.smsNumber) return Promise.resolve(null);
+    return fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cfg.smsNumber,
+        message: '100MillClub: ' + text.slice(0, 140),
+        key: cfg.smsKey || 'textbelt'
+      })
+    }).then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.success) return { sent: true, where: 'SMS', quota: j.quotaRemaining };
+        return { error: 'SMS: ' + (j.error || 'refused') +
+                 (j.quotaRemaining === 0 ? ' — the free text for today is used; add a Textbelt key for more.' : '') };
+      })
+      .catch(function (e) { return { error: 'SMS: ' + e.message }; });
+  }
+
+  function hashTopic(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(36);
+  }
+
+  /** Fan out to every enabled channel; returns the array of outcomes. */
+  A.deliverAll = function (text, cfg) {
+    cfg = cfg || A.config();
+    return Promise.all([
+      A.deliver(text, cfg),
+      deliverEmail(text, cfg),
+      deliverSms(text, cfg)
+    ]).then(function (results) {
+      return results.filter(Boolean);
+    });
+  };
+
   /** Fire a test message so people can prove the plumbing before relying on it. */
   A.test = function (cfg) {
     return A.deliver('Test signal — if you can read this, forwarding works.', cfg);
@@ -305,8 +370,10 @@
     if (cfg.desktop) desktopNotify(title, text);
     pushLog({ id: 'ext', sym: title, text: text, at: Date.now() });
 
-    A.deliver(text, cfg).then(function (r) {
-      if (r && r.error) MC.ui.toast('Could not forward it', r.error, 'err');
+    A.deliverAll(text, cfg).then(function (results) {
+      results.forEach(function (r) {
+        if (r.error) MC.ui.toast('Could not forward it', r.error, 'err');
+      });
     });
 
     if (MC.onAlertFired) MC.onAlertFired();

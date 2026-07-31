@@ -6,6 +6,10 @@
 <title>100MillClub — City of Grind | Trading Terminal</title>
 <meta name="description" content="100MillClub trading terminal — live TradingView charts, watchlists, simulated order entry, strategy backtesting and creator vlogs." />
 <meta name="theme-color" content="#07090b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="100MillClub" />
+<meta name="mobile-web-app-capable" content="yes" />
 
 <!-- social preview -->
 <meta property="og:type" content="website" />
@@ -66,6 +70,10 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://s3.tradingview.com" />
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://unpkg.com" crossorigin />
+<link rel="preconnect" href="https://i.ytimg.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
@@ -86,7 +94,9 @@
 <!-- phone rules genuinely last: they must out-cascade every sheet above -->
 <link rel="stylesheet" href="css/mobile.css" />
 
-<script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+<!-- defer: stops this blocking first paint; it still runs before our
+     end-of-body scripts fire their DOMContentLoaded init -->
+<script defer src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
 
@@ -248,7 +258,15 @@
         <i class="fa-solid fa-star"></i>Watchlist
       </span>
       <span class="pill" id="wlCount">0</span>
+      <button class="panel-min" id="minLeft"
+              data-tip="Minimise the watchlist"
+              data-tip-desc="Folds it to a slim rail so the chart gets the room. One click brings it back.">
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
     </div>
+    <button class="rail" id="railLeft" aria-label="Expand watchlist">
+      <i class="fa-solid fa-angles-right"></i><span>Watchlist</span><i class="fa-solid fa-star" style="color:var(--gold)"></i>
+    </button>
     <div class="wl-cols"><span>Symbol</span><span>Price</span><span>Today</span></div>
     <div class="wl-body" id="watchlist"></div>
   </aside>
@@ -349,16 +367,19 @@
           <button class="src on" data-src="live"
                   data-tip="Live market data"
                   data-tip-desc="The real TradingView chart with genuine prices, and its own indicator and drawing toolbars.">
-            <span class="live-dot"></span>Live
+            <span class="live-dot"></span><span class="lbl">Live</span>
           </button>
           <button class="src" data-src="sim"
                   data-tip="Practice data"
                   data-tip-desc="The built-in engine. This is what powers this dashboard's own indicators, drawings and backtests — and it keeps working with no internet.">
-            <i class="fa-solid fa-flask-vial"></i>Simulated
+            <i class="fa-solid fa-flask-vial"></i><span class="lbl">Simulated</span>
           </button>
         </div>
 
         <div class="tf-group" id="tfGroup" aria-label="Timeframe">
+          <button class="tf" data-tf="1s"
+                  data-tip="One-second bars"
+                  data-tip-desc="Live seconds need a paid TradingView plan, so this runs on the simulated engine — which really does roll a fresh bar every second.">1s</button>
           <button class="tf" data-tf="1m">1m</button>
           <button class="tf" data-tf="5m">5m</button>
           <button class="tf" data-tf="15m">15m</button>
@@ -535,7 +556,15 @@
 
   <!-- ---------------- RIGHT: TRADE / BACKTEST ---------------- -->
   <aside class="card col right" id="rightPanel" aria-label="Trade and backtest">
+    <button class="rail" id="railRight" aria-label="Expand trade panel">
+      <i class="fa-solid fa-angles-left"></i><span>Trade</span><i class="fa-solid fa-bolt" style="color:var(--gold)"></i>
+    </button>
     <div class="rtabs" role="tablist">
+      <button class="panel-min" id="minRight" style="flex:0 0 auto"
+              data-tip="Minimise this panel"
+              data-tip-desc="Folds trading to a slim rail so the chart gets the room.">
+        <i class="fa-solid fa-angles-right"></i>
+      </button>
       <button class="rtab on" data-pane="trade"><i class="fa-solid fa-bolt"></i> Trade</button>
       <button class="rtab" data-pane="test"><i class="fa-solid fa-flask"></i> Test</button>
       <button class="rtab" data-pane="alerts">
@@ -808,6 +837,36 @@
           <div class="field">
             <div class="label">Webhook URL</div>
             <input class="input mono" id="alHookUrl" type="url" placeholder="https://…" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="opt">
+          <div><div class="opt-t">Email me</div>
+            <div class="opt-d">Alerts land in your inbox via the free ntfy.sh bridge — a handful per day</div></div>
+          <div class="sw" id="alEmailOn" role="switch"></div>
+        </div>
+        <div class="field hidden" id="alEmailWrap">
+          <div class="label">Email address</div>
+          <input class="input mono" id="alEmail" type="email" placeholder="you@example.com" autocomplete="off" />
+        </div>
+
+        <div class="opt">
+          <div><div class="opt-t">Text my phone</div>
+            <div class="opt-d">SMS via Textbelt — one free text a day, or add their key for unlimited</div></div>
+          <div class="sw" id="alSmsOn" role="switch"></div>
+        </div>
+        <div class="hidden" id="alSmsWrap">
+          <div class="field">
+            <div class="label">Phone number
+              <i class="fa-solid fa-circle-question q"
+                 data-tip="Full international format"
+                 data-tip-desc="Country code first, like +15551234567. Textbelt sends the text; your number is stored only in this browser."></i>
+            </div>
+            <input class="input mono" id="alSmsNumber" type="tel" placeholder="+15551234567" autocomplete="off" />
+          </div>
+          <div class="field">
+            <div class="label">Textbelt key (optional)</div>
+            <input class="input mono" id="alSmsKey" type="password" placeholder="blank = 1 free text/day" autocomplete="off" />
           </div>
         </div>
 

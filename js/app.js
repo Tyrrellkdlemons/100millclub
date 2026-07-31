@@ -24,7 +24,10 @@
     State.symbol = symbol;
     var asset = State.asset;
 
-    $('symBadge').textContent = symbol.slice(0, 2);
+    var badge = $('symBadge');
+    badge.textContent = symbol.length <= 4 ? symbol : symbol.slice(0, 3);
+    badge.style.fontSize = badge.textContent.length >= 4 ? '8.5px'
+                         : badge.textContent.length === 3 ? '10px' : '12px';
     $('symName').textContent = symbol;
     $('symSub').textContent = asset.n;
     $('symMkt').textContent = MC.MKT_LABEL[asset.m];
@@ -217,15 +220,33 @@
   function tick() {
     MC.watchlist.tick();
 
-    // roll the newest candle so the simulated chart breathes
+    // Roll the simulated chart: update the working candle, and when its
+    // period has genuinely elapsed, close it and open a fresh one — so the
+    // 1s chart really produces a bar a second, and every frame stays honest.
     if (State.bars.length) {
       var asset = State.asset;
+      var step = MC.TF_SEC[State.tf];
+      var nowSec = Math.floor(Date.now() / 1000);
       var last = Object.assign({}, State.bars[State.bars.length - 1]);
-      last.close = asset.p;
-      last.high = Math.max(last.high, asset.p);
-      last.low = Math.min(last.low, asset.p);
-      last.volume += Math.round(MC.baseVolume(asset) * Math.random() * 0.08);
-      State.chart.updateLast(last);
+
+      if (nowSec >= last.time + step) {
+        var fresh = {
+          time: last.time + step * Math.max(1, Math.floor((nowSec - last.time) / step)),
+          open: last.close, high: Math.max(last.close, asset.p),
+          low: Math.min(last.close, asset.p), close: asset.p,
+          volume: Math.round(MC.baseVolume(asset) * (0.4 + Math.random() * 0.6))
+        };
+        State.bars.push(fresh);
+        if (State.bars.length > 500) State.bars.shift();
+        State.chart.updateLast(fresh);
+      } else {
+        last.close = asset.p;
+        last.high = Math.max(last.high, asset.p);
+        last.low = Math.min(last.low, asset.p);
+        last.volume += Math.round(MC.baseVolume(asset) * Math.random() * 0.08);
+        State.bars[State.bars.length - 1] = last;
+        State.chart.updateLast(last);
+      }
     }
 
     updateHeaderPrice();
@@ -416,9 +437,16 @@
       $$('.tf').forEach(function (t) { t.classList.toggle('on', t === btn); });
       State.tf = btn.dataset.tf;
       loadBars();
-      MC.TV.refreshInterval();
-      MC.TV.syncIfFollowing();
-      MC.ui.toast('Timeframe changed', 'Each bar now covers ' + btn.textContent.trim() + '.', 'info');
+      // Seconds are a paid TradingView feature, so 1s lives on the
+      // simulated engine — hop over automatically and say so.
+      if (State.tf === '1s' && State.source === 'live') {
+        setSource('sim');
+        MC.ui.toast('One-second bars', 'Seconds need a paid TradingView plan, so this is the simulated feed — a real bar rolls in every second.', 'info');
+      } else {
+        MC.TV.refreshInterval();
+        MC.TV.syncIfFollowing();
+        MC.ui.toast('Timeframe changed', 'Each bar now covers ' + btn.textContent.trim() + '.', 'info');
+      }
     });
 
     /* ---- chart style ---- */
@@ -654,6 +682,24 @@
       $('helpMenu').classList.remove('on');
       MC.ui.openModal('mdKeys');
     });
+
+    /* ---- minimisable side panels: slim rails, more chart ---- */
+    function setMin(side, min) {
+      var panel = $(side === 'left' ? 'leftPanel' : 'rightPanel');
+      panel.classList.toggle('min', min);
+      document.documentElement.style.setProperty(
+        side === 'left' ? '--left-w' : '--right-w',
+        min ? '46px' : ''
+      );
+      MC.store.set('mc_min_' + side, min ? '1' : '');
+      setTimeout(function () { State.chart.fit(); MC.panes.resize(); }, 60);
+    }
+    $('minLeft').addEventListener('click', function () { setMin('left', true); });
+    $('railLeft').addEventListener('click', function () { setMin('left', false); });
+    $('minRight').addEventListener('click', function () { setMin('right', true); });
+    $('railRight').addEventListener('click', function () { setMin('right', false); });
+    if (MC.store.get('mc_min_left') === '1' && window.innerWidth > 860) setMin('left', true);
+    if (MC.store.get('mc_min_right') === '1' && window.innerWidth > 1180) setMin('right', true);
 
     /* ---- chart size: the clear one-click button ---- */
     var SIZE_LABELS = { cozy: 'Size', tall: 'Tall', max: 'Max' };

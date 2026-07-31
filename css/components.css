@@ -707,3 +707,35 @@ body.resizing-x *, body.resizing-y *{ user-select:none !important; }
     linear-gradient(180deg, rgba(7,9,11,.18), transparent 12%, transparent 86%, rgba(7,9,11,.22)),
     radial-gradient(120% 90% at 50% 8%, transparent 60%, rgba(7,9,11,.14));
 }
+
+/* --------------------------------------------------------------------------
+   TIMEFRAMES OUTRANK THE SOURCE TOGGLE — the thing you touch most is the
+   biggest thing on the row.
+   -------------------------------------------------------------------------- */
+.tf-group{ order:2; }
+.src-switch{ order:3; transform:scale(.92); transform-origin:right center; }
+.tf{ padding:9px 13px; font-size:12.5px; font-weight:800; }
+
+/* --------------------------------------------------------------------------
+   MINIMISED SIDE PANELS — slim gold rails, one click back
+   -------------------------------------------------------------------------- */
+.panel-min{
+  width:26px; height:26px; border-radius:7px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px; color:var(--dim);
+  transition:.15s var(--ease);
+}
+.panel-min:hover{ color:var(--gold); background:var(--panel-2); }
+.rail{ display:none; }
+.left.min > *:not(.rail):not(.panel-grip), .right.min > *:not(.rail):not(.panel-grip){ display:none; }
+.left.min .rail, .right.min .rail{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  width:100%; height:100%;
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-size:11px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--muted); cursor:pointer; transition:.15s var(--ease);
+}
+.left.min .rail:hover, .right.min .rail:hover{ color:var(--gold); }
+.left.min .rail i, .right.min .rail i{ writing-mode:horizontal-tb; font-size:12px; }
+.left.min, .right.min{ overflow:hidden; }
+@media (max-width:860px){ .panel-min, .rail{ display:none !important; } }
+@media (max-width:1180px){ #minRight, #railRight{ display:none !important; } }

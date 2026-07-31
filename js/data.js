@@ -97,10 +97,13 @@
   MC.MKT_LABEL = { futures: 'Futures', stocks: 'Stocks', crypto: 'Crypto', forex: 'Forex', indices: 'Indices' };
 
   /** Seconds covered by one bar, per timeframe. */
-  MC.TF_SEC = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400, '1w': 604800 };
+  MC.TF_SEC = { '1s': 1, '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400, '1w': 604800 };
 
   /** Our timeframe → TradingView interval code. */
-  MC.TV_INTERVAL = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D', '1w': 'W' };
+  /* '1S' needs a paid TradingView plan, so the anonymous embed cannot show
+     seconds — picking 1s flips to the simulated engine, which genuinely
+     rolls a fresh bar every second. */
+  MC.TV_INTERVAL = { '1s': '1', '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D', '1w': 'W' };
 
   /** Symbols shown in the live TradingView ticker tape across the top. */
   MC.TAPE_SYMBOLS = [

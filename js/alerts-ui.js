@@ -47,6 +47,26 @@
     $('alTgToken').value = cfg.telegramToken || '';
     $('alTgChat').value = cfg.telegramChat || '';
     $('alHookUrl').value = cfg.webhookUrl || '';
+    $('alEmailOn').classList.toggle('on', !!cfg.emailOn);
+    $('alEmail').value = cfg.email || '';
+    $('alSmsOn').classList.toggle('on', !!cfg.smsOn);
+    $('alSmsNumber').value = cfg.smsNumber || '';
+    $('alSmsKey').value = cfg.smsKey || '';
+    $('alEmailWrap').classList.toggle('hidden', !cfg.emailOn);
+    $('alSmsWrap').classList.toggle('hidden', !cfg.smsOn);
+    $('alEmailOn').addEventListener('click', function () {
+      var on = $('alEmailOn').classList.toggle('on');
+      $('alEmailWrap').classList.toggle('hidden', !on);
+      saveConfig();
+    });
+    $('alSmsOn').addEventListener('click', function () {
+      var on = $('alSmsOn').classList.toggle('on');
+      $('alSmsWrap').classList.toggle('hidden', !on);
+      saveConfig();
+    });
+    ['alEmail', 'alSmsNumber', 'alSmsKey'].forEach(function (id) {
+      $(id).addEventListener('change', saveConfig);
+    });
     $('alSound').classList.toggle('on', cfg.sound !== false);
     $('alDesktop').classList.toggle('on', !!cfg.desktop);
     syncChannel();
@@ -76,14 +96,19 @@
     $('alTest').addEventListener('click', function () {
       saveConfig();
       var c = A.config();
-      if (c.channel === 'none') {
-        MC.ui.toast('Pick a destination', 'Choose Telegram, Discord or a webhook first.', 'err');
+      var anything = c.channel !== 'none' || c.emailOn || c.smsOn;
+      if (!anything) {
+        MC.ui.toast('Pick a destination', 'Turn on Telegram/Discord/webhook, email, or SMS first.', 'err');
         return;
       }
-      MC.ui.toast('Sending…', 'Trying ' + c.channel + '.', 'info');
-      A.test(c).then(function (r) {
-        if (r && r.sent) MC.ui.toast('It works ✓', 'Test signal delivered to ' + r.where + '.', 'ok');
-        else MC.ui.toast('Test failed', (r && r.error) || 'No response.', 'err');
+      MC.ui.toast('Sending…', 'Testing every channel you have on.', 'info');
+      A.deliverAll('Test signal — if you can read this, forwarding works.', c).then(function (results) {
+        if (!results.length) { MC.ui.toast('Nothing enabled', 'Turn a channel on first.', 'err'); return; }
+        results.forEach(function (r) {
+          if (r.sent) MC.ui.toast('It works ✓', 'Delivered to ' + r.where +
+            (r.quota !== undefined ? ' (' + r.quota + ' free left today)' : '') + '.', 'ok');
+          else if (r.error) MC.ui.toast('Channel failed', r.error, 'err');
+        });
       });
     });
 
@@ -139,7 +164,12 @@
       telegramChat: $('alTgChat').value.trim(),
       webhookUrl: $('alHookUrl').value.trim(),
       sound: $('alSound').classList.contains('on'),
-      desktop: $('alDesktop').classList.contains('on')
+      desktop: $('alDesktop').classList.contains('on'),
+      emailOn: $('alEmailOn').classList.contains('on'),
+      email: $('alEmail').value.trim(),
+      smsOn: $('alSmsOn').classList.contains('on'),
+      smsNumber: $('alSmsNumber').value.trim(),
+      smsKey: $('alSmsKey').value.trim()
     });
   }
 

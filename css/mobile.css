@@ -72,8 +72,26 @@ button, a, select, input, .wl-row, .vid, .dock-tab{ touch-action:manipulation; }
   .sym-badge{ width:30px; height:30px; font-size:10.5px; }
   .px-now{ font-size:16px; }
   .stat-strip{ display:none; }
-  .ctool{ gap:8px; padding:8px 10px; }
-  .tool-group .btn-tv .lbl{ display:none; }
+  .ctool{ gap:6px; row-gap:5px; padding:7px 10px; }
+  /* follow-sync steers a second desktop tab — meaningless on a phone.
+     The TradingView handoff stays reachable from the dock header. */
+  #btnTvFollow{ display:none; }
+  .tool-group .btn-tv{ display:none; }
+  /* Two deliberate rows:
+       row 1  symbol + the tool icons
+       row 2  Live/Sim icons + the timeframes filling the rest
+     Measured, not hoped: sym 143 + tools ~165 fits 335; the tf group was
+     collapsing to 145px (18px per button) because flex:1 on the buttons
+     never widened the group itself. */
+  .tool-group{ gap:2px; order:1; }
+  .btn-icon{ width:31px; height:31px; }
+  .sym-block{ gap:7px; order:0; }
+  .sym-block .chip:not(.chip-proxy){ display:none; }
+  .chip-proxy{ font-size:8px; padding:2px 4px; }
+  .src-switch{ order:2; transform:none; }
+  .tf-group{ order:3; flex:1; min-width:0; }
+  .tf{ flex:1; padding:10px 0; font-size:11px; font-weight:800; text-align:center; }
+  .style-switch, #btnTvFollow{ display:none; }
 
   /* bigger touch targets where fingers actually land */
   .tf{ padding:9px 0; flex:1; text-align:center; }
@@ -127,4 +145,23 @@ button, a, select, input, .wl-row, .vid, .dock-tab{ touch-action:manipulation; }
   .nav{ gap:6px; padding:0 8px; }
   .helpWrap, #helpWrap{ display:none; }   /* Queez covers help on phones */
   .bnav{ font-size:9px; }
+}
+
+/* --------------------------------------------------------------------------
+   PHONE TOOLBAR, FINAL WORD — this block is last on purpose: earlier passes
+   kept partially overriding each other, so the definitive measurements live
+   here. Row 1: symbol + five tool icons (≈300px). Row 2: Live/Sim icons +
+   timeframes filling the rest.
+   -------------------------------------------------------------------------- */
+@media (max-width:860px){
+  .ctool .tool-group .btn-tv{ display:none; }   /* handoff lives in the dock header */
+  .ctool #btnTvFollow{ display:none; }
+  .ctool .btn-icon{ width:30px; height:30px; }
+  .ctool .tool-group{ gap:2px; }
+  .ctool .src span:not(.live-dot){ display:none; }
+  .ctool .src i{ display:inline; }
+  .ctool .src{ padding:7px 9px; }
+}
+@media (max-width:860px){
+  .ctool .tf{ padding:11px 0; font-size:11px; }   /* 36px-tall touch targets */
 }
