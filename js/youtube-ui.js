@@ -73,7 +73,7 @@
       }
     });
 
-    // stop playback when the modal closes, whichever way it closes
+    // theatre modal: closing it stops ITS iframe only
     document.addEventListener('click', function (e) {
       if (e.target.classList.contains('backdrop') || e.target.closest('[data-close]')) {
         stopPlayback();
@@ -82,6 +82,8 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') stopPlayback();
     });
+
+    initMini();
 
     syncKeyState();
     renderChips();
@@ -129,28 +131,144 @@
   };
 
   /* ----------------------------------------------------------------------
-     PLAYER
+     PLAYER — a floating mini-player by default, so the chart stays usable
+     while the video runs. Theatre mode swaps to the big modal.
      ---------------------------------------------------------------------- */
-  UI.play = function (video) {
-    nowPlaying = video;
-    $('playerTitle').textContent = video.title.slice(0, 70);
-    $('playerOpenYt').href = MC.youtube.watchUrl(video.id);
-
+  function embedHtml(video) {
     // youtube.com/embed (not the nocookie domain) deliberately: it carries the
     // viewer's own YouTube session, so the watch counts toward THEIR history
     // and recommendations. autoplay=1 works because opening follows a click.
-    $('playerFrame').innerHTML =
-      '<iframe src="https://www.youtube.com/embed/' + video.id + '?autoplay=1&rel=1" ' +
+    return '<iframe src="https://www.youtube.com/embed/' + video.id + '?autoplay=1&rel=1" ' +
       'title="' + MC.esc(video.title) + '" allow="autoplay; encrypted-media; picture-in-picture" ' +
       'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  }
 
-    MC.ui.openModal('mdPlayer');
+  UI.play = function (video) {
+    nowPlaying = video;
+    $('miniTitle').textContent = video.title;
+    $('miniOpenYt').href = MC.youtube.watchUrl(video.id);
+    $('miniFrame').innerHTML = embedHtml(video);
+    $('miniPlayer').hidden = false;
     MC.youtube.noteWatched(video);
+    MC.ui.toast('Rolling 🎬', 'Park it anywhere — the chart still works while it plays.', 'gold');
+  };
+
+  /** Theatre mode: move the SAME video into the big modal. */
+  UI.theater = function () {
+    if (!nowPlaying) return;
+    $('miniFrame').innerHTML = '';
+    $('miniPlayer').hidden = true;
+    $('playerTitle').textContent = nowPlaying.title.slice(0, 70);
+    $('playerOpenYt').href = MC.youtube.watchUrl(nowPlaying.id);
+    $('playerFrame').innerHTML = embedHtml(nowPlaying);
+    MC.ui.openModal('mdPlayer');
   };
 
   function stopPlayback() {
     $('playerFrame').innerHTML = '';     // removing the iframe stops the audio
+    // NB: deliberately does not touch the mini player — closing an unrelated
+    // modal must not kill a video someone parked in the corner.
+  }
+
+  function stopMini() {
+    $('miniFrame').innerHTML = '';
+    $('miniPlayer').hidden = true;
     nowPlaying = null;
+  }
+
+  /* ---- drag to move, grip to resize, persisted ---- */
+  function initMini() {
+    var player = $('miniPlayer');
+
+    // restore last position/size
+    try {
+      var saved = JSON.parse(MC.store.get('mc_mini') || 'null');
+      if (saved) {
+        if (saved.w) player.style.width = saved.w + 'px';
+        if (isFinite(saved.x) && isFinite(saved.y)) {
+          player.style.left = saved.x + 'px';
+          player.style.top = saved.y + 'px';
+          player.style.right = 'auto';
+          player.style.bottom = 'auto';
+        }
+      }
+    } catch (e) {}
+
+    function saveMini() {
+      var r = player.getBoundingClientRect();
+      MC.store.set('mc_mini', JSON.stringify({
+        x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width)
+      }));
+    }
+
+    function keepOnScreen() {
+      var r = player.getBoundingClientRect();
+      var x = MC.clamp(r.left, 4, Math.max(4, innerWidth - r.width - 4));
+      var y = MC.clamp(r.top, 4, Math.max(4, innerHeight - 60));
+      player.style.left = x + 'px';
+      player.style.top = y + 'px';
+      player.style.right = 'auto';
+      player.style.bottom = 'auto';
+    }
+
+    // move — drag the header (buttons excluded)
+    var drag = null;
+    $('miniHead').addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.mini-btn')) return;
+      e.preventDefault();
+      var r = player.getBoundingClientRect();
+      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+      $('miniHead').setPointerCapture(e.pointerId);
+    });
+    $('miniHead').addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      player.style.left = (e.clientX - drag.dx) + 'px';
+      player.style.top = (e.clientY - drag.dy) + 'px';
+      player.style.right = 'auto';
+      player.style.bottom = 'auto';
+    });
+    $('miniHead').addEventListener('pointerup', function (e) {
+      if (!drag) return;
+      drag = null;
+      try { $('miniHead').releasePointerCapture(e.pointerId); } catch (err) {}
+      keepOnScreen();
+      saveMini();
+    });
+
+    // resize — drag the corner grip; height follows 16:9 via CSS
+    var rs = null;
+    $('miniGrip').addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      rs = { x: e.clientX, w: player.getBoundingClientRect().width };
+      $('miniGrip').setPointerCapture(e.pointerId);
+    });
+    $('miniGrip').addEventListener('pointermove', function (e) {
+      if (!rs) return;
+      player.style.width = MC.clamp(rs.w + (e.clientX - rs.x), 240, Math.min(720, innerWidth - 20)) + 'px';
+    });
+    $('miniGrip').addEventListener('pointerup', function (e) {
+      if (!rs) return;
+      rs = null;
+      try { $('miniGrip').releasePointerCapture(e.pointerId); } catch (err) {}
+      keepOnScreen();
+      saveMini();
+    });
+
+    $('miniClose').addEventListener('click', stopMini);
+    $('miniTheater').addEventListener('click', UI.theater);
+    $('miniPin').addEventListener('click', function () {
+      if (!nowPlaying) return;
+      if (MC.youtube.pin(nowPlaying)) {
+        UI.renderShelf();
+        MC.ui.toast('Saved 📌', 'On your shelf.', 'gold');
+      } else {
+        MC.ui.toast('Already there', 'That one is on your shelf.', 'info');
+      }
+    });
+
+    window.addEventListener('resize', MC.debounce(function () {
+      if (!player.hidden) keepOnScreen();
+    }, 150));
   }
 
   /* ----------------------------------------------------------------------

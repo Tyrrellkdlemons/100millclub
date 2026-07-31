@@ -26,9 +26,9 @@
   var LIMITS = {
     left:  { min: 170, max: 340 },
     right: { min: 270, max: 430 },
-    dock:  { min: 96,  max: 460 },
-    chartMinW: 420,     // the centre column may never drop below this
-    chartMinH: 280      // toolbar + plot may never drop below this
+    dock:  { min: 96,  max: 560 },
+    chart: { min: 280, max: 1400 },   // the plot itself, dragged directly
+    chartMinW: 420      // the centre column may never drop below this
   };
 
   var DEFAULTS = { left: 262, right: 330, dock: 322 };
@@ -70,24 +70,27 @@
     return MC.clamp(px, LIMITS.right.min, Math.min(LIMITS.right.max, maxByChart));
   }
   function clampDock(px) {
-    var appH = document.querySelector('.app').getBoundingClientRect().height;
-    var maxByChart = appH - LIMITS.chartMinH - 10;   // 10 = column gap
-    return MC.clamp(px, LIMITS.dock.min, Math.min(LIMITS.dock.max, maxByChart));
+    // the centre scrolls now, so the dock no longer competes with the chart
+    return MC.clamp(px, LIMITS.dock.min, LIMITS.dock.max);
+  }
+  function clampChart(px) {
+    return MC.clamp(px, LIMITS.chart.min, LIMITS.chart.max);
   }
 
   R.apply = function () {
     if (sizes.left) setVar('--left-w', clampLeft(sizes.left));
     if (sizes.right) setVar('--right-w', clampRight(sizes.right));
     if (sizes.dock) setVar('--dock-h', clampDock(sizes.dock));
+    if (sizes.chart) setVar('--chart-h', clampChart(sizes.chart));
   };
 
   R.reset = function (which) {
     if (!which) {
       sizes = {};
-      clearVar('--left-w'); clearVar('--right-w'); clearVar('--dock-h');
+      clearVar('--left-w'); clearVar('--right-w'); clearVar('--dock-h'); clearVar('--chart-h');
     } else {
       delete sizes[which];
-      clearVar({ left: '--left-w', right: '--right-w', dock: '--dock-h' }[which]);
+      clearVar({ left: '--left-w', right: '--right-w', dock: '--dock-h', chart: '--chart-h' }[which]);
     }
     persist(sizes);
     settle();
@@ -175,6 +178,14 @@
       sizes.dock = clampDock((sizes.dock || currentVar('--dock-h', DEFAULTS.dock)) - dy);
       setVar('--dock-h', sizes.dock);
     }, function () { R.reset('dock'); });
+
+    // the chart itself: drag the bottom edge of its card (down = taller)
+    makeGrip(MC.$('chartCard'), 'grip-bottom', 'y', function (dy) {
+      var current = sizes.chart ||
+        document.querySelector('.chart-stack').getBoundingClientRect().height;
+      sizes.chart = clampChart(current + dy);
+      setVar('--chart-h', sizes.chart);
+    }, function () { R.reset('chart'); });
 
     // window resizes re-run the clamps so the chart guarantee holds
     window.addEventListener('resize', MC.debounce(function () {

@@ -231,7 +231,16 @@
   box-shadow:var(--shadow);
 }
 .col{ display:flex; flex-direction:column; min-height:0; min-width:0; }
-.center{ display:flex; flex-direction:column; gap:10px; min-height:0; }
+
+/* The centre column SCROLLS. The chart takes a generous fixed height (drag
+   its bottom edge to change it) and the dock sits below at natural size —
+   roll down to the vlogs, roll back up to the chart. The side panels keep
+   their own internal scroll and never move. */
+.center{
+  display:flex; flex-direction:column; gap:10px;
+  min-height:0; overflow-y:auto; overflow-x:hidden;
+  scroll-behavior:smooth; padding-right:2px;
+}
 
 /* mobile-only controls */
 .mob-btn{ display:none; }
@@ -246,21 +255,12 @@
    runs out it is the dock that gives way, never the chart. Without these,
    a 630px-tall window left the chart 104px high under a 379px dock.
    -------------------------------------------------------------------------- */
-@media (max-height:780px){ :root{ --dock-h:240px; } }
-@media (max-height:680px){
-  :root{ --dock-h:140px; }
-  /* the toolbar may wrap to two rows here; the chart keeps its 180px min
-     and the dock shrinks to make the sums work (103 + 183 + 197 = 493) */
+/* Short windows: the centre scrolls now, so nothing needs to be starved —
+   the chart just takes a slice of the viewport and everything else is a
+   scroll away. */
+@media (max-height:780px){
+  .chart-stack{ height:var(--chart-h, 56vh); }
   .ctool{ padding:7px 12px; row-gap:4px; }
-  .vid{ width:178px; }
-  .vtitle{ -webkit-line-clamp:1; line-clamp:1; min-height:16px; }
-  .dock .yt-chips{ display:none; }
-}
-/* Very short windows: the dock folds to its header row. Every panel is
-   still one click away; the chart simply refuses to be the thing that dies. */
-@media (max-height:560px){
-  .dock .dock-body{ display:none; }
-  .dock .dock-caret{ transform:rotate(-90deg); }
 }
 
 /* --------------------------------------------------------------------------

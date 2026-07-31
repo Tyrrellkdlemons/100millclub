@@ -893,6 +893,26 @@
   </aside>
 </main>
 
+<!-- floating mini-player: video keeps playing while you work the chart -->
+<div class="mini-player" id="miniPlayer" hidden>
+  <div class="mini-head" id="miniHead"
+       data-tip="Drag me anywhere"
+       data-tip-desc="Watch while you chart. The video keeps playing wherever you park it.">
+    <i class="fa-brands fa-youtube"></i>
+    <span class="mini-title" id="miniTitle">Now playing</span>
+    <button class="mini-btn" id="miniPin" data-tip="Save to your shelf"><i class="fa-solid fa-thumbtack"></i></button>
+    <a class="mini-btn" id="miniOpenYt" target="_blank" rel="noopener noreferrer"
+       data-tip="Watch on YouTube"
+       data-tip-desc="Likes, comments and subscriptions all feed your recommendations there.">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    </a>
+    <button class="mini-btn" id="miniTheater" data-tip="Theatre mode — big screen"><i class="fa-solid fa-expand"></i></button>
+    <button class="mini-btn mini-x" id="miniClose" data-tip="Close and stop"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="mini-frame" id="miniFrame"></div>
+  <div class="mini-grip" id="miniGrip" data-tip="Drag to resize"></div>
+</div>
+
 <!-- app-style bottom navigation, phones only -->
 <nav class="bottom-nav" id="bottomNav" aria-label="Main">
   <button class="bnav" data-bnav="markets"><i class="fa-solid fa-list"></i>Markets</button>

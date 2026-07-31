@@ -82,6 +82,10 @@ button, a, select, input, .wl-row, .vid, .dock-tab{ touch-action:manipulation; }
   .rtab{ padding:11px 4px; }
   .wl-row{ padding:12px 7px 12px 16px; }
 
+  /* the centre scrolls; the chart takes a friendlier slice of a phone screen */
+  .chart-stack{ height:var(--chart-h, 52vh); }
+  .center{ -webkit-overflow-scrolling:touch; }
+
   /* the dock starts folded on phones — one tap opens it */
   .vlog-body{ -webkit-overflow-scrolling:touch; }
   .yt-bar{ padding:8px 10px 0; }

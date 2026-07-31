@@ -115,3 +115,49 @@
 .file-veil-card{ padding:46px 62px; border-width:3px; }
 .file-veil-card i{ font-size:44px; }
 .file-veil-card b{ font-size:19px; }
+
+/* --------------------------------------------------------------------------
+   FLOATING MINI-PLAYER — the video rides along while you chart
+   -------------------------------------------------------------------------- */
+.mini-player{
+  position:fixed; right:18px; bottom:84px; z-index:860;
+  width:340px;
+  border-radius:14px; overflow:hidden;
+  background:rgba(10,13,17,.98);
+  border:1px solid rgba(245,197,24,.35);
+  box-shadow:0 22px 54px rgba(0,0,0,.72), 0 0 24px rgba(245,197,24,.14);
+}
+.mini-player[hidden]{ display:none; }
+.mini-head{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; cursor:grab; user-select:none; touch-action:none;
+  background:linear-gradient(180deg, rgba(245,197,24,.10), transparent);
+  border-bottom:1px solid rgba(245,197,24,.18);
+}
+.mini-head:active{ cursor:grabbing; }
+.mini-head > i{ color:#f00; font-size:14px; flex-shrink:0; }
+.mini-title{
+  flex:1; min-width:0; font-size:11.5px; font-weight:700;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.mini-btn{
+  width:26px; height:26px; border-radius:7px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px; color:var(--muted);
+  transition:.15s var(--ease);
+}
+.mini-btn:hover{ background:var(--panel-3); color:var(--text); }
+.mini-btn.mini-x:hover{ background:rgba(255,77,94,.18); color:var(--red); }
+.mini-frame{ position:relative; width:100%; aspect-ratio:16/9; background:#000; }
+.mini-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.mini-grip{
+  position:absolute; right:0; bottom:0; width:18px; height:18px;
+  cursor:nwse-resize; touch-action:none;
+  background:linear-gradient(135deg, transparent 55%, rgba(245,197,24,.6) 56%, rgba(245,197,24,.6) 62%, transparent 63%,
+             transparent 70%, rgba(245,197,24,.6) 71%, rgba(245,197,24,.6) 77%, transparent 78%);
+}
+@media (max-width:860px){
+  .mini-player{
+    right:8px; left:auto; width:min(300px, calc(100vw - 16px));
+    bottom:calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+}
