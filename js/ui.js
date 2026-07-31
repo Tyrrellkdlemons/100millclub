@@ -49,11 +49,19 @@
   };
 
   /* ----------------------------------------------------------------------
-     TOOLTIPS — any element with data-tip="…"
+     TOOLTIPS
+     Any element can carry:
+       data-tip       headline (required)
+       data-tip-desc  plain-English explanation (optional)
+       data-tip-key   keyboard shortcut (optional)
      ---------------------------------------------------------------------- */
   UI.initTooltips = function () {
     var tip = MC.$('tip');
     if (!tip) return;
+
+    var titleEl = tip.querySelector('.tip-title');
+    var descEl = tip.querySelector('.tip-desc');
+    var keyEl = tip.querySelector('.tip-key');
     var timer;
 
     function hide() { clearTimeout(timer); tip.classList.remove('on'); }
@@ -62,19 +70,29 @@
       var target = e.target.closest('[data-tip]');
       if (!target) return;
       clearTimeout(timer);
+
+      // Longer explanations get a touch more dwell time before appearing.
+      var hasDesc = !!target.getAttribute('data-tip-desc');
       timer = setTimeout(function () {
-        tip.textContent = target.getAttribute('data-tip');
+        titleEl.textContent = target.getAttribute('data-tip') || '';
+        descEl.textContent = target.getAttribute('data-tip-desc') || '';
+        keyEl.textContent = target.getAttribute('data-tip-key') || '';
         tip.classList.add('on');
 
         var r = target.getBoundingClientRect();
         var t = tip.getBoundingClientRect();
         var x = r.left + r.width / 2 - t.width / 2;
-        var y = r.bottom + 9;
-        if (y + t.height > window.innerHeight - 8) y = r.top - t.height - 9;
+        var y = r.bottom + 10;
+        var place = 'below';
 
+        if (y + t.height > window.innerHeight - 8) {
+          y = r.top - t.height - 10;
+          place = 'above';
+        }
+        tip.setAttribute('data-place', place);
         tip.style.left = MC.clamp(x, 8, window.innerWidth - t.width - 8) + 'px';
         tip.style.top = Math.max(8, y) + 'px';
-      }, 320);
+      }, hasDesc ? 380 : 300);
     });
 
     document.addEventListener('mouseout', function (e) {
@@ -82,6 +100,8 @@
     });
     document.addEventListener('mousedown', hide);
     window.addEventListener('scroll', hide, true);
+    // never leave a tooltip stranded over the tour overlay
+    window.addEventListener('blur', hide);
   };
 
   /* ----------------------------------------------------------------------

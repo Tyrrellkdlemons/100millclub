@@ -44,44 +44,99 @@
   border-bottom:1px solid var(--border);
 }
 
-.brand{ display:flex; align-items:center; gap:11px; flex-shrink:0; }
+/* --------------------------------------------------------------------------
+   BRAND — the crest is the anchor of the whole theme, so it is deliberately
+   the loudest thing in the navbar: bigger, lit from within, and breathing.
+   Every colour here comes from the brand tokens.
+   -------------------------------------------------------------------------- */
+.brand{ display:flex; align-items:center; gap:13px; flex-shrink:0; }
 
 .logo-btn{
-  position:relative; width:42px; height:42px;
-  border-radius:12px; overflow:hidden; flex-shrink:0;
+  position:relative; width:52px; height:52px; flex-shrink:0;
+  border-radius:15px; overflow:hidden;
   display:grid; place-items:center;
-  background:radial-gradient(circle at 50% 45%,#1a1c10,#07090b 72%);
-  border:1px solid #2b2a16;
-  transition:.25s var(--ease);
+  background:radial-gradient(circle at 50% 40%, #23200f 0%, #0d1008 55%, #07090b 100%);
+  border:1.5px solid rgba(245,197,24,.4);
+  transition:transform .25s var(--ease), border-color .25s var(--ease);
+  animation:brandBreathe 4.6s ease-in-out infinite;
 }
-.logo-btn:hover{ border-color:var(--gold); box-shadow:var(--shadow-gold); transform:translateY(-1px); }
+.logo-btn:hover{
+  transform:translateY(-2px) scale(1.04);
+  border-color:var(--gold);
+  animation-play-state:paused;
+  box-shadow:0 8px 26px rgba(0,0,0,.6), 0 0 34px rgba(245,197,24,.45);
+}
+.logo-btn:active{ transform:translateY(0) scale(.99); }
+
+/* gold halo that swells and fades, tinted with the crest's green */
+@keyframes brandBreathe{
+  0%,100%{
+    box-shadow:0 6px 18px rgba(0,0,0,.55),
+               0 0 16px rgba(245,197,24,.16),
+               0 0 30px rgba(61,220,75,.05);
+    border-color:rgba(245,197,24,.34);
+  }
+  50%{
+    box-shadow:0 6px 18px rgba(0,0,0,.55),
+               0 0 30px rgba(245,197,24,.36),
+               0 0 52px rgba(61,220,75,.12);
+    border-color:rgba(245,197,24,.72);
+  }
+}
+
+/* a slow shine that sweeps across the metal every few seconds */
+.logo-btn::after{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(115deg,
+    transparent 32%, rgba(255,255,255,.30) 46%, rgba(255,255,255,.10) 54%, transparent 66%);
+  transform:translateX(-135%);
+  animation:brandShine 6s ease-in-out infinite;
+}
+@keyframes brandShine{
+  0%,74%{ transform:translateX(-135%); }
+  92%,100%{ transform:translateX(135%); }
+}
+
 .logo-btn svg,.logo-btn img{ width:100%; height:100%; display:block; }
 .logo-btn img{ object-fit:cover; }
 .logo-btn .placeholder{
-  font-size:15px; font-weight:900; letter-spacing:-.5px;
+  font-size:18px; font-weight:900; letter-spacing:-.5px;
   background:linear-gradient(180deg,#fff3a8,#f5c518 46%,#c08d15);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .logo-btn .cam{
-  position:absolute; inset:0; display:grid; place-items:center;
-  font-size:12px; background:rgba(0,0,0,.65); color:var(--gold);
-  opacity:0; transition:.2s;
+  position:absolute; inset:0; z-index:2;
+  display:grid; place-items:center; gap:2px;
+  font-size:13px; background:rgba(4,6,8,.74); color:var(--gold);
+  opacity:0; transition:opacity .2s var(--ease);
 }
 .logo-btn:hover .cam{ opacity:1; }
 
-.brand-text{ line-height:1.1; user-select:none; }
-.brand-name{ font-size:15px; font-weight:900; letter-spacing:-.4px; white-space:nowrap; }
+.brand-text{ line-height:1.12; user-select:none; }
+.brand-name{
+  font-size:19px; font-weight:900; letter-spacing:-.6px; white-space:nowrap;
+  filter:drop-shadow(0 1px 6px rgba(245,197,24,.28));
+}
 .brand-name .g{
-  background:linear-gradient(180deg,#fff3a8,#f5c518 46%,#c08d15);
+  background:linear-gradient(180deg,#fff8c9,#f5c518 44%,#b8860b);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .brand-name .s{
-  background:linear-gradient(180deg,#fff,#d7dde6 46%,#8a94a3);
+  background:linear-gradient(180deg,#ffffff,#d7dde6 44%,#7d8896);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
+
+/* green chevron bar under the wordmark, echoing the crest artwork */
 .brand-tag{
-  font-size:9px; letter-spacing:2.4px; text-transform:uppercase;
-  color:var(--gold-deep); font-weight:700;
+  position:relative; display:inline-block; margin-top:3px; padding-top:4px;
+  font-size:9.5px; letter-spacing:3px; text-transform:uppercase;
+  font-weight:700; color:var(--gold-deep);
+}
+.brand-tag::before{
+  content:""; position:absolute; left:0; top:0; width:100%; height:2px;
+  border-radius:2px;
+  background:linear-gradient(90deg, var(--gold), var(--grind) 55%, transparent);
+  box-shadow:0 0 8px rgba(61,220,75,.4);
 }
 
 /* market category tabs */
@@ -215,7 +270,9 @@
 
 /* mobile: both sidebars become drawers, navbar condenses */
 @media (max-width:860px){
-  :root{ --nav-h:56px; --dock-h:300px; }
+  :root{ --nav-h:60px; --dock-h:300px; }
+  /* the crest keeps its glow but shrinks so the navbar still breathes */
+  .logo-btn{ width:44px; height:44px; border-radius:13px; }
   .app{ grid-template-columns:minmax(0,1fr); padding:8px; gap:8px; }
   .left{
     position:fixed; z-index:100;

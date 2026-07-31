@@ -48,7 +48,11 @@
         var dir = a.chg >= 0 ? 'up' : 'down';
         html +=
           '<div class="wl-row' + (a.s === MC.State.symbol ? ' on' : '') + '" data-sym="' + a.s + '" ' +
-               'role="button" tabindex="0" data-tip="' + MC.esc(a.n) + ' — click to load this market">' +
+               'draggable="true" role="button" tabindex="0" ' +
+               'data-tip="' + MC.esc(a.n) + '" ' +
+               'data-tip-desc="Click to load this market. Drag it up or down to reorder, ' +
+                              'or drag it onto the chart or the trade panel.">' +
+            '<i class="fa-solid fa-grip-vertical wl-grip"></i>' +
             '<div>' +
               '<div class="wl-sym">' + a.s + '</div>' +
               '<div class="wl-name">' + MC.esc(a.n) + '</div>' +

@@ -1,0 +1,199 @@
+/* ==========================================================================
+   help.css — the "make it easy" layer
+   Rich hover tooltips, drag-and-drop affordances, the guided tour,
+   and the persistent hint badges.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   RICH TOOLTIP
+   data-tip       headline
+   data-tip-desc  plain-English explanation (optional)
+   data-tip-key   keyboard shortcut (optional)
+   -------------------------------------------------------------------------- */
+#tip{
+  position:fixed; z-index:950; pointer-events:none;
+  opacity:0; transform:translateY(4px);
+  transition:opacity .13s var(--ease), transform .13s var(--ease);
+  max-width:262px; padding:9px 11px; border-radius:10px;
+  background:linear-gradient(180deg,#1e2732,#161d26);
+  border:1px solid var(--border-2);
+  box-shadow:0 10px 26px rgba(0,0,0,.6);
+}
+#tip.on{ opacity:1; transform:none; }
+#tip .tip-title{ font-size:11.5px; font-weight:700; color:var(--text); line-height:1.35; }
+#tip .tip-desc{
+  font-size:11px; font-weight:500; color:var(--muted);
+  line-height:1.5; margin-top:4px;
+}
+#tip .tip-key{
+  display:inline-block; margin-top:7px; padding:3px 7px;
+  font-size:10px; font-weight:700; letter-spacing:.4px;
+  color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); border-radius:5px;
+}
+#tip .tip-desc:empty,#tip .tip-key:empty{ display:none; }
+
+/* little arrow */
+#tip::after{
+  content:""; position:absolute; width:9px; height:9px;
+  background:#1e2732; border-left:1px solid var(--border-2); border-top:1px solid var(--border-2);
+  transform:rotate(45deg);
+}
+#tip[data-place="below"]::after{ top:-5px; left:calc(50% - 5px); }
+#tip[data-place="above"]::after{ bottom:-5px; left:calc(50% - 5px); transform:rotate(225deg); }
+
+/* --------------------------------------------------------------------------
+   DRAG AND DROP
+   -------------------------------------------------------------------------- */
+
+/* a row being dragged */
+.wl-row[draggable]{ cursor:grab; }
+.wl-row.dragging{ opacity:.4; cursor:grabbing; }
+
+/* drop indicator line between rows */
+.wl-row.drop-above{ box-shadow:inset 0 2px 0 0 var(--accent); }
+.wl-row.drop-below{ box-shadow:inset 0 -2px 0 0 var(--accent); }
+
+/* grab handle appears on hover so the row reads as draggable */
+.wl-grip{
+  position:absolute; left:-2px; top:50%; transform:translateY(-50%);
+  font-size:9px; color:var(--dim); opacity:0; transition:opacity .15s;
+  pointer-events:none;
+}
+.wl-row{ position:relative; }
+.wl-row:hover .wl-grip{ opacity:.65; }
+
+/* chart accepts a dropped symbol */
+.chart-stack.drop-target::after,
+.rbody.drop-target::after{
+  content:"Drop to load this market";
+  position:absolute; inset:8px; z-index:30;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; letter-spacing:.3px; color:var(--accent);
+  background:rgba(79,140,255,.10);
+  border:2px dashed var(--accent); border-radius:12px;
+  backdrop-filter:blur(2px); pointer-events:none;
+}
+.rbody{ position:relative; }
+
+/* logo accepts a dropped image */
+.logo-btn.drop-target{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(245,197,24,.28), var(--shadow-gold);
+}
+
+/* full-window overlay while an image file is dragged anywhere on the page */
+.file-veil{
+  position:fixed; inset:0; z-index:800; display:none;
+  align-items:center; justify-content:center;
+  background:rgba(4,6,8,.82); backdrop-filter:blur(7px);
+}
+.file-veil.on{ display:flex; animation:fade .18s var(--ease); }
+.file-veil-card{
+  display:flex; flex-direction:column; align-items:center; gap:13px;
+  padding:38px 54px; border-radius:20px;
+  border:2px dashed var(--gold); background:rgba(19,25,32,.9);
+  text-align:center;
+}
+.file-veil-card i{ font-size:34px; color:var(--gold); }
+.file-veil-card b{ font-size:16px; font-weight:800; }
+.file-veil-card span{ font-size:12px; color:var(--muted); max-width:280px; line-height:1.5; }
+
+/* --------------------------------------------------------------------------
+   HINT BADGES — the "Show hints" toggle
+   -------------------------------------------------------------------------- */
+.hint{
+  position:absolute; z-index:40;
+  width:19px; height:19px; border-radius:50%;
+  display:none; align-items:center; justify-content:center;
+  font-size:10px; font-weight:800; color:#fff;
+  background:var(--accent); border:2px solid var(--panel);
+  box-shadow:0 2px 8px rgba(0,0,0,.5); cursor:help;
+  animation:hintPulse 2.2s infinite;
+}
+body.hints-on .hint{ display:flex; }
+@keyframes hintPulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(79,140,255,.55); }
+  70%{ box-shadow:0 0 0 7px rgba(79,140,255,0); }
+}
+
+/* --------------------------------------------------------------------------
+   GUIDED TOUR
+   -------------------------------------------------------------------------- */
+.tour-veil{
+  position:fixed; inset:0; z-index:700; display:none;
+  background:transparent;
+}
+.tour-veil.on{ display:block; }
+
+/* the spotlight is a transparent box with a huge shadow dimming everything else */
+.tour-spot{
+  position:fixed; z-index:701; border-radius:12px;
+  box-shadow:0 0 0 9999px rgba(4,6,8,.78), 0 0 0 2px var(--accent) inset;
+  transition:all .32s var(--ease);
+  pointer-events:none;
+}
+
+.tour-card{
+  position:fixed; z-index:702; width:min(330px,calc(100vw - 28px));
+  padding:16px 17px; border-radius:15px;
+  background:linear-gradient(180deg,#1a222c,#141b23);
+  border:1px solid var(--border-2);
+  box-shadow:0 22px 54px rgba(0,0,0,.72);
+  transition:all .32s var(--ease);
+}
+.tour-step{
+  font-size:10px; font-weight:800; letter-spacing:1.2px;
+  text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+.tour-card h4{ margin:0 0 7px; font-size:15px; font-weight:800; letter-spacing:-.2px; }
+.tour-card p{ margin:0; font-size:12.5px; line-height:1.6; color:var(--muted); }
+.tour-card p b{ color:var(--text); }
+.tour-actions{ display:flex; align-items:center; gap:8px; margin-top:15px; }
+.tour-dots{ display:flex; gap:5px; margin-right:auto; }
+.tour-dot{ width:6px; height:6px; border-radius:50%; background:var(--border-2); transition:.2s; }
+.tour-dot.on{ background:var(--accent); width:17px; border-radius:4px; }
+.tour-btn{
+  padding:8px 14px; border-radius:9px;
+  font-size:12px; font-weight:700; transition:.16s var(--ease);
+  background:var(--panel-3); color:var(--muted); border:1px solid var(--border-2);
+}
+.tour-btn:hover{ color:var(--text); }
+.tour-btn.primary{
+  background:linear-gradient(180deg,#6ba0ff,#4f8cff);
+  color:#fff; border-color:#3d78e8;
+}
+.tour-btn.primary:hover{ box-shadow:var(--shadow-accent); }
+.tour-skip{
+  position:fixed; z-index:702; right:18px; top:18px;
+  padding:8px 13px; border-radius:9px;
+  font-size:12px; font-weight:700; color:var(--muted);
+  background:rgba(19,25,32,.94); border:1px solid var(--border-2);
+}
+.tour-skip:hover{ color:var(--text); }
+
+@media (max-width:860px){
+  .tour-card{ left:14px !important; right:14px; width:auto; }
+}
+
+/* --------------------------------------------------------------------------
+   HELP LAUNCHER — the floating "?" cluster
+   -------------------------------------------------------------------------- */
+.help-menu{
+  position:absolute; right:0; top:calc(100% + 8px); z-index:120;
+  width:236px; padding:6px; border-radius:13px;
+  background:var(--panel-2); border:1px solid var(--border-2);
+  box-shadow:0 18px 40px rgba(0,0,0,.6);
+  display:none;
+}
+.help-menu.on{ display:block; animation:fade .18s var(--ease); }
+.help-item{
+  display:flex; align-items:center; gap:10px; width:100%;
+  padding:9px 10px; border-radius:9px; text-align:left;
+  font-size:12.5px; font-weight:600; color:var(--text);
+  transition:.15s var(--ease);
+}
+.help-item:hover{ background:var(--panel-3); }
+.help-item i{ width:17px; text-align:center; color:var(--accent); font-size:12px; }
+.help-item small{ display:block; font-size:10.5px; font-weight:500; color:var(--dim); margin-top:1px; }
+.help-wrap{ position:relative; }

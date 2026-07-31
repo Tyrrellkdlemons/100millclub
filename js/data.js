@@ -38,18 +38,36 @@
     { s: 'AUDUSD', n: 'Australian / US Dollar',     m: 'forex', p: 0.66218, d: 5, v: 0.007, tv: 'FX:AUDUSD' },
     { s: 'USDCAD', n: 'US Dollar / Canadian Dollar',m: 'forex', p: 1.36420, d: 5, v: 0.005, tv: 'FX:USDCAD' },
 
-    /* ---- Indices ---- */
-    { s: 'SPX',   n: 'S&P 500',                  m: 'indices', p: 5745.37,  d: 2, v: 0.011, tv: 'SP:SPX' },
-    { s: 'NDX',   n: 'NASDAQ 100',               m: 'indices', p: 20012.84, d: 2, v: 0.015, tv: 'NASDAQ:NDX' },
-    { s: 'DJI',   n: 'Dow Jones Industrial',     m: 'indices', p: 42330.15, d: 2, v: 0.010, tv: 'DJ:DJI' },
-    { s: 'RUT',   n: 'Russell 2000',             m: 'indices', p: 2224.71,  d: 2, v: 0.016, tv: 'TVC:RUT' },
-    { s: 'FTSE',  n: 'FTSE 100 · UK',       m: 'indices', p: 8320.76,  d: 2, v: 0.010, tv: 'TVC:UKX' },
-    { s: 'DAX',   n: 'DAX 40 · Germany',    m: 'indices', p: 19473.63, d: 2, v: 0.012, tv: 'XETR:DAX' },
-    { s: 'CAC',   n: 'CAC 40 · France',     m: 'indices', p: 7791.79,  d: 2, v: 0.012, tv: 'EURONEXT:PX1' },
-    { s: 'N225',  n: 'Nikkei 225 · Japan',  m: 'indices', p: 38925.63, d: 2, v: 0.014, tv: 'TVC:NI225' },
+    /* ---- Indices ----
+       Index tickers are the one place the embedded widget gets fussy, so these
+       were chosen by probing TradingView's scanner for what actually resolves
+       anonymously:
+
+       · TVC: feeds that report update_mode "streaming" are TradingView's own
+         free index feeds and render for everyone — used wherever one exists.
+       · The S&P 500 and NASDAQ 100 have no free index feed (SP:SPX, TVC:SPX
+         and every broker CFD mirror either 404 or demand a data entitlement),
+         so those chart the liquid ETF that tracks them. `tvProxy` flags that
+         so the UI can say so out loud.
+       · `tvPro` is the real exchange ticker. It is never used for the embed —
+         only for the "Open in TradingView" link, so anyone who *does* hold the
+         entitlement lands on the genuine index in their own account. */
+    { s: 'SPX',   n: 'S&P 500',               m: 'indices', p: 5745.37,  d: 2, v: 0.011,
+      tv: 'AMEX:SPY',    tvPro: 'SP:SPX',        tvProxy: 'SPY ETF' },
+    { s: 'NDX',   n: 'NASDAQ 100',            m: 'indices', p: 20012.84, d: 2, v: 0.015,
+      tv: 'NASDAQ:QQQ',  tvPro: 'NASDAQ:NDX',    tvProxy: 'QQQ ETF' },
+    { s: 'DJI',   n: 'Dow Jones Industrial',  m: 'indices', p: 42330.15, d: 2, v: 0.010,
+      tv: 'TVC:DJI',     tvPro: 'DJ:DJI' },
+    { s: 'RUT',   n: 'Russell 2000',          m: 'indices', p: 2224.71,  d: 2, v: 0.016, tv: 'TVC:RUT' },
+    { s: 'FTSE',  n: 'FTSE 100 · UK',         m: 'indices', p: 8320.76,  d: 2, v: 0.010, tv: 'TVC:UKX' },
+    { s: 'DAX',   n: 'DAX 40 · Germany',      m: 'indices', p: 19473.63, d: 2, v: 0.012,
+      tv: 'TVC:DEU40',   tvPro: 'XETR:DAX' },
+    { s: 'CAC',   n: 'CAC 40 · France',       m: 'indices', p: 7791.79,  d: 2, v: 0.012,
+      tv: 'TVC:CAC40',   tvPro: 'EURONEXT:PX1' },
+    { s: 'N225',  n: 'Nikkei 225 · Japan',    m: 'indices', p: 38925.63, d: 2, v: 0.014, tv: 'TVC:NI225' },
     { s: 'HSI',   n: 'Hang Seng · Hong Kong', m: 'indices', p: 20632.30, d: 2, v: 0.018, tv: 'TVC:HSI' },
-    { s: 'STOXX', n: 'Euro Stoxx 50',            m: 'indices', p: 5067.45,  d: 2, v: 0.012, tv: 'TVC:SX5E' },
-    { s: 'VIX',   n: 'Volatility Index',         m: 'indices', p: 16.42,    d: 2, v: 0.070, tv: 'TVC:VIX' }
+    { s: 'STOXX', n: 'Euro Stoxx 50',         m: 'indices', p: 5067.45,  d: 2, v: 0.012, tv: 'TVC:SX5E' },
+    { s: 'VIX',   n: 'Volatility Index',      m: 'indices', p: 16.42,    d: 2, v: 0.070, tv: 'TVC:VIX' }
   ];
 
   /** Fast symbol → asset lookup. */
@@ -70,11 +88,11 @@
 
   /** Symbols shown in the live TradingView ticker tape across the top. */
   MC.TAPE_SYMBOLS = [
-    { proName: 'SP:SPX',            title: 'S&P 500' },
-    { proName: 'NASDAQ:NDX',        title: 'NASDAQ 100' },
-    { proName: 'DJ:DJI',            title: 'Dow Jones' },
+    { proName: 'AMEX:SPY',          title: 'S&P 500' },
+    { proName: 'NASDAQ:QQQ',        title: 'NASDAQ 100' },
+    { proName: 'TVC:DJI',           title: 'Dow Jones' },
     { proName: 'TVC:UKX',           title: 'FTSE 100' },
-    { proName: 'XETR:DAX',          title: 'DAX' },
+    { proName: 'TVC:DEU40',         title: 'DAX' },
     { proName: 'TVC:NI225',         title: 'Nikkei 225' },
     { proName: 'NASDAQ:AAPL',       title: 'Apple' },
     { proName: 'NASDAQ:NVDA',       title: 'NVIDIA' },

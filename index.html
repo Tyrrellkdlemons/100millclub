@@ -69,6 +69,7 @@
 <link rel="stylesheet" href="css/base.css" />
 <link rel="stylesheet" href="css/layout.css" />
 <link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/help.css" />
 
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -84,7 +85,9 @@
 <!-- ======================= NAVBAR ======================= -->
 <header class="nav">
   <div class="brand">
-    <button class="logo-btn" id="logoBtn" data-tip="Click to upload your own logo (PNG, JPG or SVG)" aria-label="Upload site logo">
+    <button class="logo-btn" id="logoBtn" aria-label="Upload site logo"
+            data-tip="Your logo"
+            data-tip-desc="Click to pick an image — or just drag one anywhere onto the page and drop it. Saved on this device.">
       <!-- Default mark: the 100MillClub crest. An uploaded image replaces it. -->
       <svg class="logo-default" viewBox="0 0 120 120" role="img" aria-label="100MillClub crest">
         <defs>
@@ -157,18 +160,48 @@
   </div>
 
   <div class="nav-right">
-    <button class="btn" id="connectBtn" data-tip="Link a broker account (demo only)">
+    <button class="btn" id="connectBtn"
+            data-tip="Connect a broker"
+            data-tip-desc="Simulates linking a brokerage account. Nothing real is connected and no money is involved.">
       <i class="fa-solid fa-plug"></i><span class="lbl">Connect</span>
     </button>
-    <button class="btn" id="navBacktest" data-tip="Jump to the strategy tester">
+    <button class="btn" id="navBacktest"
+            data-tip="Test a strategy"
+            data-tip-desc="Jumps to the strategy tester, which replays a set of rules over past prices and shows what would have happened.">
       <i class="fa-solid fa-flask"></i><span class="lbl">Backtest</span>
     </button>
-    <button class="btn on" id="navVlogs" data-tip="Show or hide the video section">
+    <button class="btn on" id="navVlogs"
+            data-tip="Videos and market panels"
+            data-tip-desc="Shows or hides the section under the chart."
+            data-tip-key="V">
       <i class="fa-solid fa-video"></i><span class="lbl">Vlogs</span>
     </button>
-    <button class="btn btn-icon" id="helpBtn" data-tip="How this works" aria-label="Help">
-      <i class="fa-solid fa-question"></i>
-    </button>
+    <div class="help-wrap" id="helpWrap">
+      <button class="btn btn-icon" id="helpBtn" aria-label="Help"
+              data-tip="Need a hand?"
+              data-tip-desc="Replay the guided tour, open the full guide, or switch on hint markers."
+              data-tip-key="?">
+        <i class="fa-solid fa-question"></i>
+      </button>
+      <div class="help-menu" id="helpMenu" role="menu">
+        <button class="help-item" id="miTour" role="menuitem">
+          <i class="fa-solid fa-route"></i>
+          <span>Take the tour<small>A guided walk through every panel</small></span>
+        </button>
+        <button class="help-item" id="miHints" role="menuitem">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Show hints<small>Pin markers on every area</small></span>
+        </button>
+        <button class="help-item" id="miGuide" role="menuitem">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Full guide<small>Read how everything works</small></span>
+        </button>
+        <button class="help-item" id="miShortcuts" role="menuitem">
+          <i class="fa-solid fa-keyboard"></i>
+          <span>Keyboard shortcuts<small>Move around without the mouse</small></span>
+        </button>
+      </div>
+    </div>
     <button class="btn btn-icon mob-btn r" id="mobRight" data-tip="Open the trade panel" aria-label="Open trade panel">
       <i class="fa-solid fa-bolt"></i>
     </button>
@@ -201,7 +234,11 @@
         <div class="sym-block">
           <div class="sym-badge" id="symBadge">AA</div>
           <div class="sym-meta">
-            <div class="sym-name"><span id="symName">AAPL</span><span class="chip" id="symMkt">Stocks</span></div>
+            <div class="sym-name">
+              <span id="symName">AAPL</span>
+              <span class="chip" id="symMkt">Stocks</span>
+              <span class="chip chip-proxy hidden" id="symProxy"></span>
+            </div>
             <div class="sym-sub" id="symSub">Apple Inc.</div>
           </div>
         </div>
@@ -213,26 +250,44 @@
         </div>
 
         <div class="tool-group">
-          <button class="btn btn-icon" id="btnInd" data-tip="Indicators — average lines and momentum" aria-label="Indicators">
+          <button class="btn btn-icon" id="btnInd" aria-label="Indicators"
+                  data-tip="Indicators"
+                  data-tip-desc="Average lines that smooth out the noise, plus a momentum meter that shows when a market is running hot or cold.">
             <i class="fa-solid fa-wave-square"></i>
           </button>
-          <button class="btn btn-icon" id="btnDraw" data-tip="Drawing tools — trend lines and price levels" aria-label="Drawing tools">
+          <button class="btn btn-icon" id="btnDraw" aria-label="Drawing tools"
+                  data-tip="Drawing tools"
+                  data-tip-desc="Draw a trend line between two points, or drop a flat line at a price you care about.">
             <i class="fa-solid fa-pen-nib"></i>
           </button>
-          <button class="btn btn-icon" id="btnFs" data-tip="Fullscreen chart (F)" aria-label="Fullscreen">
+          <button class="btn btn-icon" id="btnFs" aria-label="Fullscreen"
+                  data-tip="Fullscreen chart"
+                  data-tip-desc="Make the chart fill the whole screen. Press it again or hit Escape to come back."
+                  data-tip-key="F">
             <i class="fa-solid fa-expand"></i>
           </button>
-          <button class="btn btn-icon" id="btnCfg" data-tip="Chart settings" aria-label="Chart settings">
+          <button class="btn btn-icon" id="btnCfg" aria-label="Chart settings"
+                  data-tip="Chart settings"
+                  data-tip-desc="Switch between candles, a line or a mountain chart, and control the grid, crosshair and update speed.">
             <i class="fa-solid fa-gear"></i>
+          </button>
+          <button class="btn btn-tv" id="btnOpenTV" aria-label="Open in TradingView"
+                  data-tip="Open on your TradingView account"
+                  data-tip-desc="Opens this exact symbol and timeframe on tradingview.com. Already signed in there? You get it on your own plan — real-time entitled data, your saved layouts, indicators and alerts.">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i><span class="lbl">TradingView</span>
           </button>
         </div>
 
         <!-- live TradingView chart vs the built-in simulated engine -->
         <div class="src-switch" id="srcSwitch">
-          <button class="src on" data-src="live" data-tip="Real TradingView chart with live market data">
+          <button class="src on" data-src="live"
+                  data-tip="Live market data"
+                  data-tip-desc="The real TradingView chart with genuine prices, and its own indicator and drawing toolbars.">
             <span class="live-dot"></span>Live
           </button>
-          <button class="src" data-src="sim" data-tip="Built-in engine — powers indicators, drawings and backtests">
+          <button class="src" data-src="sim"
+                  data-tip="Practice data"
+                  data-tip-desc="The built-in engine. This is what powers this dashboard's own indicators, drawings and backtests — and it keeps working with no internet.">
             <i class="fa-solid fa-flask-vial"></i>Simulated
           </button>
         </div>
@@ -303,6 +358,11 @@
           </button>
         </div>
         <div class="dock-actions">
+          <button class="btn btn-tv hidden" id="dockOpenTV" aria-label="Open this panel on TradingView"
+                  data-tip="Open this panel on your TradingView account"
+                  data-tip-desc="Takes you to the full version on tradingview.com. If you are signed in there, it loads on your own subscription.">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i><span class="lbl">TradingView</span>
+          </button>
           <button class="btn btn-icon" id="dockToggle" data-tip="Collapse or expand this section" aria-label="Collapse section">
             <i class="fa-solid fa-chevron-down dock-caret"></i>
           </button>
@@ -357,8 +417,14 @@
       <!-- ===== TRADE ===== -->
       <div class="pane on" id="pane-trade">
         <div class="side-toggle">
-          <button class="side buy on" id="sideBuy" aria-pressed="true">BUY</button>
-          <button class="side sell" id="sideSell" aria-pressed="false">SELL</button>
+          <button class="side buy on" id="sideBuy" aria-pressed="true"
+                  data-tip="Buy"
+                  data-tip-desc="You make money if the price goes up from here."
+                  data-tip-key="B">BUY</button>
+          <button class="side sell" id="sideSell" aria-pressed="false"
+                  data-tip="Sell"
+                  data-tip-desc="You make money if the price goes down from here."
+                  data-tip-key="S">SELL</button>
         </div>
 
         <div class="field">
@@ -399,13 +465,17 @@
         <div class="row2">
           <div class="field">
             <div class="label">Stop loss
-              <i class="fa-solid fa-circle-question q" data-tip="Your safety exit — closes the trade automatically if the price moves against you"></i>
+              <i class="fa-solid fa-circle-question q"
+                 data-tip="Stop loss — your safety exit"
+                 data-tip-desc="If the price moves against you and reaches this number, the trade closes on its own so the loss stops there. Leave it blank to skip it."></i>
             </div>
             <div class="input-wrap"><input class="input mono" id="oSl" type="number" step="any" placeholder="optional" /></div>
           </div>
           <div class="field">
             <div class="label">Take profit
-              <i class="fa-solid fa-circle-question q" data-tip="Your target exit — locks in the gain when the price reaches it"></i>
+              <i class="fa-solid fa-circle-question q"
+                 data-tip="Take profit — your target exit"
+                 data-tip-desc="If the price moves your way and reaches this number, the trade closes on its own and the gain is locked in."></i>
             </div>
             <div class="input-wrap"><input class="input mono" id="oTp" type="number" step="any" placeholder="optional" /></div>
           </div>
@@ -516,7 +586,22 @@
 
 <!-- ======================= OVERLAYS ======================= -->
 <div class="toasts" id="toasts" aria-live="polite"></div>
-<div id="tip" role="tooltip"></div>
+
+<!-- rich hover tooltip: headline + plain-English explanation + shortcut -->
+<div id="tip" role="tooltip">
+  <div class="tip-title"></div>
+  <div class="tip-desc"></div>
+  <div class="tip-key"></div>
+</div>
+
+<!-- shown while an image file is dragged anywhere over the page -->
+<div class="file-veil" id="fileVeil">
+  <div class="file-veil-card">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <b>Drop your logo here</b>
+    <span>Release anywhere on the page and this image becomes your site logo. PNG, JPG, SVG or WebP.</span>
+  </div>
+</div>
 
 <!-- indicators -->
 <div class="backdrop" id="mdInd">
@@ -691,7 +776,22 @@
         <b>Calendar</b> are live TradingView panels with real market data. Collapse the whole
         section with the caret, or hide it with the <b>Vlogs</b> button in the top bar.</p>
 
-      <div class="help-h">7 · Make it yours</div>
+      <div class="help-h">7 · Using your own TradingView account</div>
+      <p class="help-p">The charts and market panels built into this page are <b>TradingView's public
+        embeds</b>. They always load anonymously — they run in a sandboxed frame that cannot read your
+        tradingview.com login, so they cannot show your subscription's real-time feeds no matter who
+        is signed in. That is a TradingView platform rule, not a setting here.</p>
+      <p class="help-p">To see something <b>on your own plan</b>, use the blue <b>TradingView</b> button in
+        the chart toolbar (or in the panel header). It opens the exact symbol and timeframe you are
+        looking at on tradingview.com. If you are already signed in there, it loads with everything you
+        pay for — real-time entitled data, your saved layouts, your indicators and your alerts. If you
+        are not signed in, you simply get the normal free view.</p>
+      <p class="help-p">This is also why the index charts here use TradingView's own index feeds rather
+        than the exchange tickers: the exchange versions need a paid data entitlement and refuse to load
+        in an embed. The TradingView button still sends you to the entitled ticker, so subscribers get
+        the real feed.</p>
+
+      <div class="help-h">8 · Make it yours</div>
       <p class="help-p">Click the crest in the top-left corner to <b>upload your own logo</b> —
         it is remembered on this device.</p>
 
@@ -709,6 +809,26 @@
   </div>
 </div>
 
+<!-- keyboard shortcuts -->
+<div class="backdrop" id="mdKeys">
+  <div class="modal">
+    <div class="m-head">
+      <i class="fa-solid fa-keyboard"></i><h3>Keyboard shortcuts</h3>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="m-body">
+      <div class="opt"><div><div class="opt-t">Search the watchlist</div><div class="opt-d">Jump straight to the search box</div></div><span class="kbd">/</span></div>
+      <div class="opt"><div><div class="opt-t">Buy</div><div class="opt-d">Open the order ticket set to BUY</div></div><span class="kbd">B</span></div>
+      <div class="opt"><div><div class="opt-t">Sell</div><div class="opt-d">Open the order ticket set to SELL</div></div><span class="kbd">S</span></div>
+      <div class="opt"><div><div class="opt-t">Fullscreen chart</div><div class="opt-d">Expand the chart, and back again</div></div><span class="kbd">F</span></div>
+      <div class="opt"><div><div class="opt-t">Videos and panels</div><div class="opt-d">Show or hide the bottom section</div></div><span class="kbd">V</span></div>
+      <div class="opt"><div><div class="opt-t">Help</div><div class="opt-d">Open the full guide</div></div><span class="kbd">?</span></div>
+      <div class="opt"><div><div class="opt-t">Close anything</div><div class="opt-d">Shut a popup, drawer or drawing mode</div></div><span class="kbd">Esc</span></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-accent" data-close>Got it</button></div>
+  </div>
+</div>
+
 <!-- ======================= SCRIPTS (load order matters) ======================= -->
 <script src="js/utils.js"></script>
 <script src="js/data.js"></script>
@@ -720,6 +840,8 @@
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
 <script src="js/vlogs.js"></script>
+<script src="js/dragdrop.js"></script>
+<script src="js/tour.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

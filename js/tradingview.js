@@ -219,6 +219,82 @@
   };
 
   /* ----------------------------------------------------------------------
+     "OPEN IN TRADINGVIEW" — using the visitor's own account
+
+     Worth being precise about how this works, because it is a hard platform
+     limit rather than a choice:
+
+     The embedded widgets above always render anonymously. They live in a
+     sandboxed third-party iframe, so they cannot read a tradingview.com
+     session and there is no supported way to make them inherit a visitor's
+     plan. That is why exchange-entitled tickers (SP:SPX, DJ:DJI …) refuse to
+     load in the embed no matter who is looking at them.
+
+     What *does* respect the visitor's subscription is tradingview.com itself.
+     So these helpers deep-link to the exact symbol and timeframe currently on
+     screen. If the visitor is already signed in, the page opens with their own
+     plan: real-time entitled data, their saved layouts, indicators and alerts.
+     If they are not signed in, they get the normal free view.
+     ---------------------------------------------------------------------- */
+
+  var TV_BASE = 'https://www.tradingview.com';
+
+  /** NASDAQ:AAPL → NASDAQ-AAPL, the shape tradingview.com uses in its paths. */
+  function symbolPath(ticker) {
+    return ticker.replace(':', '-');
+  }
+
+  /**
+   * Prefer the exchange-entitled ticker when we have one — a subscriber
+   * should land on the real feed, not the delayed index proxy.
+   */
+  TV.bestTicker = function (asset) {
+    var a = asset || MC.State.asset;
+    return a.tvPro || a.tv;
+  };
+
+  /** Build a tradingview.com URL for the current market. */
+  TV.deepLink = function (kind) {
+    var asset = MC.State.asset;
+    var ticker = TV.bestTicker(asset);
+    var path = symbolPath(ticker);
+
+    switch (kind) {
+      case 'chart':
+        return TV_BASE + '/chart/?symbol=' + encodeURIComponent(ticker) +
+               '&interval=' + encodeURIComponent(MC.TV_INTERVAL[MC.State.tf]);
+      case 'technicals':
+        return TV_BASE + '/symbols/' + path + '/technicals/';
+      case 'news':
+        return TV_BASE + '/symbols/' + path + '/news/';
+      case 'screener':
+        return TV_BASE + (asset.m === 'crypto' ? '/crypto-screener/' : '/screener/');
+      case 'heatmap':
+        return TV_BASE + '/heatmap/stock/';
+      case 'calendar':
+        return TV_BASE + '/economic-calendar/';
+      default:
+        return TV_BASE + '/symbols/' + path + '/';
+    }
+  };
+
+  /** Open it in a new tab, carrying the visitor's own TradingView session. */
+  TV.openInTradingView = function (kind) {
+    var url = TV.deepLink(kind || 'chart');
+    var win = window.open(url, '_blank', 'noopener,noreferrer');
+
+    if (!win) {
+      MC.ui.toast('Popup blocked', 'Allow popups for this site to open TradingView.', 'err');
+      return;
+    }
+    MC.ui.toast(
+      'Opening in TradingView',
+      'Signed in there? You will see it on your own plan — real-time data, your layouts and indicators.',
+      'gold'
+    );
+  };
+
+  /* ----------------------------------------------------------------------
      REFRESH HOOKS
      ---------------------------------------------------------------------- */
 

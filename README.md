@@ -54,6 +54,31 @@ profile), **News**, **Screener**, **Heatmap** and **Calendar**.
 The **watchlist prices are simulated** so the dashboard is fully interactive
 offline — the chart, tape and market panels are the real thing.
 
+### Using your own TradingView subscription
+
+The embedded widgets **always render anonymously**. They run in a sandboxed
+third-party iframe that cannot read a tradingview.com session, so there is no
+supported way to make them inherit a visitor's plan. That is a TradingView
+platform rule, not a setting here.
+
+What does respect a subscription is tradingview.com itself, so the blue
+**TradingView** button in the chart toolbar (and in the dock header) deep-links
+the exact symbol and timeframe on screen. A signed-in visitor lands on their own
+plan: real-time entitled data, saved layouts, indicators and alerts.
+
+The same limit is why index tickers are chosen carefully. Every embedded index
+ticker was probed against TradingView's scanner for anonymous availability:
+
+| Index | Embedded feed | Why |
+| --- | --- | --- |
+| Dow, Russell, FTSE, DAX, CAC, Nikkei, Hang Seng, Euro Stoxx, VIX | `TVC:*` | TradingView's own free index feeds — `update_mode: streaming` |
+| S&P 500 | `AMEX:SPY` | no free S&P index feed exists; `SP:SPX`, `TVC:SPX` and every broker CFD mirror either 404 or demand an entitlement |
+| NASDAQ 100 | `NASDAQ:QQQ` | same — `NASDAQ:NDX` is entitlement-gated |
+
+Where an ETF proxy is used the chart header says so with a gold **via SPY ETF**
+chip, and the TradingView button still points at the genuine index so
+subscribers get the real feed.
+
 ---
 
 ## Features

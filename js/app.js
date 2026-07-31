@@ -28,6 +28,19 @@
     $('symName').textContent = symbol;
     $('symSub').textContent = asset.n;
     $('symMkt').textContent = MC.MKT_LABEL[asset.m];
+
+    // Say so plainly when the live chart is tracking an ETF rather than the
+    // index itself, because no free index feed exists for it.
+    var proxyChip = $('symProxy');
+    proxyChip.classList.toggle('hidden', !asset.tvProxy);
+    if (asset.tvProxy) {
+      proxyChip.textContent = 'via ' + asset.tvProxy;
+      proxyChip.setAttribute('data-tip', 'Charting the ' + asset.tvProxy);
+      proxyChip.setAttribute('data-tip-desc',
+        asset.n + ' has no free live index feed, so the chart tracks the ' + asset.tvProxy +
+        ', which follows it closely. Hit the TradingView button for the real index — ' +
+        'if your account has the data, you will see it there.');
+    }
     $('oSym').value = symbol + ' · ' + asset.n;
     $('bSym').value = symbol;
 
@@ -383,6 +396,29 @@
     btn.insertBefore(img, btn.querySelector('.cam'));
   }
 
+  /** Shared by the file picker and the drag-and-drop handler. */
+  function readLogoFile(file) {
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+      MC.ui.toast('Not an image', 'Pick a PNG, JPG, SVG or WebP file.', 'err');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      setLogo(reader.result);
+      var saved = MC.store.set('mc_logo', reader.result);   // false if over quota
+      MC.ui.toast(
+        'Logo updated',
+        saved ? 'Your mark is now on the terminal.'
+              : 'Showing it now — the file was too large to remember for next time.',
+        'gold'
+      );
+    };
+    reader.onerror = function () {
+      MC.ui.toast('Could not read that file', 'Try a different image.', 'err');
+    };
+    reader.readAsDataURL(file);
+  }
+
   /* ======================================================================
      EVENT WIRING
      ====================================================================== */
@@ -557,10 +593,47 @@
       if (!hiding) openDockTab('vlogs');
       setTimeout(function () { State.chart.fit(); }, 300);
     });
-    $('helpBtn').addEventListener('click', function () { MC.ui.openModal('mdHelp'); });
+    /* ---- help menu ---- */
+    $('helpBtn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      $('helpMenu').classList.toggle('on');
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#helpWrap')) $('helpMenu').classList.remove('on');
+    });
+    $('miTour').addEventListener('click', function () {
+      $('helpMenu').classList.remove('on');
+      MC.tour.start();
+    });
+    $('miHints').addEventListener('click', function () {
+      $('helpMenu').classList.remove('on');
+      var on = MC.tour.toggleHints();
+      $('miHints').querySelector('span').firstChild.nodeValue = on ? 'Hide hints' : 'Show hints';
+    });
+    $('miGuide').addEventListener('click', function () {
+      $('helpMenu').classList.remove('on');
+      MC.ui.openModal('mdHelp');
+    });
+    $('miShortcuts').addEventListener('click', function () {
+      $('helpMenu').classList.remove('on');
+      MC.ui.openModal('mdKeys');
+    });
+
+    /* ---- open on the visitor's own TradingView account ---- */
+    $('btnOpenTV').addEventListener('click', function () { MC.TV.openInTradingView('chart'); });
+    $('dockOpenTV').addEventListener('click', function () {
+      // send them to whichever panel they are actually looking at
+      var active = document.querySelector('.dock-tab.on');
+      var kind = active ? active.dataset.dock : 'chart';
+      MC.TV.openInTradingView(kind === 'vlogs' ? 'chart' : kind);
+    });
 
     /* ---- dock ---- */
-    MC.on($('dockTabs'), 'click', '.dock-tab', function (e, tab) { openDockTab(tab.dataset.dock); });
+    MC.on($('dockTabs'), 'click', '.dock-tab', function (e, tab) {
+      openDockTab(tab.dataset.dock);
+      // the TradingView button is meaningless on the vlogs tab
+      $('dockOpenTV').classList.toggle('hidden', tab.dataset.dock === 'vlogs');
+    });
     $('dockToggle').addEventListener('click', function () {
       $('dock').classList.toggle('collapsed');
       setTimeout(function () { State.chart.fit(); }, 300);
@@ -586,25 +659,11 @@
     });
     $('copyLink').addEventListener('click', MC.vlogs.copyLink);
 
-    /* ---- logo upload ---- */
+    /* ---- logo upload (click or drop) ---- */
     $('logoBtn').addEventListener('click', function () { $('logoInput').click(); });
     $('logoInput').addEventListener('change', function (e) {
       var file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (!file.type.indexOf || file.type.indexOf('image/') !== 0) {
-        MC.ui.toast('Not an image', 'Pick a PNG, JPG, SVG or WebP file.', 'err');
-        return;
-      }
-      var reader = new FileReader();
-      reader.onload = function () {
-        setLogo(reader.result);
-        MC.store.set('mc_logo', reader.result);   // silently skipped if too big
-        MC.ui.toast('Logo updated', 'Your mark is now on the terminal.', 'gold');
-      };
-      reader.onerror = function () {
-        MC.ui.toast('Could not read that file', 'Try a different image.', 'err');
-      };
-      reader.readAsDataURL(file);
+      if (file) readLogoFile(file);
     });
 
     /* ---- mobile drawers ---- */
@@ -617,13 +676,22 @@
       var typing = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName);
 
       if (e.key === 'Escape') {
+        if (MC.tour.isRunning()) { MC.tour.stop(); return; }
         MC.ui.closeModals();
         MC.ui.closeDrawers();
+        $('helpMenu').classList.remove('on');
         endDraw();
         if (document.activeElement.blur) document.activeElement.blur();
         return;
       }
       if (typing) return;
+
+      // while the tour is up, the arrow keys and Enter drive it
+      if (MC.tour.isRunning()) {
+        if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); MC.tour.next(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); MC.tour.back(); }
+        return;
+      }
 
       var key = e.key.toLowerCase();
       if (e.key === '/') { e.preventDefault(); $('search').focus(); }
@@ -662,6 +730,7 @@
     if (savedLogo) setLogo(savedLogo);
     var savedSymbol = MC.store.get('mc_symbol');
     if (savedSymbol && MC.MAP[savedSymbol]) State.symbol = savedSymbol;
+    MC.dragdrop.applySavedOrder();      // their own watchlist arrangement
 
     // 3. populate the static bits of the UI
     $('bSym').innerHTML = MC.ASSETS.map(function (a) {
@@ -688,15 +757,25 @@
     MC.trade.renderPositions();
     startLive();
 
+    // 6. the "make it easy" layer: drag-and-drop, hint markers, guided tour
+    MC.dragdrop.init({
+      onImageFile: readLogoFile,
+      onSymbol: selectSymbol
+    });
+    MC.tour.buildHints();
+
     if (!MC.HAS_LWC) {
       MC.ui.toast('Offline chart mode',
         'The chart library did not load, so the built-in renderer is running. Everything else works normally.', 'info');
     }
 
-    setTimeout(function () {
-      MC.ui.toast('Welcome to the City of Grind 👑',
-        'Click any market on the left to load it. Press ? any time for a quick tour.', 'gold');
-    }, 900);
+    // First visit gets the walkthrough; after that, just a nudge.
+    if (!MC.tour.maybeAutoStart()) {
+      setTimeout(function () {
+        MC.ui.toast('Welcome back to the City of Grind 👑',
+          'Hover anything for an explanation, or hit the ? button to replay the tour.', 'gold');
+      }, 900);
+    }
   }
 
   if (document.readyState === 'loading') {
