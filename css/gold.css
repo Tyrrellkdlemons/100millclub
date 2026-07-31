@@ -1,0 +1,141 @@
+/* ==========================================================================
+   gold.css — the trim
+
+   The crest is gold, silver and green, so the interface borrows the same
+   metal. Everything here is decoration only: gold never carries meaning on
+   its own (green still means up, red down, blue is the interactive accent),
+   it just tells you this is the City of Grind and not a generic terminal.
+   ========================================================================== */
+
+:root{
+  --trim:linear-gradient(90deg, transparent, rgba(245,197,24,.55) 18%, rgba(255,230,128,.9) 50%, rgba(245,197,24,.55) 82%, transparent);
+  --trim-soft:linear-gradient(90deg, transparent, rgba(245,197,24,.34) 30%, rgba(245,197,24,.34) 70%, transparent);
+  --trim-edge:rgba(245,197,24,.18);
+}
+
+/* --------------------------------------------------------------------------
+   PANELS — a hairline of gold along the top edge of every card
+   -------------------------------------------------------------------------- */
+.card{ position:relative; }
+.card::before{
+  content:""; position:absolute; left:14px; right:14px; top:-1px; height:1px;
+  background:var(--trim-soft); border-radius:1px; pointer-events:none; z-index:2;
+}
+/* the chart is the hero panel, so its trim is the bright one */
+.chart-card::before{ background:var(--trim); left:10px; right:10px; }
+
+/* --------------------------------------------------------------------------
+   NAVBAR + TAPE — a single lit seam under the header
+   -------------------------------------------------------------------------- */
+.nav{ border-bottom-color:var(--trim-edge); }
+.nav::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background:var(--trim); opacity:.75; pointer-events:none;
+}
+.tape{ border-bottom-color:rgba(245,197,24,.14); }
+
+/* --------------------------------------------------------------------------
+   SECTION HEADINGS — the rule after a title fades from gold
+   -------------------------------------------------------------------------- */
+.sec-title::after{
+  background:linear-gradient(90deg, rgba(245,197,24,.42), rgba(29,37,48,.9) 60%, transparent);
+}
+.wl-title{ color:var(--silver); }
+.wl-cols{ border-bottom-color:rgba(245,197,24,.16); }
+
+/* --------------------------------------------------------------------------
+   TOOLBARS — soft gold separators rather than flat grey
+   -------------------------------------------------------------------------- */
+.ctool{ border-bottom-color:rgba(245,197,24,.14); }
+.stat-strip{ border-bottom-color:rgba(245,197,24,.1); }
+.dock-head{ border-bottom-color:rgba(245,197,24,.14); }
+.rtabs{ border-bottom-color:rgba(245,197,24,.14); }
+
+/* --------------------------------------------------------------------------
+   ACTIVE STATES — a gold sheen on top of the blue accent, never replacing it
+   -------------------------------------------------------------------------- */
+.mtab.on,
+.tf.on,
+.src.on,
+.dock-tab.on,
+.rtab.on{
+  box-shadow:0 2px 10px rgba(79,140,255,.32), inset 0 1px 0 rgba(255,230,128,.45);
+}
+
+.wl-row.on{
+  border-left-color:var(--gold);
+  background:linear-gradient(90deg, rgba(245,197,24,.10), rgba(79,140,255,.05) 60%, transparent);
+}
+
+/* the selected market's badge keeps the metal */
+.sym-badge{
+  background:linear-gradient(145deg,#ffe680,#e0ac12);
+  color:#12100a;
+  box-shadow:0 3px 12px rgba(245,197,24,.3), inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* --------------------------------------------------------------------------
+   BUTTONS — a thin lit top edge, like brushed metal catching light
+   -------------------------------------------------------------------------- */
+.btn-accent,
+.run-btn,
+.submit{ box-shadow:inset 0 1px 0 rgba(255,230,128,.4); }
+.btn-gold{ box-shadow:inset 0 1px 0 rgba(255,255,255,.5); }
+
+.btn:hover{ border-color:rgba(245,197,24,.32); }
+
+/* --------------------------------------------------------------------------
+   MODALS — framed in gold at the top, like a certificate
+   -------------------------------------------------------------------------- */
+.modal{ position:relative; overflow:hidden; }
+.modal::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:2px;
+  background:var(--trim); z-index:3;
+}
+.m-head{ border-bottom-color:rgba(245,197,24,.18); }
+.m-foot{ border-top-color:rgba(245,197,24,.18); }
+
+/* --------------------------------------------------------------------------
+   SUMMARY + RESULT CARDS — the numbers that matter get the metal
+   -------------------------------------------------------------------------- */
+.summary{ border-color:rgba(245,197,24,.2); }
+.summary .srow.total{ border-top-color:rgba(245,197,24,.35); }
+.summary .srow.total b{ color:var(--gold); }
+
+.rcell.wide{ border-color:rgba(245,197,24,.24); }
+.eq-wrap{ border-color:rgba(245,197,24,.18); }
+
+/* --------------------------------------------------------------------------
+   SCROLLBARS
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#3a3520,#232d3a);
+  border-radius:9px;
+}
+::-webkit-scrollbar-thumb:hover{ background:linear-gradient(180deg,#6b5a1e,#31404f); }
+
+/* --------------------------------------------------------------------------
+   THE FRAME — a faint gold vignette around the whole app
+   -------------------------------------------------------------------------- */
+.app::after{
+  content:""; position:fixed; inset:0; z-index:6; pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(245,197,24,.07),
+             inset 0 0 120px rgba(245,197,24,.035);
+}
+
+/* --------------------------------------------------------------------------
+   TOASTS — the crown toast gets a full gold edge
+   -------------------------------------------------------------------------- */
+.toast.gold{ border-color:rgba(245,197,24,.42); }
+.toast.gold::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:1px;
+  background:var(--trim);
+}
+
+/* --------------------------------------------------------------------------
+   Respect reduced-motion users: trim is static anyway, but keep the crest calm
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  .logo-btn{ animation:none; }
+  .logo-btn::after{ display:none; }
+}

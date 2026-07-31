@@ -278,18 +278,35 @@
     }
   };
 
-  /** Open it in a new tab, carrying the visitor's own TradingView session. */
+  /**
+   * Hand off to tradingview.com, where the visitor's own session applies.
+   *
+   * By default this targets one named window, so repeated handoffs reuse the
+   * same tab rather than opening a pile of them. That keeps a single signed-in
+   * TradingView session in place and just swaps the symbol — the closest thing
+   * available to "it already knows who I am", given embeds cannot be
+   * authenticated at all.
+   */
   TV.openInTradingView = function (kind) {
     var url = TV.deepLink(kind || 'chart');
-    var win = window.open(url, '_blank', 'noopener,noreferrer');
+    var reuse = MC.store.get('mc_tv_reuse') !== '0';
+
+    // A named target reuses the tab. noopener would force a fresh window
+    // every time and defeat the point, so it is omitted deliberately here;
+    // the destination is a fixed tradingview.com URL we construct ourselves.
+    var win = reuse
+      ? window.open(url, 'mc_tradingview')
+      : window.open(url, '_blank', 'noopener,noreferrer');
 
     if (!win) {
       MC.ui.toast('Popup blocked', 'Allow popups for this site to open TradingView.', 'err');
       return;
     }
+    try { win.focus(); } catch (e) {}
+
     MC.ui.toast(
-      'Opening in TradingView',
-      'Signed in there? You will see it on your own plan — real-time data, your layouts and indicators.',
+      'Opened on TradingView',
+      'Already signed in there? It loads on your own plan — real-time data, your layouts and alerts.',
       'gold'
     );
   };

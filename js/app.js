@@ -231,6 +231,7 @@
 
     if (State.activeIndicators.length) applyIndicators();
     MC.alerts.check();
+    MC.calendar.check();
   }
 
   function startLive() {
@@ -461,6 +462,12 @@
     bindSwitch('cfgGrid', function (on) { State.chart.setGrid(on); });
     bindSwitch('cfgCross', function (on) { State.chart.setCrosshair(on); });
     bindSwitch('cfgLast', function (on) { State.chart.setLastLine(on); });
+    bindSwitch('cfgTvReuse', function (on) {
+      MC.store.set('mc_tv_reuse', on ? '1' : '0');
+      MC.ui.toast(on ? 'Reusing one tab' : 'New tab each time',
+        on ? 'TradingView handoffs will keep landing in the same tab.'
+           : 'Every handoff opens a fresh tab.', 'info');
+    });
     bindSwitch('cfgLive', function (on) {
       State.cfg.live = on;
       startLive();
@@ -711,6 +718,9 @@
     MC.indicatorUI.init();
     MC.indicatorUI.render();
     MC.alertsUI.init();
+    MC.radarUI.init();
+    MC.news.refresh().then(function () { MC.news.primeSeen(); });
+    MC.news.startAuto();
 
     // 4. live TradingView panels — the tape falls back to the simulated
     //    marquee if TradingView cannot be reached

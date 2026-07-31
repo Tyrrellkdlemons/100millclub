@@ -70,7 +70,10 @@
 <link rel="stylesheet" href="css/layout.css" />
 <link rel="stylesheet" href="css/components.css" />
 <link rel="stylesheet" href="css/indicators.css" />
+<link rel="stylesheet" href="css/radar.css" />
 <link rel="stylesheet" href="css/help.css" />
+<!-- gold trim last, so it layers over everything it decorates -->
+<link rel="stylesheet" href="css/gold.css" />
 
 <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -355,6 +358,11 @@
           <button class="dock-tab" data-dock="calendar" data-tip="Upcoming economic events">
             <i class="fa-solid fa-calendar-days"></i>Calendar
           </button>
+          <button class="dock-tab" data-dock="radar"
+                  data-tip="Radar — headlines and events you can set alerts on"
+                  data-tip-desc="The TradingView panels are sandboxed, so alerts need their own data. This is that feed: headlines and a dated economic schedule you can arm.">
+            <i class="fa-solid fa-satellite-dish"></i>Radar
+          </button>
         </div>
         <div class="dock-actions">
           <button class="btn btn-tv hidden" id="dockOpenTV" aria-label="Open this panel on TradingView"
@@ -398,6 +406,47 @@
         <!-- economic calendar -->
         <div class="dock-pane" id="dock-calendar">
           <div class="tv-slot" style="position:relative;margin:10px;height:calc(100% - 20px)"><div id="tvCalendar" style="height:100%"></div></div>
+        </div>
+
+        <!-- radar: our own headline + event feed, the one alerts can read -->
+        <div class="dock-pane" id="dock-radar">
+          <div class="radar">
+            <section class="radar-col">
+              <header class="radar-head">
+                <i class="fa-solid fa-calendar-check"></i>
+                <b>Economic events</b>
+                <span class="radar-note">arm one and it warns you beforehand</span>
+                <button class="qbtn radar-add" id="calAddOwn" style="flex:0 0 auto">
+                  <i class="fa-solid fa-plus"></i> Add your own
+                </button>
+              </header>
+              <div class="radar-body" id="calList"></div>
+            </section>
+
+            <section class="radar-col">
+              <header class="radar-head">
+                <i class="fa-solid fa-newspaper"></i>
+                <b>Headlines</b>
+                <span class="radar-note" id="newsStatus"></span>
+                <button class="qbtn radar-add" id="newsRefresh" style="flex:0 0 auto">
+                  <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+              </header>
+
+              <div class="radar-controls">
+                <select class="input" id="newsSource"></select>
+                <input class="input" id="newsKey" type="password" placeholder="API key" autocomplete="off" />
+                <input class="input" id="newsUrl" type="url" placeholder="https://your-feed…" autocomplete="off" />
+              </div>
+              <div class="radar-controls">
+                <input class="input" id="newsKeywords" type="text"
+                       placeholder="Alert me on these words — fed, cpi, nvidia, hack" autocomplete="off" />
+              </div>
+              <div class="radar-note-line" id="newsSourceNote"></div>
+
+              <div class="radar-body" id="newsList"></div>
+            </section>
+          </div>
         </div>
       </div>
     </div>
@@ -897,6 +946,25 @@
           <option value="700">Fast — every 0.7 seconds</option>
         </select>
       </div>
+
+      <div class="sec-title">Your TradingView account</div>
+      <div class="note" style="background:rgba(245,197,24,.07);border-color:rgba(245,197,24,.22)">
+        <b style="color:var(--gold)">Signing you in automatically is not possible.</b><br><br>
+        The charts on this page are TradingView's public embeds. They load inside a sandboxed frame on
+        a different domain, so they cannot see that you are signed in to tradingview.com — browsers
+        block that, and TradingView offers no way to pass a session into an embed. Any site claiming
+        otherwise is not doing what it says.<br><br>
+        What does work is a <b>handoff</b>: the <b>TradingView</b> button opens the symbol and timeframe
+        you are looking at on tradingview.com itself, where you already are signed in. You get your own
+        plan there — real-time entitled data, your layouts, indicators and alerts.
+      </div>
+      <div class="opt">
+        <div>
+          <div class="opt-t">Reuse one TradingView tab</div>
+          <div class="opt-d">Send every handoff to the same tab instead of piling up new ones, so your session stays put</div>
+        </div>
+        <div class="sw on" id="cfgTvReuse" role="switch"></div>
+      </div>
     </div>
     <div class="m-foot"><button class="btn btn-accent" data-close>Done</button></div>
   </div>
@@ -1037,11 +1105,14 @@
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
 <script src="js/alerts.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/news.js"></script>
 <script src="js/vlogs.js"></script>
 <script src="js/dragdrop.js"></script>
 <script src="js/tour.js"></script>
 <script src="js/indicator-ui.js"></script>
 <script src="js/alerts-ui.js"></script>
+<script src="js/radar-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

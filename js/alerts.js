@@ -294,6 +294,24 @@
     return A.deliver('Test signal — if you can read this, forwarding works.', cfg);
   };
 
+  /**
+   * Shared exit for anything that is not a price alert — economic events and
+   * news matches — so they get the same chime, desktop popup, forwarding and
+   * history as a price trigger.
+   */
+  A.notifyExternal = function (title, text) {
+    var cfg = A.config();
+    if (cfg.sound) beep();
+    if (cfg.desktop) desktopNotify(title, text);
+    pushLog({ id: 'ext', sym: title, text: text, at: Date.now() });
+
+    A.deliver(text, cfg).then(function (r) {
+      if (r && r.error) MC.ui.toast('Could not forward it', r.error, 'err');
+    });
+
+    if (MC.onAlertFired) MC.onAlertFired();
+  };
+
   /* ----------------------------------------------------------------------
      LOCAL NOTIFICATION
      ---------------------------------------------------------------------- */
