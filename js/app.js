@@ -601,8 +601,11 @@
       dock.classList.remove('collapsed');
       $('navVlogs').classList.add('on');
       openDockTab('vlogs');
+      // block:'start', not 'nearest' — on short windows the dock's top edge
+      // already peeks above the fold, and 'nearest' then scrolls nothing at
+      // all while the cards stay hidden below. Caught on a 633px window.
       setTimeout(function () {
-        dock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        dock.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 80);
     });
     /* ---- help menu ---- */
