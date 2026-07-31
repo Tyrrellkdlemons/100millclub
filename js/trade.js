@@ -21,7 +21,97 @@
 
   Trade.clearHistory = function () { MC.store.set(HISTORY_KEY, '[]'); };
 
+  var START_BALANCE = 100000;
+
+  /**
+   * The demo account, derived — never stored as a mutable number that could
+   * drift: balance = starting cash + everything the history says was won or
+   * lost, and equity adds what the open positions are worth right now.
+   */
+  Trade.account = function () {
+    var realized = Trade.history().reduce(function (s, t) { return s + t.pnl; }, 0);
+    var open = (MC.State.positions || []).reduce(function (s, p) {
+      var a = MC.MAP[p.sym];
+      if (!a) return s;
+      return s + (a.p - p.entry) * p.qty * (p.side === 'buy' ? 1 : -1);
+    }, 0);
+    return {
+      start: START_BALANCE,
+      realized: realized,
+      open: open,
+      balance: START_BALANCE + realized,
+      equity: START_BALANCE + realized + open
+    };
+  };
+
+  /** Wipe the demo back to a fresh $100,000 — positions and history both. */
+  Trade.resetDemo = function () {
+    MC.State.positions = [];
+    Trade.clearHistory();
+    Trade.renderPositions();
+    Trade.renderAccount();
+  };
+
+  /**
+   * One-tap test trade: sized so a 2%% stop risks about 1%% of the balance,
+   * with the target twice as far. The whole risk lesson in one button.
+   */
+  Trade.quick = function (side) {
+    var asset = MC.State.asset;
+    var acct = Trade.account();
+    var qty = (acct.balance * 0.01) / (asset.p * 0.02);
+    qty = Math.min(qty, acct.balance / asset.p);            // never over 1x notional
+    qty = qty >= 100 ? Math.round(qty) : Math.round(qty * 10000) / 10000;
+    if (qty <= 0) return;
+
+    var dir = side === 'buy' ? 1 : -1;
+    var position = {
+      id: 'ORD-' + Math.random().toString(36).slice(2, 7).toUpperCase(),
+      sym: MC.State.symbol,
+      side: side,
+      qty: qty,
+      entry: asset.p,
+      sl: round(asset.p - dir * asset.p * 0.02, asset.d),
+      tp: round(asset.p + dir * asset.p * 0.04, asset.d),
+      at: new Date()
+    };
+    MC.State.positions.unshift(position);
+    Trade.renderPositions();
+    Trade.renderAccount();
+    MC.ui.toast(
+      side === 'buy' ? 'Demo buy in ✓' : 'Demo sell in ✓',
+      qty + ' ' + position.sym + ' @ ' + MC.fmtPx(asset.p, asset.d) +
+      ' · stop and target set, risking about 1% of the account',
+      'ok'
+    );
+  };
+
+  function round(v, d) { return Math.round(v * Math.pow(10, d)) / Math.pow(10, d); }
+
+  /** The balance strip above the ticket. */
+  Trade.renderAccount = function () {
+    var el = MC.$('acctBar');
+    if (!el) return;
+    var a = Trade.account();
+    MC.$('acctEquity').textContent = MC.fmtMoney(a.equity);
+    setPl('acctOpen', a.open);
+    setPl('acctClosed', a.realized);
+  };
+
+  function setPl(id, v) {
+    var el = MC.$(id);
+    el.textContent = (v > 0 ? '+' : '') + MC.fmtMoney(v);
+    el.className = 'mono ' + (v > 0 ? 'up' : v < 0 ? 'down' : '');
+  }
+
   function recordClose(position, exitPrice, reason) {
+    var pctMove = position.entry
+      ? ((exitPrice - position.entry) / position.entry) * 100 * (position.side === 'buy' ? 1 : -1)
+      : 0;
+    if (MC.queez && MC.queezUI) {
+      var quip = MC.queez.notePnl(pctMove);
+      if (quip) MC.queezUI.remark(quip);
+    }
     var direction = position.side === 'buy' ? 1 : -1;
     var pnl = (exitPrice - position.entry) * position.qty * direction;
     var list = Trade.history();
@@ -222,6 +312,7 @@
                 hitTarget ? 'target' : 'stop');
     MC.State.positions = MC.State.positions.filter(function (x) { return x.id !== position.id; });
     Trade.renderPositions();
+    Trade.renderAccount();
     MC.ui.toast(
       hitTarget ? 'Take profit hit 🎯' : 'Stop loss hit',
       position.sym + ' ' + position.side.toUpperCase() + ' closed automatically · ' + position.id,
@@ -237,6 +328,7 @@
     recordClose(position, MC.MAP[position.sym].p, 'manual');
     MC.State.positions = MC.State.positions.filter(function (x) { return x.id !== id; });
     Trade.renderPositions();
+    Trade.renderAccount();
     MC.ui.toast(
       'Position closed',
       position.sym + ' · ' + (pnl.value >= 0 ? 'profit ' : 'loss ') + MC.fmtMoney(pnl.value),

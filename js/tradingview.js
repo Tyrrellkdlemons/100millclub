@@ -241,6 +241,28 @@
 
   var TV_BASE = 'https://www.tradingview.com';
 
+  /* The reference to the named TradingView tab. Held so the signed-in tab
+     can be RE-NAVIGATED silently: assigning location on a window reference
+     does not steal focus, unlike window.open on a name. Cross-origin
+     navigation of a window you opened is allowed; reading it is not. */
+  var tvWin = null;
+
+  TV.followEnabled = function () { return MC.store.get('mc_tv_follow') === '1'; };
+  TV.setFollow = function (on) { MC.store.set('mc_tv_follow', on ? '1' : '0'); };
+  TV.hasTab = function () { return !!(tvWin && !tvWin.closed); };
+
+  /**
+   * If follow is on and the handoff tab is alive, steer it to the current
+   * symbol and timeframe — your signed-in TradingView follows this page.
+   */
+  TV.syncIfFollowing = function () {
+    if (!TV.followEnabled() || !TV.hasTab()) return false;
+    try {
+      tvWin.location.href = TV.deepLink('chart');
+      return true;
+    } catch (e) { return false; }
+  };
+
   /** NASDAQ:AAPL → NASDAQ-AAPL, the shape tradingview.com uses in its paths. */
   function symbolPath(ticker) {
     return ticker.replace(':', '-');
@@ -304,6 +326,7 @@
       MC.ui.toast('Popup blocked', 'Allow popups for this site to open TradingView.', 'err');
       return;
     }
+    if (reuse) tvWin = win;                 // keep the handle for silent follow-sync
     try { win.focus(); } catch (e) {}
 
     MC.ui.toast(

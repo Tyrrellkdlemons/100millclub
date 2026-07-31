@@ -642,3 +642,68 @@ body.resizing-x *, body.resizing-y *{ user-select:none !important; }
 
 .panel-grip.grip-bottom{ left:0; right:0; bottom:-5px; height:10px; cursor:row-resize; }
 .panel-grip.grip-bottom::after{ left:12%; right:12%; bottom:4px; height:2px; }
+
+/* --------------------------------------------------------------------------
+   DEMO ACCOUNT BAR + ONE-TAP TEST TRADES
+   -------------------------------------------------------------------------- */
+.acct-bar{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 11px; margin-bottom:10px; border-radius:11px;
+  background:linear-gradient(160deg, rgba(245,197,24,.08), rgba(19,25,32,.92) 60%);
+  border:1px solid rgba(245,197,24,.26);
+}
+.acct-cell b{
+  display:block; font-size:8.5px; font-weight:800; letter-spacing:.8px;
+  text-transform:uppercase; color:var(--dim); margin-bottom:2px;
+}
+.acct-cell span{ font-size:12px; font-weight:800; }
+.acct-cell.main span{
+  font-size:15px;
+  background:linear-gradient(180deg,#fff8c9,#f5c518 55%,#c08d15);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.acct-cell.main{ margin-right:auto; }
+.acct-reset{
+  width:28px; height:28px; border-radius:8px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px; color:var(--dim);
+  border:1px solid var(--border-2); transition:.15s var(--ease);
+}
+.acct-reset:hover{ color:var(--gold); border-color:rgba(245,197,24,.4); }
+
+.quick-row{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.quick{
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:12px; border-radius:11px;
+  font-size:13px; font-weight:800; letter-spacing:.3px;
+  transition:.18s var(--ease);
+}
+.quick.buy{
+  color:#04180d; background:linear-gradient(180deg,#2ee27a,#1d9e52);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+}
+.quick.sell{
+  color:#2a0206; background:linear-gradient(180deg,#ff6472,#d92c3d);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+}
+.quick:hover{ transform:translateY(-2px); filter:brightness(1.07); }
+.quick:active{ transform:none; }
+.quick-note{
+  font-size:10px; color:var(--dim); text-align:center;
+  margin:6px 0 12px; line-height:1.5;
+}
+
+/* the follow-sync button glows gold when armed */
+#btnTvFollow.on{
+  color:var(--gold); border-color:rgba(245,197,24,.5);
+  background:rgba(245,197,24,.12);
+  box-shadow:0 0 12px rgba(245,197,24,.25);
+}
+#btnChartSize .lbl{ font-size:10.5px; }
+
+/* a soft vignette over the sim chart for depth — pointer-events free */
+#chart::after{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:3;
+  background:
+    linear-gradient(180deg, rgba(7,9,11,.18), transparent 12%, transparent 86%, rgba(7,9,11,.22)),
+    radial-gradient(120% 90% at 50% 8%, transparent 60%, rgba(7,9,11,.14));
+}

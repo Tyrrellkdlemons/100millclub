@@ -149,6 +149,32 @@
     });
   }
 
+  /** The clear button's three sizes. null = the stylesheet default. */
+  var PRESETS = { cozy: null, tall: 0.82, max: 1.06 };   // fractions of viewport height
+  var PRESET_ORDER = ['cozy', 'tall', 'max'];
+
+  R.chartPreset = function () { return MC.store.get('mc_chart_preset') || 'cozy'; };
+
+  R.cycleChartPreset = function () {
+    var next = PRESET_ORDER[(PRESET_ORDER.indexOf(R.chartPreset()) + 1) % PRESET_ORDER.length];
+    R.applyChartPreset(next);
+    return next;
+  };
+
+  R.applyChartPreset = function (name) {
+    MC.store.set('mc_chart_preset', name);
+    var frac = PRESETS[name];
+    if (frac == null) {
+      delete sizes.chart;
+      clearVar('--chart-h');
+    } else {
+      sizes.chart = clampChart(Math.round(window.innerHeight * frac));
+      setVar('--chart-h', sizes.chart);
+    }
+    persist(sizes);
+    settle();
+  };
+
   /**
    * Make sure the dock is at least `minPx` tall — used when something
    * navigates INTO the dock (the Vlogs button) so a user who once dragged

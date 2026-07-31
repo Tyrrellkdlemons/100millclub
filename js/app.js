@@ -50,8 +50,10 @@
 
     loadBars();
     updateHeaderPrice();
+    State.chart.setWatermark(symbol);
     MC.trade.syncPrice();
     MC.TV.refreshSymbol();
+    MC.TV.syncIfFollowing();                          // steer the signed-in tab
     if (MC.youtubeUI) MC.youtubeUI.refreshChips();   // search ideas follow the market
     MC.store.set('mc_symbol', symbol);
   }
@@ -229,6 +231,7 @@
     updateHeaderPrice();
     MC.watchlist.updateFallbackTape();
     MC.trade.updatePositions();
+    MC.trade.renderAccount();
 
     if (State.activeIndicators.length) applyIndicators();
     MC.alerts.check();
@@ -414,6 +417,7 @@
       State.tf = btn.dataset.tf;
       loadBars();
       MC.TV.refreshInterval();
+      MC.TV.syncIfFollowing();
       MC.ui.toast('Timeframe changed', 'Each bar now covers ' + btn.textContent.trim() + '.', 'info');
     });
 
@@ -559,7 +563,21 @@
     });
     $('placeBtn').addEventListener('click', function () {
       MC.trade.place();
+      MC.trade.renderAccount();
       MC.queezUI.remark(MC.queez.noteOrder());
+    });
+    $('quickBuy').addEventListener('click', function () {
+      MC.trade.quick('buy');
+      MC.queezUI.remark(MC.queez.noteOrder());
+    });
+    $('quickSell').addEventListener('click', function () {
+      MC.trade.quick('sell');
+      MC.queezUI.remark(MC.queez.noteOrder());
+    });
+    $('acctReset').addEventListener('click', function () {
+      if (!window.confirm('Start the demo account over at $100,000? Positions and trade history are wiped.')) return;
+      MC.trade.resetDemo();
+      MC.ui.toast('Fresh start', 'The demo account is back to $100,000. Make it count, Queez.', 'gold');
     });
     $('reviewBtn').addEventListener('click', function () {
       var section = $('reviewWrap');
@@ -636,6 +654,46 @@
       $('helpMenu').classList.remove('on');
       MC.ui.openModal('mdKeys');
     });
+
+    /* ---- chart size: the clear one-click button ---- */
+    var SIZE_LABELS = { cozy: 'Size', tall: 'Tall', max: 'Max' };
+    function syncSizeBtn() {
+      $('chartSizeLbl').textContent = SIZE_LABELS[MC.resize.chartPreset()] || 'Size';
+      $('btnChartSize').classList.toggle('on', MC.resize.chartPreset() !== 'cozy');
+    }
+    $('btnChartSize').addEventListener('click', function () {
+      var name = MC.resize.cycleChartPreset();
+      syncSizeBtn();
+      MC.ui.toast(
+        name === 'cozy' ? 'Normal size' : name === 'tall' ? 'Tall chart' : 'Maximum chart',
+        name === 'cozy' ? 'Back to the standard height.'
+          : name === 'tall' ? 'The chart now takes most of the screen.'
+          : 'As big as it goes without fullscreen. Press F for even more.',
+        'info'
+      );
+    });
+    syncSizeBtn();
+
+    /* ---- TradingView follow-sync ---- */
+    function syncFollowBtn() {
+      $('btnTvFollow').classList.toggle('on', MC.TV.followEnabled());
+    }
+    $('btnTvFollow').addEventListener('click', function () {
+      var on = !MC.TV.followEnabled();
+      MC.TV.setFollow(on);
+      syncFollowBtn();
+      if (on && !MC.TV.hasTab()) {
+        MC.ui.toast('Now open TradingView once',
+          'Press the blue TradingView button — after that, every market you pick here steers that tab too.',
+          'gold');
+      } else {
+        MC.ui.toast(on ? 'TradingView follows you' : 'Follow off',
+          on ? 'Your signed-in tab will track every symbol and timeframe you pick here.'
+             : 'The handoff tab stays where it is.',
+          'info');
+      }
+    });
+    syncFollowBtn();
 
     /* ---- open on the visitor's own TradingView account ---- */
     $('btnOpenTV').addEventListener('click', function () { MC.TV.openInTradingView('chart'); });
@@ -864,6 +922,8 @@
     setSource('live');
     MC.trade.setSide('buy');
     MC.trade.renderPositions();
+    MC.trade.renderAccount();
+    if (MC.resize.chartPreset() !== 'cozy') MC.resize.applyChartPreset(MC.resize.chartPreset());
     startLive();
 
     // 6. the "make it easy" layer: drag-and-drop, hint markers, guided tour

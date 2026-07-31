@@ -299,6 +299,16 @@
                   data-tip-desc="Switch between candles, a line or a mountain chart, and control the grid, crosshair and update speed.">
             <i class="fa-solid fa-gear"></i>
           </button>
+          <button class="btn btn-icon" id="btnChartSize" aria-label="Bigger chart"
+                  data-tip="Bigger chart"
+                  data-tip-desc="One click steps the chart Normal → Tall → Max and back. You can also drag the chart's bottom edge, or press F for fullscreen.">
+            <i class="fa-solid fa-up-right-and-down-left-from-center"></i><span class="lbl" id="chartSizeLbl">Size</span>
+          </button>
+          <button class="btn btn-icon" id="btnTvFollow" aria-label="TradingView follows this page"
+                  data-tip="Your TradingView tab follows me"
+                  data-tip-desc="Open TradingView once with the blue button and leave it signed in. With this on, every market or timeframe you pick here steers that tab too — silently, without switching to it.">
+            <i class="fa-solid fa-link"></i>
+          </button>
           <button class="btn btn-tv" id="btnOpenTV" aria-label="Open in TradingView"
                   data-tip="Open on your TradingView account"
                   data-tip-desc="Opens this exact symbol and timeframe on tradingview.com. Already signed in there? You get it on your own plan — real-time entitled data, your saved layouts, indicators and alerts.">
@@ -538,6 +548,33 @@
 
       <!-- ===== TRADE ===== -->
       <div class="pane on" id="pane-trade">
+        <!-- the demo account: derived from history, reset any time -->
+        <div class="acct-bar" id="acctBar">
+          <div class="acct-cell main"><b>Demo equity</b><span class="mono" id="acctEquity">$100,000</span></div>
+          <div class="acct-cell"><b>Open</b><span class="mono" id="acctOpen">$0.00</span></div>
+          <div class="acct-cell"><b>Closed</b><span class="mono" id="acctClosed">$0.00</span></div>
+          <button class="acct-reset" id="acctReset"
+                  data-tip="Fresh $100,000"
+                  data-tip-desc="Wipes demo positions and history and starts the account over. The Coach's report card starts over too.">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+
+        <!-- one-tap test trades: sized to risk ~1%, stop and target included -->
+        <div class="quick-row">
+          <button class="quick buy" id="quickBuy"
+                  data-tip="Instant demo buy"
+                  data-tip-desc="Sized so a 2% stop risks about 1% of the account, target at twice the stop. One tap, whole lesson.">
+            <i class="fa-solid fa-bolt"></i> Quick BUY
+          </button>
+          <button class="quick sell" id="quickSell"
+                  data-tip="Instant demo sell"
+                  data-tip-desc="Same sizing, betting on a fall instead.">
+            <i class="fa-solid fa-bolt"></i> Quick SELL
+          </button>
+        </div>
+        <div class="quick-note">One tap: auto-sized, stop and target included. The full ticket below is for doing it your way.</div>
+
         <div class="side-toggle">
           <button class="side buy on" id="sideBuy" aria-pressed="true"
                   data-tip="Buy"

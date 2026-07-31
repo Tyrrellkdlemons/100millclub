@@ -82,6 +82,12 @@
         background: { type: 'solid', color: 'transparent' },
         textColor: T.text, fontFamily: 'Inter, sans-serif', fontSize: 11
       },
+      // the crest's gold, ghosted behind the candles
+      watermark: {
+        visible: true, text: MC.State.symbol,
+        color: 'rgba(245,197,24,.055)',
+        fontSize: 84, fontFamily: 'Inter, sans-serif', fontStyle: '900'
+      },
       grid: { vertLines: { color: T.grid }, horzLines: { color: T.grid } },
       rightPriceScale: { borderColor: T.border, scaleMargins: { top: 0.08, bottom: 0.22 } },
       timeScale: { borderColor: T.border, timeVisible: true, secondsVisible: false, rightOffset: 6, barSpacing: 8 },
@@ -153,6 +159,11 @@
       kind: 'lwc',
       chart: chart,
       get series() { return main; },
+
+      /** Ghosted symbol behind the candles follows the selection. */
+      setWatermark: function (text) {
+        chart.applyOptions({ watermark: { text: text } });
+      },
 
       setData: function (bars) {
         raw = bars;
@@ -412,6 +423,7 @@
 
     return {
       kind: 'canvas',
+      setWatermark: function () {},
       setData: function (next) { bars = next; draw(); },
       updateLast: function (bar) { if (bars.length) { bars[bars.length - 1] = bar; draw(); } },
       setOverlay: function (key, values, color) { overlays[key] = { values: values, color: color }; draw(); },
