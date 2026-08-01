@@ -765,3 +765,12 @@ body.resizing-x *, body.resizing-y *{ user-select:none !important; }
 .sym-badge.m-crypto{ background:linear-gradient(145deg,#ffb056,#e07f12); color:#211200; box-shadow:0 3px 10px rgba(255,159,67,.3); }
 .sym-badge.m-forex{ background:linear-gradient(145deg,#4fd8d8,#1f9e9e); color:#03211f; box-shadow:0 3px 10px rgba(43,217,217,.3); }
 .sym-badge.m-indices{ background:linear-gradient(145deg,#e8edf4,#96a1b0); color:#12161c; box-shadow:0 3px 10px rgba(215,221,230,.3); }
+
+/* the report card now holds two books — label each section */
+.rv-sect{
+  display:flex; align-items:center; gap:7px;
+  margin:16px 0 8px; font-size:10.5px; font-weight:800;
+  letter-spacing:.09em; text-transform:uppercase; color:#d9ae15;
+}
+.rv-sect:first-child{ margin-top:2px; }
+.rv-sect i{ opacity:.85; }

@@ -616,6 +616,20 @@
         section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     });
+    // the Folio's own door into the same report card. bnavSelect and setMin
+    // are declared later in this function — declarations hoist, so both are
+    // callable here; the calls only ever run at click time anyway.
+    $('pfGrade').addEventListener('click', function () {
+      openPane('trade');
+      bnavSelect('trade');       // keep the phone tab bar pointing at the truth
+      setMin('right', false);    // a minimised 46px rail cannot show a report
+      var section = $('reviewWrap');
+      section.classList.add('on');
+      MC.review.render();
+      setTimeout(function () {
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 60);   // after the pane switch has painted
+    });
     MC.on($('positions'), 'click', '[data-close-pos]', function (e, btn) {
       MC.trade.close(btn.getAttribute('data-close-pos'));
     });

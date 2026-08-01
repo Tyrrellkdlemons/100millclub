@@ -481,12 +481,14 @@
       next: 'Two minutes, one key, and the search results stop leaving the page.',
       rel: ['vlogs'] },
 
-    { id: 'review', k: ['review', 'grade', 'report card', 'what did i do wrong', 'mistakes', 'am i good', 'my trading', 'feedback'],
+    { id: 'review', k: ['review', 'grade', 'report card', 'what did i do wrong', 'mistakes', 'am i good', 'my trading', 'feedback', 'grade my portfolio', 'portfolio grade', 'grade the folio', 'rate my portfolio'],
       t: 'The report card',
       a: 'Trade tab → <b>Coach, grade my trading</b>. I mark your closed trades across four pillars — ' +
          '<b>Discipline</b> (were there stops), <b>Edge</b> (does the approach make money), <b>Patience</b> ' +
          '(overtrading and revenge entries), and <b>Exits</b> (cutting winners while nursing losers). Every ' +
-         'grade cites the number that earned it, and every problem comes with the fix printed next to it.',
+         'grade cites the number that earned it, and every problem comes with the fix printed next to it. The same ' +
+         'report grades your <b>Folio</b> — the real book — on <b>Spread</b>, <b>Risk mix</b>, <b>Entries</b> and ' +
+         '<b>Results</b>. Folio tab → <b>Coach, grade it</b> jumps straight there.',
       next: 'Close a few practice trades, then press the button and face the music, Queez.',
       rel: ['orders', 'risk', 'stoploss'] },
 

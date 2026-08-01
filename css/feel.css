@@ -66,25 +66,42 @@ input, textarea{ cursor:text; }
    the browser that repainting one row never dirties its neighbours, and
    content-visibility skips layout entirely for rows that are off-screen.
    -------------------------------------------------------------------------- */
-.wl-row{
-  contain:layout paint;
-  content-visibility:auto;
-  contain-intrinsic-size:auto 58px;
+/* Desktop only. On phones the side panels are TRANSFORMED drawers, and
+   content-visibility inside a transformed layer makes rows rasterise late
+   and fuzzy while the drawer slides — the "goes blurry" bug. Phones are
+   fast enough without this; desktops keep the win. */
+@media (min-width:861px){
+  .wl-row{
+    contain:layout paint;
+    content-visibility:auto;
+    contain-intrinsic-size:auto 58px;
+  }
+  .vid{
+    contain:layout paint;
+    content-visibility:auto;
+    contain-intrinsic-size:auto 214px;
+  }
+  .pos, .al-row, .pf-row, .rv-find, .cal-row, .news-row, .toast{
+    contain:layout paint;
+  }
+  .card{ contain:layout; }
+  .left, .right{ contain:layout paint; }
 }
-.vid{
-  contain:layout paint;
-  content-visibility:auto;
-  contain-intrinsic-size:auto 214px;
-}
-.pos, .al-row, .pf-row, .rv-find, .cal-row, .news-row, .toast{
-  contain:layout paint;
-}
-.card{ contain:layout; }
 
 /* the scrolling column gets its own compositor layer, so scrolling it never
    repaints the fixed chrome around it */
 .center{ will-change:scroll-position; }
-.left, .right{ contain:layout paint; }
+
+/* phones: crisp drawers beat clever rasterisation — force sharp compositing
+   and drop the scrim blur that smeared the slide animation */
+@media (max-width:860px){
+  .left, .right{
+    contain:none;
+    backface-visibility:hidden;
+    transform-style:flat;
+  }
+  .scrim{ backdrop-filter:none; background:rgba(0,0,0,.55); }
+}
 
 /* smoother entrances for whatever scrolls into view */
 @media (prefers-reduced-motion:no-preference){
