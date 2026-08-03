@@ -5,6 +5,21 @@
   publish = "."
   command = ""
 
+# Repo housekeeping ships with the publish dir (root); don't serve it.
+# force = true is what beats the on-disk files — these must sit above the
+# SPA catch-all, because the first matching rule wins.
+[[redirects]]
+  from = "/README.md"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/.claude/*"
+  to = "/"
+  status = 301
+  force = true
+
 # Serve the terminal for any path, so share links like /vlog/v1 resolve.
 [[redirects]]
   from = "/*"
@@ -15,6 +30,7 @@
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 

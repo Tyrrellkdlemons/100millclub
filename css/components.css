@@ -258,6 +258,13 @@
   background:rgba(0,0,0,.28); opacity:0; transition:.22s;
 }
 .vid:hover .play{ opacity:1; }
+/* thumbnail failed to load (offline, i.ytimg.com blocked): keep the play
+   overlay on and warm the box with a faint gold glow so the card still
+   reads as a video rather than an empty slab */
+.thumb.noimg{
+  background:radial-gradient(140px 70px at 50% 45%, rgba(245,197,24,.14), transparent 72%), #0a0e12;
+}
+.thumb.noimg .play{ opacity:1; }
 .thumb .play i{
   width:38px; height:38px; border-radius:50%;
   display:grid; place-items:center; padding-left:2px;

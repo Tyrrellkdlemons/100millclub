@@ -48,6 +48,7 @@
   position:fixed; left:16px; bottom:72px; z-index:881;
   width:min(370px, calc(100vw - 32px));
   max-height:min(560px, calc(100vh - 130px));
+  max-height:min(560px, calc(100dvh - 130px));
   display:flex; flex-direction:column; overflow:hidden;
   border-radius:18px;
   background:rgba(13,17,22,.96);
@@ -176,7 +177,8 @@
 @media (max-width:860px){
   .qz-fab{ padding:0; width:46px; justify-content:center; left:12px; bottom:12px; }
   .qz-fab-label{ display:none; }
-  .qz-panel{ left:12px; right:12px; width:auto; bottom:66px; max-height:calc(100vh - 120px); }
+  .qz-panel{ left:12px; right:12px; width:auto; bottom:66px; max-height:calc(100vh - 120px); max-height:calc(100dvh - 120px); }
+  .qz-x{ width:36px; height:36px; flex-shrink:0; }
 }
 
 /* the Coach's "next move" line and follow-up topic chips */

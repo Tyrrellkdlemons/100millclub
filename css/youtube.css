@@ -160,6 +160,9 @@
     right:8px; left:auto; width:min(300px, calc(100vw - 16px));
     bottom:calc(120px + env(safe-area-inset-bottom, 0px));
   }
+  /* fingers, not pointers: the drag/close controls need real targets */
+  .mini-head{ gap:10px; }
+  .mini-btn{ width:36px; height:36px; }
 }
 
 /* one-tap jumps into the visitor's own signed-in feeds */

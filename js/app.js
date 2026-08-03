@@ -422,12 +422,16 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSymbol(row.dataset.sym); }
     });
 
-    /* ---- market tabs + search ---- */
-    MC.on($('mtabs'), 'click', '.mtab', function (e, tab) {
-      $$('.mtab').forEach(function (t) { t.classList.toggle('on', t === tab); });
+    /* ---- market tabs + search ----
+       Two copies exist — the navbar row and the phone copy in the watchlist
+       drawer — so match by market, not by node, to keep both in step. */
+    function pickMarket(e, tab) {
+      $$('.mtab').forEach(function (t) { t.classList.toggle('on', t.dataset.mkt === tab.dataset.mkt); });
       State.market = tab.dataset.mkt;
       MC.watchlist.render();
-    });
+    }
+    MC.on($('mtabs'), 'click', '.mtab', pickMarket);
+    MC.on($('wlMtabs'), 'click', '.mtab', pickMarket);
     $('search').addEventListener('input', function (e) {
       State.query = e.target.value;
       MC.watchlist.render();
@@ -997,6 +1001,20 @@
     if (!MC.HAS_LWC) {
       MC.ui.toast('Offline chart mode',
         'The chart library did not load, so the built-in renderer is running. Everything else works normally.', 'info');
+    }
+
+    // Every icon is Font Awesome from a CDN. If the font never arrives the
+    // condensed toolbars would be rows of blank squares, so flag the root
+    // and layout.css brings the hidden text labels back.
+    if (document.fonts && document.fonts.ready) {
+      var checkIcons = function () {
+        document.fonts.ready.then(function () {
+          var ok = document.fonts.check('900 12px "Font Awesome 6 Free"');
+          document.documentElement.classList.toggle('icons-off', !ok);
+        });
+      };
+      if (document.readyState === 'complete') checkIcons();
+      else window.addEventListener('load', checkIcons);
     }
 
     // First visit gets the walkthrough; after that, just a nudge.

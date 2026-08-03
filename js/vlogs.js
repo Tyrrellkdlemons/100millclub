@@ -34,7 +34,7 @@
       return '<article class="vid" data-vid="' + v.id + '">' +
         '<div class="thumb">' +
           '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.yt + '/hqdefault.jpg" ' +
-               'onerror="this.style.display=\'none\'">' +
+               'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">' +
           (v.tag ? '<span class="badge-tag">' + MC.esc(v.tag) + '</span>' : '') +
           '<span class="play"><i class="fa-solid fa-play"></i></span>' +
         '</div>' +
