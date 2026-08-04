@@ -220,6 +220,11 @@
             data-tip-key="V">
       <i class="fa-solid fa-video"></i><span class="lbl">Vlogs</span>
     </button>
+    <button class="btn" id="authBtn"
+            data-tip="Save your grind"
+            data-tip-desc="Sign in with Google, Apple or an email link and your funded account, trades, alerts and settings follow you to any device. Until then, everything stays in this browser only.">
+      <i class="fa-solid fa-cloud"></i><span class="lbl" id="authLbl">Save</span>
+    </button>
     <div class="help-wrap" id="helpWrap">
       <button class="btn btn-icon" id="helpBtn" aria-label="Help"
               data-tip="Need a hand?"
@@ -599,13 +604,25 @@
       <div class="pane on" id="pane-trade">
         <!-- the demo account: derived from history, reset any time -->
         <div class="acct-bar" id="acctBar">
-          <div class="acct-cell main"><b>Demo equity</b><span class="mono" id="acctEquity">$100,000</span></div>
+          <div class="acct-cell main"><b>Equity</b><span class="mono" id="acctEquity">$50,000</span></div>
+          <div class="acct-cell"><b>Buying power</b><span class="mono" id="acctBP">–</span></div>
           <div class="acct-cell"><b>Open</b><span class="mono" id="acctOpen">$0.00</span></div>
           <div class="acct-cell"><b>Closed</b><span class="mono" id="acctClosed">$0.00</span></div>
+          <div class="acct-cell"><b>Today</b><span class="mono" id="acctDay">$0.00</span></div>
           <button class="acct-reset" id="acctReset"
-                  data-tip="Fresh $100,000"
-                  data-tip-desc="Wipes demo positions and history and starts the account over. The Coach's report card starts over too.">
+                  data-tip="Reset the account"
+                  data-tip-desc="Pick a funding size and start over. Positions, working orders, history and the equity curve are wiped — the Coach's report card starts over too.">
             <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+        <div class="eq-row">
+          <canvas id="eqSpark" width="150" height="26"
+                  data-tip="Your equity curve"
+                  data-tip-desc="Account equity over time, from real snapshots taken while the terminal is open. It starts when you start — no invented history."></canvas>
+          <button class="qbtn" id="exportCsv"
+                  data-tip="Download the ledger"
+                  data-tip-desc="Every closed trade — entries, exits, commissions, net P/L — as a CSV file for spreadsheets or journaling.">
+            <i class="fa-solid fa-file-csv"></i> CSV
           </button>
         </div>
 
@@ -644,11 +661,15 @@
 
         <div class="field">
           <div class="label">Order type
-            <i class="fa-solid fa-circle-question q" data-tip="Market fills right away. Limit only fills at your price or better."></i>
+            <i class="fa-solid fa-circle-question q"
+               data-tip="Four ways to enter"
+               data-tip-desc="Market fills right away. Limit waits for your price or better. Stop waits for a breakout trigger and then enters. Stop-limit arms at the trigger but still refuses to pay worse than your limit."></i>
           </div>
           <select class="input" id="oType">
             <option value="market">Market — fill now</option>
-            <option value="limit">Limit — my price</option>
+            <option value="limit">Limit — my price or better</option>
+            <option value="stop">Stop — enter on a break</option>
+            <option value="stoplimit">Stop-limit — break, then my price</option>
           </select>
         </div>
 
@@ -661,6 +682,9 @@
               <button class="qbtn" data-qty="10">10</button>
               <button class="qbtn" data-qty="50">50</button>
               <button class="qbtn" data-qty="100">100</button>
+              <button class="qbtn" data-riskusd="250" data-tip="Size the trade so the stop costs $250"
+                      data-tip-desc="Works out the quantity from the distance to your stop loss. No stop set? A 2% stop is filled in so the number stays honest.">risk $250</button>
+              <button class="qbtn" data-riskusd="500" data-tip="Size the trade so the stop costs $500">risk $500</button>
             </div>
           </div>
           <div class="field">
@@ -668,6 +692,15 @@
             <div class="input-wrap"><input class="input mono" id="oPx" type="number" step="any" disabled /></div>
             <div class="qbtns"><button class="qbtn" id="oPxLast" style="flex:1">Use last price</button></div>
           </div>
+        </div>
+
+        <div class="field hidden" id="trigWrap">
+          <div class="label">Trigger price
+            <i class="fa-solid fa-circle-question q"
+               data-tip="The price that wakes the order up"
+               data-tip-desc="A stop order waits until the market touches this trigger, then enters. Stop-limit arms at the trigger and then fills only at your limit price or better."></i>
+          </div>
+          <div class="input-wrap"><input class="input mono" id="oTrig" type="number" step="any" placeholder="e.g. the breakout level" /></div>
         </div>
 
         <div class="row2">
@@ -700,6 +733,7 @@
           <div class="srow"><b>Est. fill price</b><span class="mono" id="sumPx">–</span></div>
           <div class="srow"><b>Risk if stopped out</b><span class="mono" id="sumRisk">–</span></div>
           <div class="srow"><b>Reward at target</b><span class="mono" id="sumRew">–</span></div>
+          <div class="srow"><b>Commission (0.05%)</b><span class="mono" id="sumFee">–</span></div>
           <div class="srow total"><b>Order value</b><span class="mono" id="sumTotal">$0.00</span></div>
         </div>
 
@@ -710,6 +744,9 @@
         <div class="sec-title">Open positions <span class="pill" id="posCount">0</span></div>
         <div id="positions"></div>
 
+        <div class="sec-title" id="pendTitle" style="display:none">Working orders <span class="pill" id="pendCount">0</span></div>
+        <div id="pending"></div>
+
         <button class="btn" id="reviewBtn" style="width:100%;justify-content:center;margin-top:10px"
                 data-tip="The Coach grades your closed trades"
                 data-tip-desc="Discipline, edge, patience and exits — each graded from your actual trade history, with what went wrong and what to do about it.">
@@ -718,8 +755,9 @@
         <div class="rv-wrap" id="reviewWrap"><div id="reviewBody"></div></div>
 
         <div class="note">
-          <i class="fa-solid fa-circle-info"></i> Practice mode. Orders fill instantly against the
-          simulated feed — no real money and no broker connected.
+          <i class="fa-solid fa-circle-info"></i> Practice mode with real broker manners: market fills
+          pay up to 0.01% slippage, every fill pays 0.05% commission, and working orders wait on the tape.
+          No real money and no broker connected.
         </div>
       </div>
 
@@ -1084,6 +1122,16 @@
   <div class="qz-actions">
     <button class="qz-act" id="qzTourBtn"><i class="fa-solid fa-route"></i> Walk me round</button>
     <button class="qz-act" id="qzGuideBtn"><i class="fa-solid fa-book-open"></i> Proper guide</button>
+    <button class="qz-act" id="qzAiBtn"><i class="fa-solid fa-robot"></i> AI desk</button>
+  </div>
+
+  <div class="qz-aicfg hidden" id="qzAiCfg">
+    <div class="qz-aicfg-note">Your own <b>OpenRouter</b> key powers this. It stays in this browser and is
+      sent to exactly one place: openrouter.ai. Free models exist and are the default. Get a key at
+      <b>openrouter.ai/keys</b>, paste it, and start any question with <b>ai</b>.</div>
+    <input class="input" id="qzAiKey" type="password" placeholder="sk-or-…" autocomplete="off" />
+    <input class="input" id="qzAiModel" type="text" placeholder="model — blank = free DeepSeek" />
+    <button class="btn btn-accent" id="qzAiSave" style="width:100%;justify-content:center">Save</button>
   </div>
 
   <form class="qz-form" id="qzForm">
@@ -1481,6 +1529,64 @@
   </div>
 </div>
 
+<!-- reset the funded account -->
+<div class="backdrop" id="mdReset">
+  <div class="modal">
+    <div class="m-head">
+      <i class="fa-solid fa-rotate-left"></i><h3>Start the account over</h3>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="m-body">
+      <p class="acc-lede">Pick the funding size. Resetting <b>permanently erases</b> open positions,
+        working orders, the trade ledger and the equity curve — and the Coach's report card starts
+        from zero. There is no undo.</p>
+      <div class="rst-opts">
+        <label class="rst-opt"><input type="radio" name="rstAmt" value="10000" /> $10,000</label>
+        <label class="rst-opt"><input type="radio" name="rstAmt" value="25000" /> $25,000</label>
+        <label class="rst-opt"><input type="radio" name="rstAmt" value="50000" checked /> $50,000</label>
+        <label class="rst-opt"><input type="radio" name="rstAmt" value="100000" /> $100,000</label>
+      </div>
+      <button class="btn btn-accent" id="rstGo" style="width:100%;justify-content:center;margin-top:12px">
+        <i class="fa-solid fa-rotate-left"></i> Reset the account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- cloud account -->
+<div class="backdrop" id="mdAccount">
+  <div class="modal">
+    <div class="m-head">
+      <i class="fa-solid fa-cloud"></i><h3>Save your grind</h3>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="m-body">
+      <div id="accSignedOut">
+        <p class="acc-lede">Sign in and your funded account, trades, alerts and settings follow you to
+          any device. Until then everything lives only in this browser — which also works fine.</p>
+        <button class="acc-btn" id="accGoogle"><i class="fa-brands fa-google" style="color:#ea4335"></i> Continue with Google</button>
+        <button class="acc-btn" id="accApple"><i class="fa-brands fa-apple"></i> Continue with Apple</button>
+        <div class="acc-or">or</div>
+        <div class="input-wrap"><input class="input" id="accEmail" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+        <button class="btn btn-accent" id="accSend" style="width:100%;justify-content:center;margin-top:8px">
+          <i class="fa-solid fa-paper-plane"></i> Email me a sign-in link
+        </button>
+        <div class="acc-note">No passwords here — the link signs you in by itself. Your data lands in a
+          private row only your account can read. Signing out keeps the local copy. API keys and
+          alert-delivery secrets never sync — they stay on each device, as promised where you entered them.</div>
+      </div>
+      <div id="accSignedIn" class="hidden">
+        <p class="acc-lede">Signed in as <b id="accWho"></b>. Progress saves to your private cloud row a
+          few seconds after every change, and loads automatically wherever you sign in.</p>
+        <div class="acc-note" id="accStatus">Cloud sync is on.</div>
+        <button class="btn" id="accSignOut" style="width:100%;justify-content:center;margin-top:10px">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign out — the local copy stays
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- keyboard shortcuts -->
 <div class="backdrop" id="mdKeys">
   <div class="modal">
@@ -1515,6 +1621,8 @@
 <script src="js/trade.js"></script>
 <script src="js/backtest.js"></script>
 <script src="js/review.js"></script>
+<script src="js/read.js"></script>
+<script src="js/ai.js"></script>
 <script src="js/alerts.js"></script>
 <script src="js/quotes.js"></script>
 <script src="js/portfolio.js"></script>
@@ -1532,6 +1640,7 @@
 <script src="js/alerts-ui.js"></script>
 <script src="js/radar-ui.js"></script>
 <script src="js/portfolio-ui.js"></script>
+<script src="js/cloud.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -28,8 +28,7 @@
       UI.send(chip.getAttribute('data-qztopic'), true);
     });
 
-    $('qzChips').innerHTML = MC.queez.suggestions()
-      .map(function (s) { return '<button class="qz-chip">' + MC.esc(s) + '</button>'; }).join('');
+    renderChips();
 
     $('qzTourBtn').addEventListener('click', function () {
       UI.close();
@@ -38,6 +37,25 @@
     $('qzGuideBtn').addEventListener('click', function () {
       UI.close();
       MC.ui.openModal('mdHelp');
+    });
+
+    /* ---- the AI desk: bring-your-own OpenRouter key ---- */
+    $('qzAiBtn').addEventListener('click', function () {
+      var cfg = MC.ai.config();
+      $('qzAiKey').value = cfg.key || '';
+      $('qzAiModel').value = cfg.model || '';
+      $('qzAiCfg').classList.toggle('hidden');
+    });
+    $('qzAiSave').addEventListener('click', function () {
+      MC.ai.saveConfig({ key: $('qzAiKey').value, model: $('qzAiModel').value });
+      $('qzAiCfg').classList.add('hidden');
+      renderChips();
+      MC.ui.toast(
+        MC.ai.enabled() ? 'AI desk on 🤖' : 'AI desk off',
+        MC.ai.enabled()
+          ? 'Start a question with "ai" — the key stays in this browser and talks only to OpenRouter.'
+          : 'Key removed. The Coach still answers everything himself.',
+        MC.ai.enabled() ? 'gold' : 'info');
     });
 
     // opening line, written once per visit
@@ -67,34 +85,86 @@
 
   UI.isOpen = function () { return open; };
 
+  function renderChips() {
+    var html = MC.queez.suggestions()
+      .map(function (s) { return '<button class="qz-chip">' + MC.esc(s) + '</button>'; }).join('');
+    html = '<button class="qz-chip">go — read this chart</button>' + html;
+    if (MC.ai && MC.ai.enabled()) {
+      html += '<button class="qz-chip">ai: what do you make of this chart?</button>';
+    }
+    $('qzChips').innerHTML = html;
+  }
+
   /** Ask a question and print both sides of it. */
   UI.send = function (text, asTopic) {
+    // "ai …" routes to the AI desk, the visitor's own key and bill
+    var aiQ = !asTopic && text.match(/^\s*(?:ai[:,]\s*|ai\s+|@ai\s+)(.+)/i);
+    if (aiQ) return sendAI(aiQ[1]);
+
     say('you', MC.esc(text));
     var typing = say('queez', '<span class="qz-typing"><i></i><i></i><i></i></span>');
 
     // a beat before answering, so it reads like a reply rather than a lookup
     setTimeout(function () {
-      var res = asTopic ? MC.queez.askTopic(text) : MC.queez.ask(text);
-      typing.innerHTML = res.text;
-
-      // the Coach always leaves Queez with a concrete next move
-      if (res.next) {
-        typing.insertAdjacentHTML('beforeend',
-          '<span class="qz-next"><i class="fa-solid fa-arrow-right"></i><b>Next move:</b> ' + res.next + '</span>');
+      var res;
+      // "go" (alone, or with "chart") — the Coach reads the chart in front of
+      // you. "go over risk with me" is a question, not a chart-read request.
+      var t = text.trim().toLowerCase();
+      var wantsRead = /^go[\s!.?]*$/.test(t) ||
+                      (/^go\b/.test(t) && /chart/.test(t)) ||
+                      /^read (the |this )?chart/.test(t) ||
+                      (/^analy[sz]e\b/.test(t) && /chart|this/.test(t));
+      if (!asTopic && wantsRead) {
+        res = MC.read.go();
+      } else {
+        res = asTopic ? MC.queez.askTopic(text) : MC.queez.ask(text);
       }
-      if (res.topic) {
-        typing.insertAdjacentHTML('beforeend', '<span class="qz-topic">' + MC.esc(res.topic) + '</span>');
-      }
-      // related topics become tappable follow-ups
-      if (res.related && res.related.length) {
-        typing.insertAdjacentHTML('beforeend',
-          '<span class="qz-rel">' + res.related.map(function (r) {
-            return '<button class="qz-rel-chip" data-qztopic="' + MC.esc(r) + '">' + MC.esc(r) + '</button>';
-          }).join('') + '</span>');
-      }
-      scroll();
+      renderResult(typing, res);
     }, 420);
   };
+
+  function renderResult(typing, res) {
+    typing.innerHTML = res.text;
+
+    // the Coach always leaves Queez with a concrete next move
+    if (res.next) {
+      typing.insertAdjacentHTML('beforeend',
+        '<span class="qz-next"><i class="fa-solid fa-arrow-right"></i><b>Next move:</b> ' + res.next + '</span>');
+    }
+    if (res.topic) {
+      typing.insertAdjacentHTML('beforeend', '<span class="qz-topic">' + MC.esc(res.topic) + '</span>');
+    }
+    // related topics become tappable follow-ups
+    if (res.related && res.related.length) {
+      typing.insertAdjacentHTML('beforeend',
+        '<span class="qz-rel">' + res.related.map(function (r) {
+          return '<button class="qz-rel-chip" data-qztopic="' + MC.esc(r) + '">' + MC.esc(r) + '</button>';
+        }).join('') + '</span>');
+    }
+    scroll();
+  }
+
+  /** The AI desk reply — clearly labeled, clearly the visitor's own model. */
+  function sendAI(question) {
+    say('you', MC.esc('ai: ' + question));
+    if (!MC.ai || !MC.ai.enabled()) {
+      say('queez',
+        'The <b>AI desk</b> is not switched on yet, Queez. Tap <b>AI desk</b> below, paste your own ' +
+        'OpenRouter key (free at openrouter.ai/keys — free models included), then start any question ' +
+        'with <b>ai</b>. The key stays in this browser and talks only to OpenRouter.');
+      return;
+    }
+    var typing = say('queez', '<span class="qz-typing"><i></i><i></i><i></i></span>');
+    MC.ai.ask(question).then(function (reply) {
+      typing.innerHTML =
+        '<span class="qz-ai-tag"><i class="fa-solid fa-robot"></i> AI desk — your key, your model</span>' +
+        MC.ai.toHtml(reply);
+      scroll();
+    }).catch(function (e) {
+      typing.innerHTML = 'The AI desk hit a snag: ' + MC.esc(e.message || 'unknown error');
+      scroll();
+    });
+  }
 
   /** Push a line into the transcript. Returns the bubble, so it can be edited. */
   function say(who, html) {

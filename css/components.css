@@ -781,3 +781,61 @@ body.resizing-x *, body.resizing-y *{ user-select:none !important; }
 }
 .rv-sect:first-child{ margin-top:2px; }
 .rv-sect i{ opacity:.85; }
+
+/* --------------------------------------------------------------------------
+   FUNDED ACCOUNT — the bar wraps its new cells, the curve sits under it
+   -------------------------------------------------------------------------- */
+.acct-bar{ flex-wrap:wrap; }
+.eq-row{ display:flex; align-items:center; gap:8px; margin:-4px 0 10px; }
+.eq-row canvas{
+  flex:1; height:26px; min-width:0;
+  background:rgba(10,13,17,.45);
+  border:1px solid var(--border); border-radius:7px;
+}
+.eq-row .qbtn{ flex-shrink:0; }
+
+/* working orders — the book that waits */
+.pend{
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:9px; padding:9px 11px; margin-bottom:7px;
+}
+.pend-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.pend-type{
+  font-size:9.5px; font-weight:800; letter-spacing:.05em;
+  text-transform:uppercase; color:#d9ae15;
+}
+.pend-x{
+  background:none; border:1px solid var(--border); color:var(--muted);
+  border-radius:7px; padding:4px 9px; font-size:10.5px; font-weight:700; cursor:pointer;
+  transition:.15s var(--ease);
+}
+.pend-x:hover{ color:#ff4d5e; border-color:rgba(255,77,94,.4); }
+
+/* reset modal funding sizes */
+.rst-opts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.rst-opt{
+  display:flex; align-items:center; gap:8px; padding:10px 12px;
+  background:var(--panel-2); border:1px solid var(--border);
+  border-radius:9px; cursor:pointer; font-weight:700; font-size:12.5px;
+}
+.rst-opt input{ accent-color:#d9ae15; }
+.rst-opt:has(input:checked){
+  border-color:rgba(217,174,21,.55);
+  box-shadow:0 0 0 1px rgba(217,174,21,.25) inset;
+}
+
+/* cloud account modal */
+.acc-lede{ font-size:12.5px; line-height:1.55; color:var(--text); margin:0 0 12px; }
+.acc-btn{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  width:100%; padding:11px; margin-bottom:8px; border-radius:9px;
+  border:1px solid var(--border); background:var(--panel-2); color:var(--text);
+  font-weight:800; font-size:12.5px; cursor:pointer; transition:.15s var(--ease);
+}
+.acc-btn:hover{ border-color:rgba(217,174,21,.45); transform:translateY(-1px); }
+.acc-or{
+  text-align:center; font-size:10.5px; color:var(--muted);
+  margin:6px 0; text-transform:uppercase; letter-spacing:.08em;
+}
+.acc-note{ font-size:11px; color:var(--muted); line-height:1.5; margin-top:10px; }
+#authBtn.on{ border-color:rgba(217,174,21,.5); color:#ffe680; }

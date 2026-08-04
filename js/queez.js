@@ -227,7 +227,7 @@
       next: 'Drop your own logo on the page, then refresh to see it stick.',
       rel: ['dragdrop'] },
 
-    { id: 'tvaccount', k: ['tradingview', 'log in', 'login', 'sign in', 'signed in', 'subscription', 'tradingview account', 'my plan'],
+    { id: 'tvaccount', k: ['tradingview', 'tradingview login', 'tradingview account', 'signed in to tradingview', 'subscription', 'my plan'],
       t: 'TradingView and your subscription',
       a: 'Straight answer, Queez: this page <b>cannot</b> sign you into TradingView and neither can any other — ' +
          'embeds live in a sandboxed frame the browser will not let near your session. The blue <b>TradingView</b> ' +
@@ -480,6 +480,53 @@
          'day, playback never spends any.',
       next: 'Two minutes, one key, and the search results stop leaving the page.',
       rel: ['vlogs'] },
+
+    { id: 'theread', k: ['chart read', 'analyze the chart', 'what do you see', 'levels', 'bias', 'support and resistance'],
+      t: 'The chart read',
+      a: 'Say <b>go</b> and I read the loaded chart out loud: bias from the moving averages, the ceiling ' +
+         'and floor the market actually respected, how hot the RSI is running, what would confirm the move ' +
+         'and what would flip it. All arithmetic on the bars in front of you — no made-up percentages, ever.',
+      next: 'Type "go" right now and watch.',
+      rel: ['alerts', 'indicators'] },
+
+    { id: 'ordertypes', k: ['stop order', 'stop limit', 'working order', 'pending order', 'order types', 'trigger price', 'cancel order'],
+      t: 'Order types',
+      a: 'Four ways in. <b>Market</b> fills now, paying a whisper of slippage like real life. <b>Limit</b> ' +
+         'waits for your price or better. <b>Stop</b> waits for a breakout trigger and then enters. ' +
+         '<b>Stop-limit</b> arms at the trigger but still refuses to pay worse than your limit. The waiting ' +
+         'ones sit in <b>Working orders</b> under your positions, watching the tape so you do not have to — ' +
+         'cancel any of them with one tap.',
+      next: 'Try a limit order 1% under the current price and watch it wait like a professional.',
+      rel: ['funded', 'risk'] },   // id ordertypes — the classic ticket entry keeps id "orders" 
+
+    { id: 'funded', k: ['funded account', 'buying power', 'commission', 'slippage', 'fees', 'equity curve', 'reset account', 'csv', 'export trades', 'balance', 'cash'],
+      t: 'The funded demo account',
+      a: 'You trade a funded practice account — $50,000 by default, resettable to $10k, $25k, $50k or ' +
+         '$100k. It has real broker manners: every fill pays <b>0.05% commission</b>, market orders eat up ' +
+         'to <b>0.01% slippage</b>, and <b>buying power</b> stops you promising the same dollar twice — ' +
+         'working orders reserve their cost while they wait. The little chart above the ticket is your ' +
+         '<b>equity curve</b>, built from real snapshots, and the CSV button exports the whole ledger.',
+      next: 'Watch the "Buying power" cell while you place an order — that number is the leash.',
+      rel: ['ordertypes', 'review'] },
+
+    { id: 'cloudsave', k: ['sign in', 'login', 'log in', 'save progress', 'account', 'google', 'apple', 'magic link', 'cloud', 'sync', 'save my'],
+      t: 'Saving your grind',
+      a: 'The <b>Save</b> button up top signs you in — Google, Apple, or a passwordless email link. Once ' +
+         'in, your funded account, trades, alerts, indicators and settings copy to a private cloud row ' +
+         'only your account can read, and load back on any device you sign into. Signed out, everything ' +
+         'still works and lives in this browser only. Local first, always.',
+      next: 'Tap Save, use the email link, and your grind survives any laptop.',
+      rel: ['funded'] },
+
+    { id: 'aidesk', k: ['ai', 'openrouter', 'ai desk', 'ask ai', 'artificial intelligence', 'model', 'gpt', 'llm'],
+      t: 'The AI desk',
+      a: 'Start any question with <b>ai</b> — like <i>"ai what do you make of this chart?"</i> — and it goes ' +
+         'to a large model through <b>your own OpenRouter key</b>, with the current chart, your positions ' +
+         'and my own read attached as context. The key lives in this browser and talks only to ' +
+         'openrouter.ai; free models exist and are the default. Set it up under <b>AI desk</b> below. ' +
+         'And it follows house rules: education, not orders.',
+      next: 'Grab a free key at openrouter.ai/keys, tap AI desk below, paste, save.',
+      rel: ['theread', 'review'] },
 
     { id: 'review', k: ['review', 'grade', 'report card', 'what did i do wrong', 'mistakes', 'am i good', 'my trading', 'feedback', 'grade my portfolio', 'portfolio grade', 'grade the folio', 'rate my portfolio'],
       t: 'The report card',

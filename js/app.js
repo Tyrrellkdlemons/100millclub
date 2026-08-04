@@ -253,6 +253,8 @@
     updateHeaderPrice();
     MC.watchlist.updateFallbackTape();
     MC.trade.updatePositions();
+    MC.trade.checkPending();
+    MC.trade.snapshotEquity();
     MC.trade.renderAccount();
 
     if (State.activeIndicators.length) applyIndicators();
@@ -559,9 +561,13 @@
     $('sideBuy').addEventListener('click', function () { MC.trade.setSide('buy'); });
     $('sideSell').addEventListener('click', function () { MC.trade.setSide('sell'); });
     $('oType').addEventListener('change', function (e) {
-      var isLimit = e.target.value === 'limit';
-      $('oPx').disabled = !isLimit;
-      if (!isLimit) MC.trade.syncPrice();
+      var t = e.target.value;
+      $('oPx').disabled = t === 'market' || t === 'stop';      // stop uses only the trigger
+      $('trigWrap').classList.toggle('hidden', t !== 'stop' && t !== 'stoplimit');
+      if (t === 'market') MC.trade.syncPrice();
+      if ((t === 'limit' || t === 'stoplimit') && !$('oPx').value) {
+        $('oPx').value = State.asset.p.toFixed(State.asset.d);
+      }
       MC.trade.updateSummary();
     });
     $('oPxLast').addEventListener('click', function () {
@@ -571,6 +577,32 @@
     $$('[data-qty]').forEach(function (b) {
       b.addEventListener('click', function () {
         $('oQty').value = b.dataset.qty;
+        MC.trade.updateSummary();
+      });
+    });
+    function ticketEntryPrice() {
+      var type = $('oType').value;
+      var asset = State.asset;
+      if (type === 'stop') return parseFloat($('oTrig').value) || asset.p;
+      if (type === 'market') return asset.p;
+      return parseFloat($('oPx').value) || asset.p;
+    }
+    $$('[data-riskusd]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var risk = parseFloat(b.dataset.riskusd);
+        var asset = State.asset;
+        var price = ticketEntryPrice();
+        var stop = parseFloat($('oSl').value);
+        if (!isFinite(stop)) {
+          // no stop yet: set the default 2% one, so the risk number is real
+          var dir = State.side === 'buy' ? 1 : -1;
+          stop = price - dir * price * 0.02;
+          $('oSl').value = stop.toFixed(asset.d);
+        }
+        var dist = Math.abs(price - stop);
+        if (!dist) return;
+        var qty = risk / dist;
+        $('oQty').value = qty >= 100 ? Math.round(qty) : Math.round(qty * 10000) / 10000;
         MC.trade.updateSummary();
       });
     });
@@ -584,14 +616,14 @@
           MC.trade.updateSummary();
           return;
         }
-        var price = $('oType').value === 'market' ? asset.p : (parseFloat($('oPx').value) || asset.p);
+        var price = ticketEntryPrice();
         var dir = State.side === 'buy' ? 1 : -1;
         $('oSl').value = (price - dir * price * pct / 100).toFixed(asset.d);
         $('oTp').value = (price + dir * price * pct / 100 * 2).toFixed(asset.d);   // 2:1 reward-to-risk
         MC.trade.updateSummary();
       });
     });
-    ['oQty', 'oPx', 'oSl', 'oTp'].forEach(function (id) {
+    ['oQty', 'oPx', 'oSl', 'oTp', 'oTrig'].forEach(function (id) {
       $(id).addEventListener('input', MC.trade.updateSummary);
     });
     $('placeBtn').addEventListener('click', function () {
@@ -607,11 +639,19 @@
       MC.trade.quick('sell');
       MC.queezUI.remark(MC.queez.noteOrder());
     });
-    $('acctReset').addEventListener('click', function () {
-      if (!window.confirm('Start the demo account over at $100,000? Positions and trade history are wiped.')) return;
-      MC.trade.resetDemo();
-      MC.ui.toast('Fresh start', 'The demo account is back to $100,000. Make it count, Queez.', 'gold');
+    $('acctReset').addEventListener('click', function () { MC.ui.openModal('mdReset'); });
+    $('rstGo').addEventListener('click', function () {
+      var checked = document.querySelector('input[name="rstAmt"]:checked');
+      var amt = checked ? parseFloat(checked.value) : 50000;
+      MC.trade.resetDemo(amt);
+      MC.ui.closeModals();
+      MC.ui.toast('Fresh start', 'The funded account is reset to ' + MC.fmtMoney(amt) + '. Make it count, Queez.', 'gold');
     });
+    $('exportCsv').addEventListener('click', MC.trade.exportCsv);
+    $('accGoogle').addEventListener('click', function () { MC.cloud.oauth('google'); });
+    $('accApple').addEventListener('click', function () { MC.cloud.oauth('apple'); });
+    $('accSend').addEventListener('click', function () { MC.cloud.magicLink($('accEmail').value.trim()); });
+    $('accSignOut').addEventListener('click', function () { MC.cloud.signOut(); });
     $('reviewBtn').addEventListener('click', function () {
       var section = $('reviewWrap');
       section.classList.toggle('on');
@@ -636,6 +676,9 @@
     });
     MC.on($('positions'), 'click', '[data-close-pos]', function (e, btn) {
       MC.trade.close(btn.getAttribute('data-close-pos'));
+    });
+    MC.on($('pending'), 'click', '[data-cancel-ord]', function (e, btn) {
+      MC.trade.cancelOrder(btn.getAttribute('data-cancel-ord'));
     });
 
     /* ---- backtest ---- */
@@ -891,8 +934,14 @@
       else if (key === 'v') $('navVlogs').click();
     });
 
+    var lastResizeW = window.innerWidth;
     window.addEventListener('resize', MC.debounce(function () {
-      MC.ui.closeModals();
+      // height-only changes are the mobile keyboard opening over a modal —
+      // closing the modal then would eat the email box mid-type
+      if (window.innerWidth !== lastResizeW) {
+        lastResizeW = window.innerWidth;
+        MC.ui.closeModals();
+      }
       State.chart.fit();
     }, 150));
   }
@@ -983,11 +1032,15 @@
 
     // 5. wire everything, then load the opening market
     wire();
+    MC.trade.init();
     selectSymbol(State.symbol);
     setSource('live');
     MC.trade.setSide('buy');
     MC.trade.renderPositions();
+    MC.trade.renderPending();
     MC.trade.renderAccount();
+    MC.trade.drawEquitySpark();
+    MC.cloud.init();
     if (MC.resize.chartPreset() !== 'cozy') MC.resize.applyChartPreset(MC.resize.chartPreset());
     startLive();
 
