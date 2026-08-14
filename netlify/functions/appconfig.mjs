@@ -15,6 +15,7 @@ export default async () => {
       macro: true,      // FRED via the keyless CSV route
       term: true,       // futures curve from Yahoo-quoted contract months
       eia: !!process.env.EIA_API_KEY,
+      fred: !!process.env.FRED_API_KEY,
       at: Date.now()
     },
     {

@@ -12,7 +12,7 @@ piece. Companion to `PHASE_0_INSPECTION.md` (what existed before).*
 | Route | Source | Cadence | Notes |
 | --- | --- | --- | --- |
 | `/api/cot` | CFTC Public Reporting (Socrata) | weekly | Managed Money net, weekly change, % of open interest for 8 commodity markets |
-| `/api/macro` | FRED `fredgraph.csv` (no key) | daily | 10-yr, fed funds, broad dollar, 10-yr inflation expectation + sparklines; adds EIA weekly crude stocks when `EIA_API_KEY` is set |
+| `/api/macro` | Yahoo-quoted market rates | live | 10-yr (`^TNX`), 13-week bill (`^IRX`), dollar index (`DX-Y.NYB`), VIX + sparklines. Adds EIA crude stocks with `EIA_API_KEY`, and the 10-yr inflation-expectation tile with `FRED_API_KEY` |
 | `/api/term?root=` | Yahoo-quoted exchange contract months | ~15 min | Builds the real curve per root, returns contango/backwardation + annualised roll |
 
 Ag-belt weather comes from **open-meteo**, fetched by the browser directly
@@ -68,6 +68,30 @@ ranking, WASDE scheduling.
   Stocks mode, shown in Futures/All as designed.
 - Zero horizontal scroll at 320/768/1280 on every new surface; journal filter
   keeps focus while typing; zero console errors.
+
+### The macro strip: three iterations, and what production taught
+
+Worth recording because it is the kind of bug local testing cannot catch.
+
+1. **v1 — 502 in production, green locally.** It asked FRED for four
+   full-history CSVs (`DFF` starts 1954, `DGS10` 1962). A laptop parses
+   megabytes fine; a cold Netlify function times out.
+2. **v2 — no crash, still empty.** Windowing with `cosd` and adding abort
+   timeouts stopped the 502, but FRED simply does not answer reliably from a
+   datacenter. The function was also *swallowing* the reason, so the strip
+   went quietly short — which is a lie. Added a `diagnostics` array.
+3. **v3 — moved to proven infrastructure.** The readings now ride the same
+   Yahoo path the quote proxy uses, already verified to answer from Netlify:
+   `^TNX`, `^IRX`, `DX-Y.NYB`, `^VIX` — market-priced and live rather than a
+   day late. Response time went **3.5s → 368ms** once the dead FRED wait was
+   removed. Inflation expectations now runs only with `FRED_API_KEY` (the
+   keyed JSON API is fast); without it the strip is four tiles and says so.
+
+A correctness bug was caught during the rewrite too: Yahoo's
+`meta.chartPreviousClose` on a 3-month range is the close **before the range
+started**, so the strip briefly labelled a three-month move as a daily one
+(10-yr read `+0.198` instead of `-0.042`). It now compares against the
+previous daily bar, cross-checked against the quote proxy's own `prevClose`.
 
 ### Note on `package.json`
 

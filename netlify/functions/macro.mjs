@@ -67,20 +67,27 @@ async function marketSeries(t) {
   }
 }
 
-/** The one reading with no market ticker. Short leash — optional by design. */
+/**
+ * 10-year inflation expectations — the one reading with no market ticker.
+ * The keyless fredgraph.csv route is measured to time out consistently from
+ * Netlify's datacenter (it works fine from a laptop), and waiting on it cost
+ * every caller ~3.5s for a tile that never arrived. So this now runs ONLY
+ * when FRED_API_KEY is set, where the JSON API is fast and reliable. Without
+ * a key the strip is four tiles and says so — no silent gap, no dead wait.
+ */
 async function inflationExpectation() {
+  const key = process.env.FRED_API_KEY;
+  if (!key) return {};
   const start = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10);
   try {
     const r = await withTimeout(
-      'https://fred.stlouisfed.org/graph/fredgraph.csv?id=T10YIE&cosd=' + start, 3500);
+      'https://api.stlouisfed.org/fred/series/observations?series_id=T10YIE' +
+      '&api_key=' + encodeURIComponent(key) + '&file_type=json&observation_start=' + start, 4000);
     if (!r.ok) return { err: 'FRED T10YIE: HTTP ' + r.status };
-    const text = await r.text();
-    const points = [];
-    for (const line of text.trim().split('\n').slice(1)) {
-      const comma = line.indexOf(',');
-      const v = parseFloat(line.slice(comma + 1));
-      if (isFinite(v)) points.push({ d: line.slice(0, comma), v });
-    }
+    const obs = (await r.json())?.observations || [];
+    const points = obs
+      .map(o => ({ d: o.date, v: parseFloat(o.value) }))
+      .filter(p => isFinite(p.v));
     if (!points.length) return { err: 'FRED T10YIE: empty' };
     const latest = points[points.length - 1];
     const prev = points[points.length - 2] || latest;
@@ -145,7 +152,8 @@ export default async () => {
       tiles,
       source: sources.join(' + '),
       diagnostics,
-      eiaConfigured: !!process.env.EIA_API_KEY
+      eiaConfigured: !!process.env.EIA_API_KEY,
+      fredConfigured: !!process.env.FRED_API_KEY
     },
     {
       headers: {

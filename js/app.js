@@ -380,6 +380,10 @@
     $$('.dock-pane').forEach(function (p) { p.classList.toggle('on', p.id === 'dock-' + name); });
     $('dock').classList.remove('collapsed');
     MC.TV.ensurePanel(name);
+    // The reading panes carry tables and card boards — a dock dragged down
+    // to a sliver cannot show them, so navigating INTO one opens it enough
+    // to be worth reading (same courtesy the Vlogs button already does).
+    if (name === 'signals' || name === 'desk') MC.resize.ensureDock(340);
     if (name === 'signals') MC.signalsUI.ensure();
     if (name === 'desk') MC.desk.ensure();
     setTimeout(function () { State.chart.fit(); }, 300);
