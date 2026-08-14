@@ -27,6 +27,92 @@
   var BIN_INT = { '15m': '15m', '1h': '1h', '4h': '4h', '1d': '1d' };
   var YH_INT = { '15m': '15m', '1h': '1h', '4h': '1h', '1d': '1d' };   // Yahoo has no 4h — 1h serves
   var YH_RANGE = { '15m': '5d', '1h': '1mo', '4h': '3mo', '1d': '1y' };
+  var TF_SECONDS = { '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400 };
+
+  /* ----------------------------------------------------------------------
+     CONFIRMED BARS + VETOES — the hardening rules
+     A signal computed on a half-formed candle changes its mind when the
+     candle closes; a signal computed on stale data is a guess wearing a
+     number. Both get stopped here, and the card says which rule fired.
+     ---------------------------------------------------------------------- */
+
+  /** Drop the still-forming last bar so every input is a CONFIRMED close. */
+  SIG.confirmedBars = function (bars, tfSec, nowMs) {
+    if (!bars || !bars.length) return bars;
+    var now = (nowMs || Date.now()) / 1000;
+    var lastBar = bars[bars.length - 1];
+    if (lastBar.time + tfSec > now) return bars.slice(0, -1);
+    return bars;
+  };
+
+  /**
+   * The veto rules, pure so the tests can hammer them.
+   *  - stale: the newest confirmed bar is too old for the timeframe. 24/7
+   *    markets get 3 intervals of grace; session markets also get the
+   *    overnight/weekend allowance so a Monday open is not "stale".
+   *  - disagreement: TrendCatcher and Momentum pointing hard in opposite
+   *    directions is not a signal, it is a coin flip — no trade.
+   */
+  SIG.applyVetoes = function (votes, barAgeSec, tfSec, marketClass) {
+    var vetoes = [];
+    var allowed = marketClass === 'crypto'
+      ? tfSec * 3
+      : Math.max(tfSec * 3, 66 * 3600);   // covers a weekend + a session gap
+    if (isFinite(barAgeSec) && barAgeSec > allowed) {
+      vetoes.push({
+        type: 'stale',
+        text: 'Stale data — the newest confirmed bar closed ' +
+              Math.round(barAgeSec / 3600) + 'h ago. Confidence capped, no lean taken.'
+      });
+    }
+    var t = votes.trend, m = votes.momo;
+    if (t && m && t.dir !== 0 && m.dir !== 0 && t.dir === -m.dir &&
+        t.conf >= 0.55 && m.conf >= 0.55) {
+      vetoes.push({
+        type: 'disagreement',
+        text: 'TrendCatcher and Momentum disagree hard (' +
+              (t.dir > 0 ? 'trend up, momentum down' : 'trend down, momentum up') +
+              ') — that is a coin flip, not a signal.'
+      });
+    }
+    return vetoes;
+  };
+
+  /* ----------------------------------------------------------------------
+     CONTRACT ROLLS — the micros expire; the card should know
+     Quarterly equity futures (H/M/U/Z) expire the third Friday of Mar,
+     Jun, Sep, Dec. Front-month proxies roll themselves; the countdown is
+     shown so nobody is surprised by roll-week behaviour.
+     ---------------------------------------------------------------------- */
+  var QUARTERLY = { MES: 1, MNQ: 1, MYM: 1, M2K: 1 };
+
+  function thirdFriday(year, month) {
+    var d = new Date(Date.UTC(year, month, 1));
+    var day = d.getUTCDay();
+    var firstFriday = 1 + ((5 - day + 7) % 7);
+    return new Date(Date.UTC(year, month, firstFriday + 14));
+  }
+
+  SIG.rollInfo = function (sym, nowMs) {
+    if (!QUARTERLY[sym]) return null;
+    var now = nowMs ? new Date(nowMs) : new Date();
+    var months = [2, 5, 8, 11];
+    for (var y = now.getUTCFullYear(); y <= now.getUTCFullYear() + 1; y++) {
+      for (var i = 0; i < months.length; i++) {
+        var expiry = thirdFriday(y, months[i]);
+        if (expiry.getTime() > now.getTime()) {
+          var days = Math.ceil((expiry.getTime() - now.getTime()) / 86400000);
+          return {
+            days: days,
+            date: expiry.toISOString().slice(0, 10),
+            soon: days <= 8,
+            label: days <= 8 ? 'rolls in ' + days + 'd' : 'expiry in ' + days + 'd'
+          };
+        }
+      }
+    }
+    return null;
+  };
 
   /* ----------------------------------------------------------------------
      BARS — real where possible, honestly labelled when not
@@ -174,6 +260,10 @@
   SIG.DESKS = DESKS;
 
   function analyze(asset, tf, bars, source) {
+    // only confirmed closes vote — the forming candle changes its mind
+    var tfSec = TF_SECONDS[tf] || 3600;
+    bars = SIG.confirmedBars(bars, tfSec);
+
     var closes = MC.ind.src.close(bars);
     var d = asset.d;
 
@@ -195,6 +285,19 @@
     var dir = score > 0.12 ? 'buy' : score < -0.12 ? 'sell' : 'neutral';
     var confidence = Math.round(Math.min(0.92, Math.abs(score) + 0.18) * 100);
 
+    // freshness + the veto rules
+    var lastBarTime = bars.length ? bars[bars.length - 1].time : null;
+    var barAgeSec = lastBarTime ? (Date.now() / 1000 - (lastBarTime + tfSec)) : Infinity;
+    if (barAgeSec < 0) barAgeSec = 0;
+    var vetoes = source === 'Simulated' ? [] : SIG.applyVetoes(votes, barAgeSec, tfSec, asset.m);
+    if (vetoes.length) {
+      dir = 'neutral';
+      confidence = Math.min(confidence, 30);
+      if (SIG.onVeto) {
+        vetoes.forEach(function (v) { try { SIG.onVeto(asset.s, tf, v); } catch (e) {} });
+      }
+    }
+
     // levels people can actually use, from ATR — spelled out, not mystical
     var atr = last(MC.ind.atr(bars, 14));
     var px = last(closes);
@@ -212,7 +315,10 @@
       sym: asset.s, tf: tf, source: source, at: Date.now(),
       dir: dir, confidence: confidence, score: score,
       votes: votes, levels: levels,
-      price: px, atr: atr
+      price: px, atr: atr,
+      barAgeSec: isFinite(barAgeSec) ? Math.round(barAgeSec) : null,
+      vetoes: vetoes,
+      roll: SIG.rollInfo(asset.s)
     };
   }
 

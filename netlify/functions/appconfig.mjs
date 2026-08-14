@@ -11,6 +11,10 @@ export default async () => {
         ? (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat-v3.1:free')
         : null,
       quotes: true,     // the Yahoo proxy needs no key — always on when deployed
+      cot: true,        // CFTC public reporting — keyless primary source
+      macro: true,      // FRED via the keyless CSV route
+      term: true,       // futures curve from Yahoo-quoted contract months
+      eia: !!process.env.EIA_API_KEY,
       at: Date.now()
     },
     {

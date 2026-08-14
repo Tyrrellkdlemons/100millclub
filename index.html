@@ -97,6 +97,7 @@
 <link rel="stylesheet" href="css/youtube.css" />
 <link rel="stylesheet" href="css/feel.css" />
 <link rel="stylesheet" href="css/market.css" />
+<link rel="stylesheet" href="css/desk.css" />
 <link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim layers over everything it decorates -->
@@ -479,6 +480,12 @@
                   data-tip-desc="TrendCatcher, momentum, mean reversion and volume vote on real price history, show their confidence, and explain the reasoning in plain English. Education, not advice.">
             <i class="fa-solid fa-tower-broadcast"></i>Signals
           </button>
+          <button class="dock-tab" data-dock="desk"
+                  data-tip="My Desk — your own trading room"
+                  data-tip-desc="Your demo book graded the way real journals grade: equity curve, win rate, profit factor, expectancy in R, drawdown, a journal you write on, and the daily-loss risk guard."
+                  data-tip-key="D">
+            <i class="fa-solid fa-user-tie"></i>My Desk
+          </button>
         </div>
         <div class="dock-actions">
           <button class="btn btn-tv hidden" id="dockOpenTV" aria-label="Open this panel on TradingView"
@@ -567,6 +574,8 @@
               </button>
             </div>
             <div class="sig-board" id="sigBoard"></div>
+            <div id="sigVetoLog"></div>
+            <div id="sigCommod" class="hidden"></div>
             <div id="sigRes"></div>
             <div class="sig-foot-note">
               <b>How to read this honestly:</b> confidence measures how strongly the four desks agree with
@@ -575,6 +584,11 @@
               situation, and none of this is financial advice.
             </div>
           </div>
+        </div>
+
+        <!-- my desk: the demo trader's own room -->
+        <div class="dock-pane" id="dock-desk">
+          <div class="dk-wrap" id="dkRoot"></div>
         </div>
 
         <!-- radar: our own headline + event feed, the one alerts can read -->
@@ -662,6 +676,12 @@
           <canvas id="eqSpark" width="150" height="26"
                   data-tip="Your equity curve"
                   data-tip-desc="Account equity over time, from real snapshots taken while the terminal is open. It starts when you start — no invented history."></canvas>
+          <button class="qbtn" id="deskOpenBtn"
+                  data-tip="My Desk — your own room"
+                  data-tip-desc="The full-width view of your trading: stats, curve, book, journal and the risk guard."
+                  data-tip-key="D">
+            <i class="fa-solid fa-user-tie"></i> My Desk
+          </button>
           <button class="qbtn" id="exportCsv"
                   data-tip="Download the ledger"
                   data-tip-desc="Every closed trade — entries, exits, commissions, net P/L — as a CSV file for spreadsheets or journaling.">
@@ -1538,6 +1558,24 @@
         <b>Bot lab</b> card jumps to the built-in backtester: replay any rule set on history before you
         trust it with anything.</p>
 
+      <div class="help-h">6¾ · My Desk and the commodities board</div>
+      <p class="help-p"><b>My Desk</b> (bottom section, or press <span class="kbd">D</span>) is your own
+        room: equity and day P/L up top, then the numbers real journals grade by — win rate, profit
+        factor, <b>expectancy in R</b> (profit measured in units of what the stop risked), max drawdown
+        and streaks — the equity curve full-width, the open book and working orders as proper tables, a
+        <b>journal with a notes column</b> that syncs with your cloud account, per-market results, a
+        browser-local <b>position calculator</b>, and the <b>risk guard</b>: a daily loss limit run the
+        way funded desks run one. Hit it and new entries are refused until tomorrow — closing what is
+        open always stays allowed.</p>
+      <p class="help-p">In Futures and All-markets modes, the Signals tab also carries the
+        <b>commodities intelligence board</b>: CFTC Commitments of Traders positioning (who is long,
+        who is short, how crowded), the <b>futures curve</b> per commodity (contango or backwardation,
+        and what rolling costs per year), the macro drivers from FRED (rates, dollar, inflation
+        expectations), and 7-day <b>ag-belt weather</b>. Every card names its primary source and its
+        freshness, and a Plain English panel decodes the jargon. Signals themselves got stricter too:
+        only <b>confirmed closes</b> vote, stale data and hard desk disagreement <b>veto</b> a signal
+        outright — and the <b>veto log</b> shows what got refused and why.</p>
+
       <div class="help-h">7 · Using your own TradingView account</div>
       <p class="help-p">The charts and market panels built into this page are <b>TradingView's public
         embeds</b>. They always load anonymously — they run in a sandboxed frame that cannot read your
@@ -1719,6 +1757,8 @@
 <script src="js/search.js"></script>
 <script src="js/signals.js"></script>
 <script src="js/signals-ui.js"></script>
+<script src="js/commod.js"></script>
+<script src="js/desk.js"></script>
 <script src="js/portfolio.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/news.js"></script>

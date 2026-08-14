@@ -3,6 +3,80 @@
 *What shipped, how it deploys, what needs the owner, and how to test every
 piece. Companion to `PHASE_0_INSPECTION.md` (what existed before).*
 
+---
+
+## Wave 2 — commodities intelligence, My Desk, hardened signals
+
+### New serverless routes (all keyless, primary sources)
+
+| Route | Source | Cadence | Notes |
+| --- | --- | --- | --- |
+| `/api/cot` | CFTC Public Reporting (Socrata) | weekly | Managed Money net, weekly change, % of open interest for 8 commodity markets |
+| `/api/macro` | FRED `fredgraph.csv` (no key) | daily | 10-yr, fed funds, broad dollar, 10-yr inflation expectation + sparklines; adds EIA weekly crude stocks when `EIA_API_KEY` is set |
+| `/api/term?root=` | Yahoo-quoted exchange contract months | ~15 min | Builds the real curve per root, returns contango/backwardation + annualised roll |
+
+Ag-belt weather comes from **open-meteo**, fetched by the browser directly
+(their API allows cross-origin; no key, no proxy needed).
+
+### Signals hardening (per the transfer package)
+
+- **Confirmed bars only** — the forming candle is dropped before any desk
+  votes, so a signal cannot change its mind when the bar closes.
+- **Stale-data veto** — bars older than 3 intervals veto the signal;
+  session markets additionally get a 66-hour allowance so a Monday open is
+  not falsely "stale".
+- **Disagreement veto** — TrendCatcher and Momentum pointing hard opposite
+  (both ≥0.55 confidence) is a coin flip, not a signal: forced neutral.
+- **Veto log** — the board shows what was refused and why (TraderAgent's
+  diagnostics-over-confidence manner).
+- **State language** — ACTIVE ≥70%, WATCH ≥50%, MEASURING below, VETOED.
+- **Roll countdown** — quarterly micros show days to third-Friday expiry and
+  flag roll week.
+
+### My Desk (new dock tab, `D`, `?open=desk`)
+
+Equity/today/open/buying-power hero with the guard pill; seven stat tiles
+(win rate, profit factor, expectancy in R, avg win/loss, max drawdown,
+trades, streaks); full-width equity curve with the starting-cash line;
+open book with live **R now** per position; working orders; journal with a
+notes column (synced); per-market results; browser-local position
+calculator; flatten-all; and the **risk guard** — daily loss limit that
+refuses new entries once hit while always allowing closes.
+
+Trade engine additions: `sl/tp/riskUsd/r` recorded at close, `Trade.stats()`,
+`Trade.guard()/guardBlock()`, `Trade.flattenAll()`.
+
+### New instruments
+
+NATGAS, COPPER, CORN, WHEAT, SOYBEANS (124 total). These have no anonymous
+TradingView feed, so they chart on the simulated engine while price, history
+and signals stay real through the proxy — the app says so in a toast.
+
+### Tests
+
+`npm test` → **29/29 passing**. Covers confirmed bars, both vetoes (incl. the
+weekend allowance), roll dates, R/profit-factor maths, the risk guard, search
+ranking, WASDE scheduling.
+
+### Wave 2 verification
+
+- Functions live: COT returned 8 markets (Gold +131k net, +35.2% of OI),
+  macro 4 tiles (10-yr 4.68%), CL curve **backwardation** at −14.3%/yr.
+- Desk: trade round-trip on live BTC → R recorded, journal note saved,
+  guard toggled, stats recomputed.
+- Commodities board: 8 COT + 4 curve + 4 macro + 3 weather cards; hidden in
+  Stocks mode, shown in Futures/All as designed.
+- Zero horizontal scroll at 320/768/1280 on every new surface; journal filter
+  keeps focus while typing; zero console errors.
+
+### Note on `package.json`
+
+Added purely so `npm test` works. There are **no dependencies** and
+`netlify.toml` still sets an empty build command — verify after deploy that
+Netlify has not started running an unwanted build step.
+
+---
+
 ## What was upgraded
 
 1. **Market modes drive the whole terminal.** The All markets / Futures /

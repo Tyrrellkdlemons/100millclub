@@ -274,6 +274,7 @@
     MC.calendar.check();
     MC.portfolio.snapshot();
     if (document.getElementById('pane-folio').classList.contains('on')) MC.portfolioUI.render();
+    if (MC.desk) MC.desk.tick();
   }
 
   function startLive() {
@@ -380,6 +381,7 @@
     $('dock').classList.remove('collapsed');
     MC.TV.ensurePanel(name);
     if (name === 'signals') MC.signalsUI.ensure();
+    if (name === 'desk') MC.desk.ensure();
     setTimeout(function () { State.chart.fit(); }, 300);
   }
 
@@ -664,6 +666,14 @@
       MC.ui.toast('Fresh start', 'The funded account is reset to ' + MC.fmtMoney(amt) + '. Make it count, Queez.', 'gold');
     });
     $('exportCsv').addEventListener('click', MC.trade.exportCsv);
+    $('deskOpenBtn').addEventListener('click', function () {
+      openDockTab('desk');
+      MC.resize.ensureDock(320);
+      if (MC.ui.rightIsDrawer()) MC.ui.closeDrawers();
+      setTimeout(function () {
+        $('dock').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    });
     $('accGoogle').addEventListener('click', function () { MC.cloud.oauth('google'); });
     $('accApple').addEventListener('click', function () { MC.cloud.oauth('apple'); });
     $('accSend').addEventListener('click', function () { MC.cloud.magicLink($('accEmail').value.trim()); });
@@ -948,6 +958,12 @@
       else if (key === 's') { openPane('trade'); MC.trade.setSide('sell'); }
       else if (key === 'f') toggleFullscreen();
       else if (key === 'v') $('navVlogs').click();
+      else if (key === 'd') {
+        openDockTab('desk');
+        setTimeout(function () {
+          $('dock').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
+      }
     });
 
     var lastResizeW = window.innerWidth;
@@ -1056,6 +1072,7 @@
     wire();
     if (openParam === 'signals') setTimeout(function () { openDockTab('signals'); }, 500);
     if (openParam === 'trade') setTimeout(function () { openPane('trade'); }, 500);
+    if (openParam === 'desk') setTimeout(function () { openDockTab('desk'); }, 500);
     MC.trade.init();
     selectSymbol(State.symbol);
     setSource('live');

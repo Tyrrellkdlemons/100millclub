@@ -18,6 +18,33 @@
   var currentTf = '1h';
   var expanded = null;         // sym currently opened to its reasoning
 
+  /* The veto log — rejected signals with their reasons, on display. A desk
+     that shows what it REFUSED to sign is worth more than one that only
+     shows winners (borrowed from the Trader Agent's diagnostics). */
+  var vetoLog = [];
+  MC.signals.onVeto = function (sym, tf, veto) {
+    var key = sym + tf + veto.type;
+    if (vetoLog.length && vetoLog[0].key === key) return;   // no duplicate spam
+    vetoLog.unshift({ key: key, sym: sym, tf: tf, type: veto.type, text: veto.text, at: Date.now() });
+    vetoLog = vetoLog.slice(0, 10);
+  };
+
+  /** TraderAgent-style state language: what the number MEANS. */
+  function stateOf(sig) {
+    if (sig.vetoes && sig.vetoes.length) return { cls: 'veto', label: 'VETOED' };
+    if (sig.confidence >= 70) return { cls: 'active', label: 'ACTIVE' };
+    if (sig.confidence >= 50) return { cls: 'watch', label: 'WATCH' };
+    return { cls: 'measuring', label: 'MEASURING' };
+  }
+
+  function agoLabel(sec) {
+    if (sec == null) return '';
+    if (sec < 90) return 'just closed';
+    if (sec < 5400) return Math.round(sec / 60) + 'm ago';
+    if (sec < 172800) return Math.round(sec / 3600) + 'h ago';
+    return Math.round(sec / 86400) + 'd ago';
+  }
+
   /* ----------------------------------------------------------------------
      PRO RESOURCES — the shelf of places professionals actually read
      ---------------------------------------------------------------------- */
@@ -105,6 +132,7 @@
     var srcCls = sig.source === 'Simulated' ? 'sim' : 'live';
     var isOpen = expanded === sig.sym;
     var watched = (MC.markets.viewCounts()[sig.sym] || 0) > 1;
+    var state = stateOf(sig);
 
     var html =
       '<div class="sig-card ' + meta.cls + (isOpen ? ' open' : '') + '" data-sig="' + sig.sym + '">' +
@@ -112,9 +140,15 @@
           '<span class="sym-badge m-' + a.m + '">' + sig.sym.slice(0, 4) + '</span>' +
           '<div class="sig-title"><b>' + sig.sym + '</b><small>' + MC.esc(a.n) + '</small></div>' +
           (watched ? '<span class="sig-watch" data-tip="Ranked up because you actually watch this market"><i class="fa-solid fa-eye"></i></span>' : '') +
+          (sig.roll ? '<span class="sig-roll' + (sig.roll.soon ? ' soon' : '') + '" data-tip="Contract expiry" data-tip-desc="Front quarterly contract expires ' + sig.roll.date + '. In roll week, volume migrates to the next contract — spreads and levels get weird.">' + sig.roll.label + '</span>' : '') +
+          '<span class="sig-state ' + state.cls + '" data-tip="' +
+            (state.label === 'ACTIVE' ? 'The desks agree strongly (≥70%)'
+             : state.label === 'WATCH' ? 'Leaning but not committed (≥50%)'
+             : state.label === 'VETOED' ? 'A hard rule rejected this signal — open the reasoning'
+             : 'Not enough agreement to call it anything yet') + '">' + state.label + '</span>' +
           '<span class="sig-src ' + srcCls + '" data-tip="' + (sig.source === 'Simulated'
             ? 'No live feed reachable for this one — computed on practice bars'
-            : 'Computed on real ' + MC.esc(sig.source) + ' price history') + '">' + MC.esc(sig.source) + '</span>' +
+            : 'Computed on real ' + MC.esc(sig.source) + ' price history — confirmed closes only, bar ' + agoLabel(sig.barAgeSec)) + '">' + MC.esc(sig.source) + '</span>' +
         '</div>' +
         '<div class="sig-verdict">' +
           '<span class="sig-dir ' + meta.cls + '"><i class="fa-solid ' + meta.icon + '"></i> ' + meta.label + '</span>' +
@@ -137,6 +171,9 @@
 
     if (isOpen) {
       html += '<div class="sig-detail">';
+      (sig.vetoes || []).forEach(function (v) {
+        html += '<div class="sig-veto-line"><i class="fa-solid fa-ban"></i><span>' + MC.esc(v.text) + '</span></div>';
+      });
       MC.signals.DESKS.forEach(function (desk) {
         var v = sig.votes[desk.key];
         var dcls = v.dir > 0 ? 'buy' : v.dir < 0 ? 'sell' : 'neut';
@@ -190,6 +227,21 @@
 
     var syms = boardSymbols();
     host.innerHTML = syms.map(skeletonCard).join('');
+
+    // the veto log — what got refused and why, latest first
+    var vetoBox = MC.$('sigVetoLog');
+    if (vetoBox) {
+      vetoBox.innerHTML = vetoLog.length
+        ? '<div class="sig-vlog-head"><i class="fa-solid fa-ban"></i> Veto log <span>signals the rules refused to sign</span></div>' +
+          vetoLog.slice(0, 6).map(function (v) {
+            return '<div class="sig-vlog-row"><b>' + MC.esc(v.sym) + ' · ' + v.tf + '</b><span>' + MC.esc(v.text) + '</span></div>';
+          }).join('')
+        : '';
+    }
+
+    // commodities intelligence rides along in Futures and All modes
+    if (MC.commod) MC.commod.render();
+
     MC.$('sigRes').innerHTML = resourcesHtml();
     var lab = MC.$('sigBotLab');
     if (lab) lab.addEventListener('click', function () {

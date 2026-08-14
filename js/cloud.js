@@ -38,6 +38,7 @@
     'mc_indicators', 'mc_custom_indicators',
     'mc_symbol', 'mc_order', 'mc_layout', 'mc_chart_preset', 'mc_volume',
     'mc_market', 'mc_recent_syms', 'mc_fav_syms', 'mc_seen_syms', 'mc_custom_assets',
+    'mc_journal', 'mc_risk_guard',
     'mc_yt_shelf', 'mc_yt_watched',
     'mc_cal_watch', 'mc_cal_custom', 'mc_news_cfg',
     'mc_tour_done', 'mc_tv_follow', 'mc_default_micros', 'mc_first_order'

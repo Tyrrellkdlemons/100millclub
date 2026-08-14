@@ -126,10 +126,18 @@
     { s: 'USDNOK', n: 'US Dollar / Norwegian Krone', m: 'forex', p: 10.1250, d: 4, v: 0.007, tv: 'FX:USDNOK', exch: 'FX', sec: 'Exotic' },
 
     /* ---- Commodities: TVC feeds confirmed free-streaming (the tape already
-       runs TVC:GOLD and TVC:USOIL). Filed under futures, where they live ---- */
-    { s: 'GOLD',   n: 'Gold',        m: 'futures', p: 3385.00, d: 2, v: 0.010, tv: 'TVC:GOLD',   exch: 'TVC', sec: 'Metal',  yh: 'GC=F' },
-    { s: 'SILVER', n: 'Silver',      m: 'futures', p: 38.25,   d: 3, v: 0.016, tv: 'TVC:SILVER', exch: 'TVC', sec: 'Metal',  yh: 'SI=F' },
-    { s: 'USOIL',  n: 'Crude Oil (WTI)', m: 'futures', p: 63.80, d: 2, v: 0.018, tv: 'TVC:USOIL', exch: 'TVC', sec: 'Energy', yh: 'CL=F' }
+       runs TVC:GOLD and TVC:USOIL). Filed under futures, where they live.
+       The five with tv:null have no anonymous TradingView feed — they chart
+       on the simulated engine while price, history and signals stay real
+       through the proxy (selectSymbol explains this in a toast). ---- */
+    { s: 'GOLD',   n: 'Gold',        m: 'futures', p: 3385.00, d: 2, v: 0.010, tv: 'TVC:GOLD',   exch: 'TVC', sec: 'Metal',  yh: 'GC=F', tr: 'GC' },
+    { s: 'SILVER', n: 'Silver',      m: 'futures', p: 38.25,   d: 3, v: 0.016, tv: 'TVC:SILVER', exch: 'TVC', sec: 'Metal',  yh: 'SI=F', tr: 'SI' },
+    { s: 'USOIL',  n: 'Crude Oil (WTI)', m: 'futures', p: 63.80, d: 2, v: 0.018, tv: 'TVC:USOIL', exch: 'TVC', sec: 'Energy', yh: 'CL=F', tr: 'CL' },
+    { s: 'NATGAS',   n: 'Natural Gas (Henry Hub)', m: 'futures', p: 3.05,  d: 3, v: 0.030, tv: null, exch: 'NYMEX', sec: 'Energy', yh: 'NG=F', tr: 'NG' },
+    { s: 'COPPER',   n: 'Copper',                  m: 'futures', p: 4.85,  d: 3, v: 0.018, tv: null, exch: 'COMEX', sec: 'Metal',  yh: 'HG=F', tr: 'HG' },
+    { s: 'CORN',     n: 'Corn',                    m: 'futures', p: 4.15,  d: 2, v: 0.016, tv: null, exch: 'CBOT',  sec: 'Ag',     yh: 'ZC=F', tr: 'ZC' },
+    { s: 'WHEAT',    n: 'Wheat (SRW)',             m: 'futures', p: 5.35,  d: 2, v: 0.018, tv: null, exch: 'CBOT',  sec: 'Ag',     yh: 'ZW=F', tr: 'ZW' },
+    { s: 'SOYBEANS', n: 'Soybeans',                m: 'futures', p: 10.45, d: 2, v: 0.015, tv: null, exch: 'CBOT',  sec: 'Ag',     yh: 'ZS=F', tr: 'ZS' }
   ];
 
   /* Yahoo symbols for the founding assets, so the keyless /api proxy can

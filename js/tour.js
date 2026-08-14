@@ -88,6 +88,15 @@
             'mine — dated economic events you can set alerts on, and headlines that can shout at you by keyword.'
     },
     {
+      target: '[data-dock="desk"]',
+      title: 'Your own room',
+      body: '<b>My Desk</b> is where your trading looks back at you: the equity curve full-width, win rate, ' +
+            'profit factor, <b>expectancy in R</b>, drawdown, every open position and working order as proper ' +
+            'tables, and a <b>journal with a notes column</b> — write down WHY, Queez, future-you will thank ' +
+            'present-you. There is also a <b>risk guard</b>: set a daily loss limit and the desk refuses new ' +
+            'entries once it is hit, exactly like a funded account. Press <b>D</b> to get here fast.'
+    },
+    {
       target: '[data-dock="signals"]',
       title: 'The signals desk, since you will ask',
       body: 'Four desks — <b>TrendCatcher</b>, <b>momentum</b>, <b>mean reversion</b>, <b>volume</b> — read real ' +

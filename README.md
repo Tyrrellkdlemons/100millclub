@@ -95,7 +95,9 @@ subscribers get the real feed.
 | **Market modes** | All markets / Futures / Stocks / Crypto / Forex / Indices — one switch steers the watchlist, chart, ticker tape, screener, heatmap and signals desk together. Remembered across visits. |
 | **Real prices, keyless** | The whole board prices live: crypto streams over a Binance WebSocket, forex (every pair and cross) derives from ECB reference rates, and stocks, indices, micro futures and metals come through the site's own `/api/quote` Netlify Function proxying Yahoo Finance server-side. Every row is labelled by its source; anything unpriceable runs simulated and says so. |
 | **The big search** | TradingView-style: fuzzy over the board, class tabs, favourites, recents, `?` syntax help, prefixes (`c:pepe`), and a live long-tail hunt across Yahoo (stocks, indices, futures, forex worldwide) + CoinGecko (every listed coin). Picking a long-tail result registers it permanently — it charts, quotes, demo-trades and takes alerts like a built-in. |
-| **Signals desk** | Four desks — TrendCatcher (EMA posture + ADX), Momentum (RSI + MACD), Mean reversion (Bollinger position), Volume (OBV) — vote on real bars, with confidence, per-desk reasoning in plain English, ATR-derived stop/target levels, personalised ranking by what you actually watch, a per-mode pro-resources shelf, and an optional AI read (site key or your own OpenRouter key). Education, never advice. |
+| **Signals desk** | Four desks — TrendCatcher (EMA posture + ADX), Momentum (RSI + MACD), Mean reversion (Bollinger position), Volume (OBV) — vote on **confirmed closes only**, with ACTIVE/WATCH/MEASURING state, per-desk reasoning in plain English, ATR-derived stop/target levels, personalised ranking, a per-mode pro-resources shelf, and an optional AI read. **Hard vetoes**: stale data or a hard trend-vs-momentum disagreement kills the signal outright, and the **veto log** shows what was refused and why. Education, never advice. |
+| **Commodities intelligence** | In Futures and All-markets modes: **CFTC Commitments of Traders** positioning (Managed Money net, weekly change, % of open interest), the **futures curve** per commodity (contango/backwardation + annualised roll cost), **FRED macro drivers** (10-yr, fed funds, dollar index, inflation expectations; EIA crude stocks with a key), and 7-day **ag-belt weather** with heat/dry flags. Every card names its primary source and freshness; a Plain English panel decodes the jargon. |
+| **My Desk** | Your own trading room (press <kbd>D</kbd>): equity/day/open P-L hero, research-grade stats (win rate, profit factor, **expectancy in R**, avg win-loss, max drawdown, streaks), full-width equity curve, open book and working orders as tables with live **R now**, a **journal with a notes column** that syncs, per-market results, a browser-local **position calculator**, **flatten-all**, and the **risk guard** — a daily loss limit run the way funded desks run one. |
 | **Watchlist** | ~120 instruments across Futures, Stocks, Crypto, Forex and Indices — plus anything search adds. Grouped, drag-to-reorder, sparklines, live/sim source labels. |
 | **Indices** | S&P 500, NASDAQ 100, Dow Jones, Russell 2000, FTSE 100, DAX 40, CAC 40, Nikkei 225, Hang Seng, Euro Stoxx 50, VIX. |
 | **Chart** | 7 timeframes (1m → 1w), candle / line / mountain styles, volume, settings modal. |
@@ -109,7 +111,22 @@ subscribers get the real feed.
 | **Branding** | 100MillClub crest as inline SVG — click it to upload your own logo, saved to `localStorage`. |
 | **Resilience** | If the Lightweight Charts CDN is unreachable, a built-in canvas renderer takes over. If TradingView is unreachable, the tape falls back to a simulated marquee and the panels say so plainly. |
 
-Keyboard: <kbd>/</kbd> search · <kbd>B</kbd> buy · <kbd>S</kbd> sell ·
+## Tests
+
+```bash
+npm test
+```
+
+29 acceptance tests over the pure logic — confirmed-bar enforcement, the
+stale-data and disagreement vetoes (including the weekend allowance for
+session markets), quarterly contract-roll dates, R-multiple and profit-factor
+maths, the risk guard, search ranking and WASDE scheduling. No framework: the
+browser modules load into a shimmed `window` and the rules get hammered
+directly.
+
+---
+
+Keyboard: <kbd>/</kbd> search · <kbd>B</kbd> buy · <kbd>S</kbd> sell · <kbd>D</kbd> my desk ·
 <kbd>F</kbd> fullscreen · <kbd>V</kbd> vlogs · <kbd>?</kbd> help · <kbd>Esc</kbd> close
 
 Responsive down to mobile: the right sidebar becomes a drawer under 1180px, the

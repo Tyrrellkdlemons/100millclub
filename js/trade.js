@@ -193,7 +193,39 @@
   /* ----------------------------------------------------------------------
      ONE-TAP TEST TRADE — the whole risk lesson in one button
      ---------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------
+     THE RISK GUARD — a daily loss limit, the way funded desks run one
+     Hit the limit and new entries are refused for the day. Closing and
+     managing what is already open always stays allowed.
+     ---------------------------------------------------------------------- */
+  var GUARD_KEY = 'mc_risk_guard';
+
+  Trade.guard = function () {
+    try {
+      var g = JSON.parse(MC.store.get(GUARD_KEY) || 'null');
+      return g && typeof g === 'object' ? g : { on: false, limit: 500 };
+    } catch (e) { return { on: false, limit: 500 }; }
+  };
+  Trade.saveGuard = function (g) { MC.store.set(GUARD_KEY, JSON.stringify(g)); };
+
+  /** Null when clear; the blocking reason when the day's limit is spent. */
+  Trade.guardBlock = function () {
+    var g = Trade.guard();
+    if (!g.on || !isFinite(g.limit) || g.limit <= 0) return null;
+    var day = Trade.account().dayRealized;
+    if (day <= -g.limit) {
+      return 'Daily loss limit hit: ' + MC.fmtMoney(day) + ' against a ' +
+             MC.fmtMoney(-g.limit) + ' limit. The desk reopens tomorrow — funded desks do exactly this.';
+    }
+    return null;
+  };
+
   Trade.quick = function (side) {
+    var blocked = Trade.guardBlock();
+    if (blocked) {
+      MC.ui.toast('Risk guard says no', blocked, 'err');
+      return;
+    }
     var asset = MC.State.asset;
     var acct = Trade.account();
     var qty = (acct.balance * 0.01) / (asset.p * 0.02);
@@ -229,6 +261,10 @@
     var gross = (exitPrice - position.entry) * position.qty * direction;
     var commission = commissionOn(position.entry * position.qty) +
                      commissionOn(exitPrice * position.qty);
+    var net = Math.round((gross - commission) * 100) / 100;
+    // the R-multiple: profit measured in units of what was risked at entry.
+    // Only meaningful when a stop existed — journals grade in R, not dollars.
+    var riskUsd = position.sl ? Math.abs(position.entry - position.sl) * position.qty : null;
     var list = Trade.history();
     list.unshift({
       sym: position.sym,
@@ -238,10 +274,14 @@
       exit: exitPrice,
       gross: Math.round(gross * 100) / 100,
       commission: Math.round(commission * 100) / 100,
-      pnl: Math.round((gross - commission) * 100) / 100,   // net — what the account feels
+      pnl: net,                                             // net — what the account feels
       pct: position.entry ? Math.round(((exitPrice - position.entry) / position.entry) * direction * 10000) / 100 : 0,
       hadSl: !!position.sl,
       hadTp: !!position.tp,
+      sl: position.sl || null,
+      tp: position.tp || null,
+      riskUsd: riskUsd ? Math.round(riskUsd * 100) / 100 : null,
+      r: riskUsd && riskUsd > 0.005 ? Math.round((net / riskUsd) * 100) / 100 : null,
       openedAt: position.at ? +new Date(position.at) : null,
       closedAt: Date.now(),
       reason: reason
@@ -313,6 +353,11 @@
    * same dollar twice.
    */
   Trade.place = function () {
+    var blocked = Trade.guardBlock();
+    if (blocked) {
+      MC.ui.toast('Risk guard says no', blocked, 'err');
+      return;
+    }
     var asset = MC.State.asset;
     var side = MC.State.side;
     var type = MC.$('oType').value;
@@ -709,6 +754,81 @@
       hitTarget ? 'ok' : 'err'
     );
   }
+
+  /** Close everything at market — the panic button every real desk has. */
+  Trade.flattenAll = function () {
+    var open = (MC.State.positions || []).slice();
+    if (!open.length) {
+      MC.ui.toast('Nothing to flatten', 'No open positions.', 'info');
+      return;
+    }
+    var total = 0;
+    open.forEach(function (p) {
+      var pnl = pnlOf(p);
+      total += pnl.value;
+      recordClose(p, MC.MAP[p.sym].p, 'flatten');
+    });
+    MC.State.positions = [];
+    savePositions();
+    Trade.renderPositions();
+    Trade.renderAccount();
+    MC.ui.toast('Flat ✓', open.length + ' position' + (open.length > 1 ? 's' : '') +
+      ' closed at market · net ' + MC.fmtMoney(total), total >= 0 ? 'ok' : 'err');
+  };
+
+  /* ----------------------------------------------------------------------
+     THE STATS THE JOURNALS GRADE BY — computed from the ledger, DOM-free
+     ---------------------------------------------------------------------- */
+  Trade.stats = function () {
+    var hist = Trade.history();
+    var wins = hist.filter(function (t) { return t.pnl > 0; });
+    var losses = hist.filter(function (t) { return t.pnl < 0; });
+    var grossWin = wins.reduce(function (s, t) { return s + t.pnl; }, 0);
+    var grossLoss = Math.abs(losses.reduce(function (s, t) { return s + t.pnl; }, 0));
+    var rTrades = hist.filter(function (t) { return t.r != null; });
+
+    // streaks read oldest → newest
+    var bestStreak = 0, worstStreak = 0, run = 0;
+    hist.slice().reverse().forEach(function (t) {
+      if (t.pnl > 0) { run = run > 0 ? run + 1 : 1; if (run > bestStreak) bestStreak = run; }
+      else if (t.pnl < 0) { run = run < 0 ? run - 1 : -1; if (run < worstStreak) worstStreak = run; }
+    });
+
+    // max drawdown off the equity snapshots — real recorded history only
+    var snaps;
+    try { snaps = JSON.parse(MC.store.get('mc_equity_snaps') || '[]') || []; } catch (e) { snaps = []; }
+    var peak = -Infinity, maxDD = 0;
+    snaps.forEach(function (s) {
+      if (s.eq > peak) peak = s.eq;
+      else if (peak > 0) maxDD = Math.max(maxDD, (peak - s.eq) / peak * 100);
+    });
+
+    var perSymbol = {};
+    hist.forEach(function (t) {
+      var row = perSymbol[t.sym] = perSymbol[t.sym] || { sym: t.sym, trades: 0, wins: 0, pnl: 0 };
+      row.trades++;
+      if (t.pnl > 0) row.wins++;
+      row.pnl += t.pnl;
+    });
+
+    return {
+      trades: hist.length,
+      winRate: hist.length ? Math.round((wins.length / hist.length) * 1000) / 10 : null,
+      profitFactor: grossLoss > 0 ? Math.round((grossWin / grossLoss) * 100) / 100
+                   : (grossWin > 0 ? Infinity : null),
+      avgWin: wins.length ? grossWin / wins.length : null,
+      avgLoss: losses.length ? grossLoss / losses.length : null,
+      expectancyR: rTrades.length
+        ? Math.round(rTrades.reduce(function (s, t) { return s + t.r; }, 0) / rTrades.length * 100) / 100
+        : null,
+      rCoverage: hist.length ? Math.round((rTrades.length / hist.length) * 100) : 0,
+      maxDrawdownPct: Math.round(maxDD * 100) / 100,
+      bestStreak: bestStreak,
+      worstStreak: Math.abs(worstStreak),
+      perSymbol: Object.keys(perSymbol).map(function (k) { return perSymbol[k]; })
+        .sort(function (a, b) { return b.pnl - a.pnl; })
+    };
+  };
 
   /** Manual close from the position card. */
   Trade.close = function (id) {
