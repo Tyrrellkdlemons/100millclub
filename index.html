@@ -49,8 +49,11 @@
 
   HOW TO USE  (there is also a "?" button in the top bar)
     Select an asset       click any row in the left watchlist
-    Search assets         type a symbol or company name in the top search box
-    Filter markets        use the All / Stocks / Crypto / Forex / Indices tabs
+    Search any market     the top search box (or "/") opens the big search —
+                          fuzzy over the board plus a live hunt across
+                          thousands of stocks, coins, pairs and futures
+    Market mode           All markets / Futures / Stocks / Crypto / Forex /
+                          Indices — steers the whole terminal, not just the list
     Change the timeframe  1m … 1w buttons above the chart
     Live vs Simulated     the toggle beside the timeframes. "Live" is the real
                           TradingView chart, "Simulated" is the built-in engine
@@ -93,6 +96,7 @@
 <link rel="stylesheet" href="css/backdrop.css" />
 <link rel="stylesheet" href="css/youtube.css" />
 <link rel="stylesheet" href="css/feel.css" />
+<link rel="stylesheet" href="css/market.css" />
 <link rel="stylesheet" href="css/queez.css" />
 <link rel="stylesheet" href="css/help.css" />
 <!-- gold trim layers over everything it decorates -->
@@ -187,19 +191,23 @@
     <i class="fa-solid fa-list"></i>
   </button>
 
-  <nav class="mtabs" id="mtabs" aria-label="Market categories">
-    <button class="mtab on" data-mkt="all">All</button>
-    <button class="mtab" data-mkt="futures">Futures</button>
-    <button class="mtab" data-mkt="stocks">Stocks</button>
-    <button class="mtab" data-mkt="crypto">Crypto</button>
-    <button class="mtab" data-mkt="forex">Forex</button>
-    <button class="mtab" data-mkt="indices">Indices</button>
+  <nav class="mtabs" id="mtabs" aria-label="Market mode"
+       data-tip="Market mode"
+       data-tip-desc="This switch steers the whole terminal — watchlist, chart, tape, screener, heatmap and the signals desk all follow it.">
+    <button class="mtab on" data-mkt="all"><i class="fa-solid fa-globe"></i>All<span class="mtab-x"> markets</span></button>
+    <button class="mtab" data-mkt="futures"><i class="fa-solid fa-bolt"></i>Futures</button>
+    <button class="mtab" data-mkt="stocks"><i class="fa-solid fa-building-columns"></i>Stocks</button>
+    <button class="mtab" data-mkt="crypto"><i class="fa-solid fa-coins"></i>Crypto</button>
+    <button class="mtab" data-mkt="forex"><i class="fa-solid fa-arrow-right-arrow-left"></i>Forex</button>
+    <button class="mtab" data-mkt="indices"><i class="fa-solid fa-chart-line"></i>Indices</button>
   </nav>
 
-  <div class="search">
+  <div class="search"
+       data-tip="Search any market"
+       data-tip-desc="Fuzzy search over the whole board, plus the live long tail — thousands of stocks, coins, pairs, futures and indices. Pick anything and it joins your universe.">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <label class="sr-only" for="search">Search assets</label>
-    <input id="search" type="text" placeholder="Search symbol or name…" autocomplete="off" spellcheck="false" />
+    <label class="sr-only" for="search">Search any market</label>
+    <input id="search" type="text" placeholder="Search any market…" autocomplete="off" spellcheck="false" readonly />
     <kbd>/</kbd>
   </div>
 
@@ -265,7 +273,8 @@
   <!-- ---------------- LEFT: WATCHLIST ---------------- -->
   <aside class="card col left" id="leftPanel" aria-label="Watchlist">
     <div class="wl-head">
-      <span class="wl-title" data-tip="Demo prices from the built-in feed. The chart, tape and market panels show real TradingView data.">
+      <span class="wl-title" data-tip="Real prices wherever a live feed exists"
+            data-tip-desc="Crypto streams from Binance, forex derives from ECB rates, and stocks, indices, futures and metals come through the site's keyless proxy. Anything no feed covers runs simulated — and is labelled so.">
         <i class="fa-solid fa-star"></i>Watchlist
       </span>
       <span class="pill" id="wlCount">0</span>
@@ -279,13 +288,13 @@
       <i class="fa-solid fa-angles-right"></i><span>Watchlist</span><i class="fa-solid fa-star" style="color:var(--gold)"></i>
     </button>
     <!-- phone-only market filter — the navbar .mtabs are hidden ≤860px -->
-    <nav class="wl-mtabs" id="wlMtabs" aria-label="Market categories">
-      <button class="mtab on" data-mkt="all">All</button>
-      <button class="mtab" data-mkt="futures">Futures</button>
-      <button class="mtab" data-mkt="stocks">Stocks</button>
-      <button class="mtab" data-mkt="crypto">Crypto</button>
-      <button class="mtab" data-mkt="forex">Forex</button>
-      <button class="mtab" data-mkt="indices">Indices</button>
+    <nav class="wl-mtabs" id="wlMtabs" aria-label="Market mode">
+      <button class="mtab on" data-mkt="all"><i class="fa-solid fa-globe"></i>All</button>
+      <button class="mtab" data-mkt="futures"><i class="fa-solid fa-bolt"></i>Futures</button>
+      <button class="mtab" data-mkt="stocks"><i class="fa-solid fa-building-columns"></i>Stocks</button>
+      <button class="mtab" data-mkt="crypto"><i class="fa-solid fa-coins"></i>Crypto</button>
+      <button class="mtab" data-mkt="forex"><i class="fa-solid fa-arrow-right-arrow-left"></i>Forex</button>
+      <button class="mtab" data-mkt="indices"><i class="fa-solid fa-chart-line"></i>Indices</button>
     </nav>
     <div class="wl-body" id="watchlist"></div>
   </aside>
@@ -465,6 +474,11 @@
                   data-tip-desc="The TradingView panels are sandboxed, so alerts need their own data. This is that feed: headlines and a dated economic schedule you can arm.">
             <i class="fa-solid fa-satellite-dish"></i>Radar
           </button>
+          <button class="dock-tab" data-dock="signals"
+                  data-tip="Signals — four desks read every market"
+                  data-tip-desc="TrendCatcher, momentum, mean reversion and volume vote on real price history, show their confidence, and explain the reasoning in plain English. Education, not advice.">
+            <i class="fa-solid fa-tower-broadcast"></i>Signals
+          </button>
         </div>
         <div class="dock-actions">
           <button class="btn btn-tv hidden" id="dockOpenTV" aria-label="Open this panel on TradingView"
@@ -532,6 +546,35 @@
         <!-- economic calendar -->
         <div class="dock-pane" id="dock-calendar">
           <div class="tv-slot" style="position:relative;margin:10px;height:calc(100% - 20px)"><div id="tvCalendar" style="height:100%"></div></div>
+        </div>
+
+        <!-- signals: the four desks' read on the board, per market mode -->
+        <div class="dock-pane" id="dock-signals">
+          <div class="sig-wrap">
+            <div class="sig-top">
+              <span class="sig-top-title"><i class="fa-solid fa-tower-broadcast"></i> The signals desk</span>
+              <span class="sig-top-note">Four desks vote on real bars where real bars exist — every card shows its source and its reasoning. Not financial advice.</span>
+              <div class="sig-tf-pick" role="tablist" aria-label="Signal timeframe">
+                <button class="tf" data-stf="15m">15m</button>
+                <button class="tf on" data-stf="1h">1h</button>
+                <button class="tf" data-stf="4h">4h</button>
+                <button class="tf" data-stf="1d">1d</button>
+              </div>
+              <button class="qbtn" id="sigRefreshAll"
+                      data-tip="Recompute every card"
+                      data-tip-desc="Signals cache for five minutes so the board stays quick. This throws the cache away and reads the latest bars.">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
+            </div>
+            <div class="sig-board" id="sigBoard"></div>
+            <div id="sigRes"></div>
+            <div class="sig-foot-note">
+              <b>How to read this honestly:</b> confidence measures how strongly the four desks agree with
+              each other — it is not a probability of profit. Cards marked <b>Simulated</b> had no live feed
+              reachable and are computed on practice bars. Signals teach a method; they do not know your
+              situation, and none of this is financial advice.
+            </div>
+          </div>
         </div>
 
         <!-- radar: our own headline + event feed, the one alerts can read -->
@@ -1149,6 +1192,34 @@
   </div>
 </div>
 
+<!-- the big symbol search — TradingView manners -->
+<div class="backdrop" id="mdSearch">
+  <div class="modal search-modal">
+    <div class="sm-head">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="smInput" type="text" placeholder="Search any market — symbol or name…"
+             autocomplete="off" spellcheck="false" aria-label="Search any market" />
+      <span class="sm-esc">Esc</span>
+      <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="sm-tabs" id="smTabs" role="tablist" aria-label="Asset class">
+      <button class="sm-tab on" data-cls="all"><i class="fa-solid fa-globe"></i>All</button>
+      <button class="sm-tab" data-cls="stocks"><i class="fa-solid fa-building-columns"></i>Stocks</button>
+      <button class="sm-tab" data-cls="crypto"><i class="fa-solid fa-coins"></i>Crypto</button>
+      <button class="sm-tab" data-cls="forex"><i class="fa-solid fa-arrow-right-arrow-left"></i>Forex</button>
+      <button class="sm-tab" data-cls="futures"><i class="fa-solid fa-bolt"></i>Futures</button>
+      <button class="sm-tab" data-cls="indices"><i class="fa-solid fa-chart-line"></i>Indices</button>
+    </div>
+    <div class="sm-body" id="smBody" role="listbox"></div>
+    <div class="sm-foot">
+      <span><span class="kbd">↑</span><span class="kbd">↓</span> navigate</span>
+      <span><span class="kbd">Enter</span> open</span>
+      <span><i class="fa-solid fa-star" style="color:var(--gold);font-size:9px"></i> favourite</span>
+      <span>type <span class="kbd">?</span> for search syntax</span>
+    </div>
+  </div>
+</div>
+
 <!-- indicator library -->
 <div class="backdrop" id="mdInd">
   <div class="modal wide">
@@ -1414,10 +1485,15 @@
       <button class="m-close" data-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="m-body">
-      <div class="help-h">1 · Pick something to trade</div>
-      <p class="help-p">Click any row in the <b>Watchlist</b> on the left. Use the tabs at the top
-        (All, Stocks, Crypto, Forex, Indices) to narrow the list, or type in the <b>search box</b>
-        to find a symbol or company name instantly.</p>
+      <div class="help-h">1 · Pick a market mode, then pick something to trade</div>
+      <p class="help-p">The tabs at the top — <b>All markets, Futures, Stocks, Crypto, Forex, Indices</b> —
+        steer the whole terminal: watchlist, chart, ticker tape, screener, heatmap and the signals desk all
+        follow the mode you pick. Then click any row in the <b>Watchlist</b> to load it.</p>
+      <p class="help-p">The <b>search box</b> (or <span class="kbd">/</span>) opens the big search: fuzzy
+        matching over your whole board, class tabs, favourites and recents — plus a live hunt across
+        thousands more stocks, coins, pairs, futures and indices. Pick anything from the long tail and it
+        <b>joins your universe permanently</b>: it charts, gets real prices where obtainable, demo-trades and
+        takes alerts like a built-in. Type <b>?</b> in the search for its syntax.</p>
 
       <div class="help-h">2 · Live chart or simulated chart</div>
       <p class="help-p">The <b>Live</b> toggle shows the real TradingView chart with genuine market
@@ -1447,6 +1523,20 @@
         TikTok, Instagram and X. <b>Technicals</b>, <b>News</b>, <b>Screener</b>, <b>Heatmap</b> and
         <b>Calendar</b> are live TradingView panels with real market data. Collapse the whole
         section with the caret, or hide it with the <b>Vlogs</b> button in the top bar.</p>
+
+      <div class="help-h">6½ · The signals desk</div>
+      <p class="help-p">The <b>Signals</b> tab in the bottom section runs four desks over real price
+        history — <b>TrendCatcher</b> (EMA posture + ADX), <b>Momentum</b> (RSI + MACD), <b>Mean
+        reversion</b> (Bollinger position) and <b>Volume</b> (OBV) — and shows their combined lean with a
+        confidence bar. One tap opens the full reasoning, plus ATR-derived stop and target levels sized the
+        way professionals size them. Cards are ranked by what you actually watch. Where no live feed is
+        reachable a card says <b>Simulated</b> in plain sight. An optional <b>AI read</b> narrates the
+        indicators — via the site's AI if configured, or your own OpenRouter key from the Coach's AI desk.
+        All of it teaches method; none of it is financial advice.</p>
+      <p class="help-p">Under the cards sits the <b>pro shelf</b> — the calendars, screeners, sentiment
+        dials and liquidation maps real desks read, curated per market mode, opening in new tabs. And the
+        <b>Bot lab</b> card jumps to the built-in backtester: replay any rule set on history before you
+        trust it with anything.</p>
 
       <div class="help-h">7 · Using your own TradingView account</div>
       <p class="help-p">The charts and market panels built into this page are <b>TradingView's public
@@ -1610,6 +1700,7 @@
 <!-- ======================= SCRIPTS (load order matters) ======================= -->
 <script src="js/utils.js"></script>
 <script src="js/data.js"></script>
+<script src="js/markets.js"></script>
 <script src="js/indicators.js"></script>
 <script src="js/builder.js"></script>
 <script src="js/registry.js"></script>
@@ -1625,6 +1716,9 @@
 <script src="js/ai.js"></script>
 <script src="js/alerts.js"></script>
 <script src="js/quotes.js"></script>
+<script src="js/search.js"></script>
+<script src="js/signals.js"></script>
+<script src="js/signals-ui.js"></script>
 <script src="js/portfolio.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/news.js"></script>

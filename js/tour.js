@@ -32,10 +32,19 @@
             'more organised than you are, Queez.'
     },
     {
+      target: '#mtabs',
+      title: 'The mode switch. The big one.',
+      body: 'These do not just filter the list any more — they steer the <b>whole terminal</b>. Pick ' +
+            '<b>Crypto</b> and the watchlist, chart, ticker tape, screener, heatmap and signals desk all go ' +
+            'crypto. Same for Forex, Stocks, the lot. <b>All markets</b> is everything at once, for the greedy.'
+    },
+    {
       target: '.search',
-      title: 'For when scrolling is too much',
-      body: 'Type <b>NVDA</b>, or type <b>Nikkei</b> — symbol or name, both work. The tabs next to it filter ' +
-            'down to Stocks, Crypto, Forex or Indices if you enjoy doing things the long way.'
+      title: 'Search that actually finds things',
+      body: 'Click it, or press <b>/</b>. Fuzzy search over the whole board — <b>NVDA</b>, <b>nikkei</b>, ' +
+            '<b>shiba</b>, whatever — plus a live hunt across thousands of stocks, coins, pairs and futures ' +
+            'beyond it. Pick one of those and it <b>joins your universe permanently</b>. Type <b>?</b> in there ' +
+            'and it explains its own syntax, which is more than most people do.'
     },
     {
       target: '#srcSwitch',
@@ -75,8 +84,16 @@
       target: '#dock',
       title: 'The bottom shelf',
       body: '<b>Vlogs</b> for the videos. <b>Technicals</b>, <b>News</b>, <b>Screener</b>, <b>Heatmap</b> and ' +
-            '<b>Calendar</b> are live TradingView panels. <b>Radar</b> is mine — dated economic events you can ' +
-            'set alerts on, and headlines that can shout at you by keyword.'
+            '<b>Calendar</b> are live TradingView panels — and they follow the market mode now. <b>Radar</b> is ' +
+            'mine — dated economic events you can set alerts on, and headlines that can shout at you by keyword.'
+    },
+    {
+      target: '[data-dock="signals"]',
+      title: 'The signals desk, since you will ask',
+      body: 'Four desks — <b>TrendCatcher</b>, <b>momentum</b>, <b>mean reversion</b>, <b>volume</b> — read real ' +
+            'price history and vote. Every card shows its confidence, its data source, and one tap opens the ' +
+            '<b>actual reasoning</b>, desk by desk, in plain English. The markets you watch most float to the top. ' +
+            'It teaches a method, Queez — it does not know the future, and anyone who says otherwise is selling something.'
     },
     {
       target: '.brand',

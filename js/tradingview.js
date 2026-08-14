@@ -30,6 +30,8 @@
     timeline: BASE + 'embed-widget-timeline.js',
     screener: BASE + 'embed-widget-screener.js',
     heatmap: BASE + 'embed-widget-stock-heatmap.js',
+    cryptoHeatmap: BASE + 'embed-widget-crypto-coins-heatmap.js',
+    forexHeatmap: BASE + 'embed-widget-forex-heat-map.js',
     events: BASE + 'embed-widget-events.js'
   };
 
@@ -113,13 +115,24 @@
      PUBLIC API — one function per panel
      ---------------------------------------------------------------------- */
 
-  /** Live scrolling ticker across the very top of the page. */
+  /** Live scrolling ticker across the very top of the page — mode-flavoured. */
+  var tapeFail = null;
+  function tapeSymbols() {
+    var perMode = MC.markets && MC.markets.TAPE && MC.markets.TAPE[MC.State.market];
+    return perMode || MC.TAPE_SYMBOLS;
+  }
   TV.tickerTape = function (onFail) {
+    if (onFail) tapeFail = onFail;
     mount('tvTicker', SCRIPTS.tickerTape, Object.assign({
-      symbols: MC.TAPE_SYMBOLS,
+      symbols: tapeSymbols(),
       showSymbolLogo: true,
       displayMode: 'adaptive'
-    }, DARK), { loadingText: 'Connecting to the live tape…', onFail: onFail });
+    }, DARK), { loadingText: 'Connecting to the live tape…', onFail: tapeFail });
+  };
+
+  /** The mode switched — re-line the tape with that market's names. */
+  TV.tapeForMode = function () {
+    if (mounted.tvTicker || MC.$('tvTicker')) TV.tickerTape();
   };
 
   /** The main TradingView chart — full charting engine with its own toolbars. */
@@ -179,21 +192,54 @@
     }, DARK), { loadingText: 'Fetching the latest headlines…' });
   };
 
-  /** Full market screener. */
+  /** Full market screener — follows the market mode, then the loaded asset. */
   TV.screener = function () {
-    var market = MC.State.asset.m === 'crypto' ? 'crypto' : 'america';
-    mount('tvScreener', SCRIPTS.screener, Object.assign({
+    var mode = MC.State.market;
+    var market = mode === 'crypto' ? 'crypto'
+               : mode === 'forex' ? 'forex'
+               : (mode === 'all' && MC.State.asset.m === 'crypto') ? 'crypto'
+               : 'america';
+    var cfg = {
       width: '100%',
       height: '100%',
       market: market,
-      defaultColumn: 'overview',
-      defaultScreen: 'most_capitalized',
       showToolbar: true
-    }, DARK), { loadingText: 'Scanning the market…' });
+    };
+    // the crypto and forex screeners reject the stock-only column presets
+    if (market === 'america') {
+      cfg.defaultColumn = 'overview';
+      cfg.defaultScreen = 'most_capitalized';
+    }
+    mount('tvScreener', SCRIPTS.screener, Object.assign(cfg, DARK),
+          { loadingText: 'Scanning the ' + (market === 'america' ? 'stock' : market) + ' market…' });
   };
 
-  /** S&P 500 heatmap, grouped by sector and sized by market cap. */
+  /** The heatmap changes species with the mode: stocks by sector, the whole
+      crypto board by cap, or the forex cross-rate grid. */
   TV.heatmap = function () {
+    var mode = MC.State.market;
+    if (mode === 'crypto' || (mode === 'all' && MC.State.asset.m === 'crypto')) {
+      mount('tvHeatmap', SCRIPTS.cryptoHeatmap, Object.assign({
+        dataSource: 'Crypto',
+        blockSize: 'market_cap_calc',
+        blockColor: '24h_close_change|5',
+        hasTopBar: false,
+        isDataSetEnabled: false,
+        isZoomEnabled: true,
+        hasSymbolTooltip: true,
+        width: '100%',
+        height: '100%'
+      }, DARK), { loadingText: 'Painting the crypto map…' });
+      return;
+    }
+    if (mode === 'forex') {
+      mount('tvHeatmap', SCRIPTS.forexHeatmap, Object.assign({
+        currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'NZD', 'CNY'],
+        width: '100%',
+        height: '100%'
+      }, DARK), { loadingText: 'Painting the currency grid…' });
+      return;
+    }
     mount('tvHeatmap', SCRIPTS.heatmap, Object.assign({
       dataSource: 'SPX500',
       exchanges: [],
@@ -208,6 +254,13 @@
       width: '100%',
       height: '100%'
     }, DARK), { loadingText: 'Painting the heatmap…' });
+  };
+
+  /** Rebuild the panels whose species depends on the mode — only the ones
+      already on screen; the rest stay lazy. */
+  TV.remountModePanels = function () {
+    if (mounted.tvScreener) TV.screener();
+    if (mounted.tvHeatmap) TV.heatmap();
   };
 
   /** Upcoming economic events that move markets. */

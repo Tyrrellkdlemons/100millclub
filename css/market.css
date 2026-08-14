@@ -1,0 +1,261 @@
+/* ==========================================================================
+   market.css — the 100x layer: mode tabs, the big search, the signals desk
+   Sits on the same tokens as everything else. Gold stays brand-only.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   MODE TABS — the market switch now steers the whole terminal, so it gets
+   a touch more presence: icons, and a gold underline on the live mode.
+   --------------------------------------------------------------------------- */
+.mtab i{ margin-right:5px; font-size:10px; opacity:.75; }
+.mtab{ position:relative; transition:color .18s var(--ease), background .18s var(--ease); }
+.mtab.on::after{
+  content:""; position:absolute; left:18%; right:18%; bottom:-1px; height:2px;
+  border-radius:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation:modeIn .3s var(--ease);
+}
+@keyframes modeIn{ from{ transform:scaleX(.3); opacity:0; } to{ transform:scaleX(1); opacity:1; } }
+
+/* the watchlist crossfades when the universe changes */
+.wl-body.mode-swap{ animation:wlSwap .28s var(--ease); }
+@keyframes wlSwap{ from{ opacity:.25; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+
+/* the navbar sheds ballast gracefully as width runs out — measured so the
+   bar never overflows a 1280 screen (it did, by 34px, before these) */
+@media (max-width:1560px){ .mtab-x{ display:none; } }
+@media (max-width:1400px){
+  .mtabs{ gap:2px; }
+  .mtab{ padding:6px 9px; }
+  .mtab i{ display:none; }
+}
+@media (max-width:1300px){
+  .nav-right .btn .lbl{ display:none; }
+  .nav-right{ gap:6px; }
+}
+
+/* ---------------------------------------------------------------------------
+   THE BIG SEARCH — TradingView manners: one calm panel, rows you can read
+   --------------------------------------------------------------------------- */
+.search-modal{ width:min(680px, calc(100vw - 32px)); max-height:min(76vh, 640px); display:flex; flex-direction:column; padding:0; }
+
+.sm-head{
+  display:flex; align-items:center; gap:10px;
+  padding:14px 16px 12px; border-bottom:1px solid var(--border);
+}
+.sm-head > .fa-magnifying-glass{ color:var(--gold); font-size:15px; }
+#smInput{
+  flex:1; background:none; border:none; outline:none;
+  font-size:16px; font-weight:600; color:var(--text); min-width:0;
+}
+#smInput::placeholder{ color:var(--dim); font-weight:500; }
+.sm-esc{ font-size:10px; color:var(--dim); border:1px solid var(--border-2); border-radius:5px; padding:2px 6px; flex:0 0 auto; }
+
+.sm-tabs{ display:flex; gap:6px; padding:10px 14px; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+.sm-tabs::-webkit-scrollbar{ display:none; }
+.sm-tab{
+  padding:5px 12px; border-radius:999px; font-size:11.5px; font-weight:600;
+  color:var(--muted); border:1px solid transparent; white-space:nowrap;
+  transition:all .16s var(--ease);
+}
+.sm-tab i{ margin-right:5px; font-size:10px; }
+.sm-tab:hover{ color:var(--text); background:var(--panel-3); }
+.sm-tab.on{ color:var(--gold); background:rgba(245,197,24,.08); border-color:rgba(245,197,24,.28); }
+
+.sm-body{ flex:1; overflow-y:auto; padding:6px 8px 10px; min-height:220px; }
+
+.sm-sec{
+  display:flex; align-items:center; gap:7px;
+  font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.7px;
+  color:var(--dim); padding:12px 10px 6px;
+}
+.sm-sec i{ color:var(--gold); font-size:10px; }
+
+.sm-row{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer;
+  transition:background .12s var(--ease);
+}
+.sm-row:hover, .sm-row.active{ background:var(--panel-3); }
+.sm-row.active{ box-shadow:inset 0 0 0 1px var(--accent-line); }
+.sm-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.sm-main b{ font-size:13px; letter-spacing:.3px; }
+.sm-main small{ color:var(--muted); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sm-live{
+  font-size:8.5px; font-weight:800; letter-spacing:.8px; color:var(--green);
+  border:1px solid rgba(38,201,106,.4); border-radius:4px; padding:2px 5px; flex:0 0 auto;
+}
+.sm-tag{ font-size:10px; color:var(--muted); background:var(--panel-2); border:1px solid var(--border); border-radius:5px; padding:3px 7px; white-space:nowrap; flex:0 0 auto; }
+.sm-exch{ font-size:10px; color:var(--dim); min-width:52px; text-align:right; flex:0 0 auto; }
+.sm-star{ color:var(--dim); padding:6px; border-radius:7px; flex:0 0 auto; transition:color .15s, transform .15s; }
+.sm-star:hover{ color:var(--gold); transform:scale(1.15); }
+.sm-star.on{ color:var(--gold); }
+.sm-add{ color:var(--accent); font-size:11px; padding:6px; flex:0 0 auto; }
+
+.sm-skel{ height:38px; border-radius:var(--radius-sm); margin:6px 10px; background:linear-gradient(100deg, var(--panel-2) 40%, var(--panel-3) 50%, var(--panel-2) 60%); background-size:200% 100%; animation:shimmer 1.1s infinite linear; }
+.sm-skel.short{ width:60%; }
+@keyframes shimmer{ from{ background-position:120% 0; } to{ background-position:-80% 0; } }
+
+.sm-tip-line{ text-align:center; color:var(--dim); font-size:11px; padding:14px 10px 8px; }
+.sm-tip-line b{ color:var(--gold); }
+
+.sm-foot{
+  display:flex; gap:16px; justify-content:center; align-items:center; flex-wrap:wrap;
+  border-top:1px solid var(--border); padding:9px 12px; color:var(--dim); font-size:10.5px;
+}
+.sm-foot .kbd{ font-size:9.5px; }
+
+.sm-help{ padding:14px 16px; }
+.sm-help-t{ font-weight:700; color:var(--gold); margin-bottom:8px; }
+.sm-help-t i{ margin-right:6px; }
+.sm-help p{ color:var(--muted); font-size:12px; line-height:1.65; margin:0 0 10px; }
+.sm-help b{ color:var(--text); }
+.sm-help code{
+  background:var(--panel-3); border:1px solid var(--border-2); border-radius:4px;
+  padding:1px 5px; font-size:11px; color:var(--gold-lite);
+}
+
+/* ---------------------------------------------------------------------------
+   THE SIGNALS DESK
+   --------------------------------------------------------------------------- */
+.sig-wrap{ padding:12px; height:100%; overflow-y:auto; }
+
+.sig-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.sig-top-title{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; }
+.sig-top-title i{ color:var(--gold); }
+.sig-top-note{ color:var(--dim); font-size:11px; flex:1; min-width:180px; }
+.sig-tf-pick{ display:flex; gap:4px; }
+.sig-tf-pick .tf{ padding:4px 9px; }
+
+.sig-board{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+  gap:10px;
+}
+
+.sig-card{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:11px 12px; display:flex; flex-direction:column; gap:9px;
+  transition:transform .16s var(--ease), border-color .16s var(--ease), box-shadow .16s var(--ease);
+  animation:sigIn .3s var(--ease);
+}
+@keyframes sigIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+.sig-card:hover{ transform:translateY(-2px); border-color:var(--border-2); box-shadow:0 8px 22px rgba(0,0,0,.35); }
+.sig-card.open{ grid-column:1 / -1; }
+
+.sig-head{ display:flex; align-items:center; gap:9px; }
+.sig-title{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.sig-title b{ font-size:13px; }
+.sig-title small{ color:var(--muted); font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sig-watch{ color:var(--gold); font-size:10px; }
+.sig-src{ font-size:8.5px; font-weight:800; letter-spacing:.6px; border-radius:4px; padding:2px 5px; flex:0 0 auto; }
+.sig-src.live{ color:var(--green); border:1px solid rgba(38,201,106,.4); }
+.sig-src.sim{ color:var(--muted); border:1px solid var(--border-2); }
+
+.sig-verdict{ display:flex; align-items:center; gap:9px; }
+.sig-dir{ font-size:10.5px; font-weight:800; letter-spacing:.5px; padding:4px 9px; border-radius:6px; white-space:nowrap; }
+.sig-dir.buy{ color:var(--green); background:rgba(38,201,106,.12); }
+.sig-dir.sell{ color:var(--red); background:rgba(255,77,94,.12); }
+.sig-dir.neut{ color:var(--muted); background:var(--panel-3); }
+.sig-conf{ flex:1; position:relative; height:14px; border-radius:7px; background:var(--panel-3); overflow:hidden; min-width:60px; }
+.sig-conf i{
+  position:absolute; inset:0 auto 0 0; border-radius:7px;
+  background:linear-gradient(90deg, var(--gold-deep), var(--gold));
+  transition:width .6s var(--ease);
+}
+.sig-conf span{ position:absolute; inset:0; display:grid; place-items:center; font-size:9px; font-weight:800; color:var(--text); z-index:1; text-shadow:0 1px 3px rgba(0,0,0,.85); }
+.sig-tf{ font-size:10px; color:var(--dim); }
+
+.sig-desks{ display:flex; align-items:center; gap:6px; }
+.sig-desk{
+  width:26px; height:26px; border-radius:7px; display:grid; place-items:center;
+  font-size:11px; border:1px solid var(--border);
+}
+.sig-desk.buy{ color:var(--green); border-color:rgba(38,201,106,.35); }
+.sig-desk.sell{ color:var(--red); border-color:rgba(255,77,94,.35); }
+.sig-desk.neut{ color:var(--dim); }
+.sig-more{ margin-left:auto; color:var(--accent); font-size:10.5px; font-weight:600; }
+.sig-more:hover{ text-decoration:underline; }
+
+.sig-skel{ height:16px; border-radius:6px; background:linear-gradient(100deg, var(--panel-3) 40%, var(--border) 50%, var(--panel-3) 60%); background-size:200% 100%; animation:shimmer 1.1s infinite linear; }
+.sig-skel.short{ width:55%; }
+
+.sig-detail{ border-top:1px solid var(--border); padding-top:10px; display:flex; flex-direction:column; gap:8px; }
+.sig-line{ display:flex; gap:10px; font-size:11.5px; line-height:1.5; }
+.sig-line b{ flex:0 0 128px; font-size:11px; }
+.sig-line b i{ margin-right:4px; }
+.sig-line b.buy{ color:var(--green); } .sig-line b.sell{ color:var(--red); } .sig-line b.neut{ color:var(--muted); }
+.sig-line span{ color:var(--muted); }
+
+.sig-levels{ display:flex; gap:14px; background:var(--panel-3); border-radius:var(--radius-sm); padding:8px 12px; font-size:11.5px; flex-wrap:wrap; }
+.sig-levels b{ color:var(--dim); font-weight:600; margin-right:5px; }
+
+.sig-ai-busy{ color:var(--muted); font-size:11.5px; padding:4px 0; }
+.sig-ai-out{
+  background:rgba(79,140,255,.06); border:1px solid var(--accent-line);
+  border-radius:var(--radius-sm); padding:10px 12px; font-size:12px; line-height:1.6; color:var(--text);
+}
+.sig-ai-out.err{ background:var(--panel-3); border-color:var(--border-2); color:var(--muted); }
+.sig-ai-via{ font-size:9.5px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+
+.sig-actions{ display:flex; gap:7px; flex-wrap:wrap; }
+
+.sig-res-head{
+  display:flex; align-items:center; gap:8px; margin:16px 0 8px;
+  font-weight:800; font-size:12.5px;
+}
+.sig-res-head i{ color:var(--gold); }
+.sig-res-head span{ color:var(--dim); font-weight:500; font-size:10.5px; }
+.sig-res{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:8px; }
+.sig-res-card{
+  display:flex; flex-direction:column; gap:4px; text-align:left;
+  background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:10px 12px; color:var(--text); transition:transform .15s var(--ease), border-color .15s var(--ease);
+}
+.sig-res-card:hover{ transform:translateY(-2px); border-color:var(--accent-line); }
+.sig-res-card b{ font-size:12px; color:var(--text); }
+.sig-res-card b i{ font-size:9px; color:var(--dim); margin-left:3px; }
+.sig-res-card span{ font-size:10.5px; color:var(--muted); line-height:1.45; }
+.sig-res-card.lab{ border-color:rgba(245,197,24,.3); cursor:pointer; }
+.sig-res-card.lab b{ color:var(--gold); }
+
+.sig-foot-note{ margin-top:14px; color:var(--dim); font-size:10.5px; line-height:1.6; }
+.sig-foot-note b{ color:var(--muted); }
+
+/* ---------------------------------------------------------------------------
+   MICRO-INTERACTIONS — press feel everywhere, cheap on the compositor
+   --------------------------------------------------------------------------- */
+.btn, .qbtn, .mtab, .tf, .sm-tab, .dock-tab, .rtab, .bnav{ -webkit-tap-highlight-color:transparent; }
+.btn:active, .qbtn:active, .quick:active, .submit:active, .run-btn:active,
+.sig-res-card:active, .sm-row:active{ transform:scale(.97); }
+.submit, .run-btn, .quick{ position:relative; overflow:hidden; }
+.submit::after, .run-btn::after{
+  content:""; position:absolute; top:0; bottom:0; left:-70%; width:36%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.14), transparent);
+  transform:skewX(-18deg); transition:left .5s var(--ease); pointer-events:none;
+}
+.submit:hover::after, .run-btn:hover::after{ left:130%; }
+
+/* the dock tab row can now hold eight tabs — let phones scroll it */
+.dock-tabs{ overflow-x:auto; scrollbar-width:none; }
+.dock-tabs::-webkit-scrollbar{ display:none; }
+
+/* ---------------------------------------------------------------------------
+   SMALL SCREENS
+   --------------------------------------------------------------------------- */
+@media (max-width: 640px){
+  .search-modal{ width:calc(100vw - 16px); max-height:calc(100dvh - 90px); }
+  .sm-exch{ display:none; }
+  .sig-board{ grid-template-columns:1fr; }
+  .sig-line b{ flex-basis:104px; }
+  .sig-res{ grid-template-columns:1fr; }
+}
+@media (max-width: 380px){
+  .sm-tag{ display:none; }
+  .sig-top-note{ display:none; }
+}
+
+/* respect the reduced-motion crowd — the information stays, the dance goes */
+@media (prefers-reduced-motion: reduce){
+  .sig-card, .wl-body.mode-swap, .mtab.on::after{ animation:none; }
+  .sig-conf i{ transition:none; }
+  .submit::after, .run-btn::after{ display:none; }
+}

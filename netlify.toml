@@ -5,6 +5,12 @@
   publish = "."
   command = ""
 
+# Serverless layer: keyless quote/history/search proxies + the optional
+# OpenRouter endpoint. Each function declares its own /api/* route, and
+# function routes are matched before the SPA catch-all below.
+[functions]
+  directory = "netlify/functions"
+
 # Repo housekeeping ships with the publish dir (root); don't serve it.
 # force = true is what beats the on-disk files — these must sit above the
 # SPA catch-all, because the first matching rule wins.

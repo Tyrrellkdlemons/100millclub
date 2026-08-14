@@ -164,11 +164,24 @@ button, a, select, input, .wl-row, .vid, .dock-tab{ touch-action:manipulation; }
   .logo-btn::after{ display:none; }
 }
 
+/* phones: the navbar sheds what lives elsewhere.
+   Connect is a simulation nicety and Backtest has its own tab in the trade
+   panel — dropping both here is what keeps the bar inside 320px with zero
+   horizontal scroll. Measured: brand ~128 + drawer btn 38 + search ≥72 +
+   Vlogs/Save/help/trade ≈ 148 + gaps = 318. */
+@media (max-width:480px){
+  #connectBtn, #navBacktest{ display:none; }
+  .brand-tag{ display:none; }
+  .search{ min-width:0; }
+  .nav-right{ gap:5px; }
+}
+
 /* very narrow phones: quieter navbar */
 @media (max-width:380px){
   .nav{ gap:6px; padding:0 8px; }
   .helpWrap, #helpWrap{ display:none; }   /* Queez covers help on phones */
   .bnav{ font-size:9px; }
+  .brand-text{ display:none; }            /* the crest alone carries the brand */
 }
 
 /* --------------------------------------------------------------------------

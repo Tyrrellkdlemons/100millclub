@@ -24,6 +24,18 @@
     State.symbol = symbol;
     var asset = State.asset;
 
+    // taste memory: recents + view counts power search and signal ranking
+    if (MC.markets) MC.markets.noteView(symbol);
+
+    // search-added indices/futures may have no anonymous TradingView feed —
+    // the simulated chart still works, and the quote proxy keeps it honest
+    if (!asset.tv && State.source === 'live') {
+      setSource('sim');
+      MC.ui.toast('Simulated chart for this one',
+        asset.s + ' has no anonymous TradingView feed, so the built-in engine draws it. ' +
+        'The price itself stays real wherever a live source covers it.', 'info');
+    }
+
     var badge = $('symBadge');
     badge.textContent = symbol.length <= 4 ? symbol : symbol.slice(0, 3);
     badge.style.fontSize = badge.textContent.length >= 4 ? '8.5px'
@@ -367,6 +379,7 @@
     $$('.dock-pane').forEach(function (p) { p.classList.toggle('on', p.id === 'dock-' + name); });
     $('dock').classList.remove('collapsed');
     MC.TV.ensurePanel(name);
+    if (name === 'signals') MC.signalsUI.ensure();
     setTimeout(function () { State.chart.fit(); }, 300);
   }
 
@@ -424,20 +437,23 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSymbol(row.dataset.sym); }
     });
 
-    /* ---- market tabs + search ----
-       Two copies exist — the navbar row and the phone copy in the watchlist
-       drawer — so match by market, not by node, to keep both in step. */
+    /* ---- market mode + search ----
+       Two tab copies exist — the navbar row and the phone copy in the
+       watchlist drawer. setMode keeps both in step and steers the whole
+       terminal: watchlist, chart, tape, screener, heatmap, signals. */
     function pickMarket(e, tab) {
-      $$('.mtab').forEach(function (t) { t.classList.toggle('on', t.dataset.mkt === tab.dataset.mkt); });
-      State.market = tab.dataset.mkt;
-      MC.watchlist.render();
+      var body = $('watchlist');
+      if (body) {
+        body.classList.remove('mode-swap');
+        void body.offsetWidth;               // restart the crossfade
+        body.classList.add('mode-swap');
+      }
+      MC.markets.setMode(tab.dataset.mkt);
     }
     MC.on($('mtabs'), 'click', '.mtab', pickMarket);
     MC.on($('wlMtabs'), 'click', '.mtab', pickMarket);
-    $('search').addEventListener('input', function (e) {
-      State.query = e.target.value;
-      MC.watchlist.render();
-    });
+    // the navbar box is a doorway now — search.js opens the big modal on
+    // focus/click, and the modal's own input narrows the watchlist live
 
     /* ---- timeframes ---- */
     MC.on($('tfGroup'), 'click', '.tf', function (e, btn) {
@@ -926,7 +942,7 @@
       }
 
       var key = e.key.toLowerCase();
-      if (e.key === '/') { e.preventDefault(); $('search').focus(); }
+      if (e.key === '/' || (key === 'k' && (e.ctrlKey || e.metaKey))) { e.preventDefault(); MC.searchUI.open(); }
       else if (e.key === '?') MC.ui.openModal('mdHelp');
       else if (key === 'b') { openPane('trade'); MC.trade.setSide('buy'); }
       else if (key === 's') { openPane('trade'); MC.trade.setSide('sell'); }
@@ -998,6 +1014,8 @@
 
     MC.ui.initTooltips();
     MC.ui.initModals();
+    MC.markets.initUI();          // reflect the remembered market mode
+    MC.searchUI.init();           // the big search modal
     MC.watchlist.render();
     MC.vlogs.render();
 
@@ -1030,8 +1048,14 @@
       if (!MC.store.get('mc_dock_open')) $('dock').classList.add('collapsed');
     }
 
+    // PWA shortcuts and share links can ask for a pane by URL
+    var openParam = null;
+    try { openParam = new URLSearchParams(location.search).get('open'); } catch (e) {}
+
     // 5. wire everything, then load the opening market
     wire();
+    if (openParam === 'signals') setTimeout(function () { openDockTab('signals'); }, 500);
+    if (openParam === 'trade') setTimeout(function () { openPane('trade'); }, 500);
     MC.trade.init();
     selectSymbol(State.symbol);
     setSource('live');
@@ -1076,6 +1100,15 @@
         MC.ui.toast('Welcome back to the City of Grind 👑',
           'Hover anything for an explanation, or hit the ? button to replay the tour.', 'gold');
       }, 900);
+    }
+
+    // The service worker keeps the shell openable offline. It is network-
+    // first for HTML/CSS/JS on purpose — the un-hashed filenames must never
+    // be served stale after a deploy (that bug already happened once).
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () { /* http dev, private mode */ });
+      });
     }
   }
 

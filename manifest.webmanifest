@@ -1,17 +1,35 @@
 {
+  "id": "100millclub-terminal",
   "name": "100MillClub — City of Grind",
   "short_name": "100MillClub",
-  "description": "Trading terminal: live charts, watchlists, alerts, backtesting, portfolio and vlogs.",
+  "description": "All-markets trading terminal: live charts, real quotes, signals desk, demo trading, alerts, backtesting, portfolio and vlogs.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#07090b",
   "theme_color": "#07090b",
+  "categories": ["finance", "education"],
   "icons": [
     { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Signals desk",
+      "short_name": "Signals",
+      "description": "The four desks' read on the board",
+      "url": "./?open=signals",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Practice trade",
+      "short_name": "Trade",
+      "description": "Straight to the demo order ticket",
+      "url": "./?open=trade",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

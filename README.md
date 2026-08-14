@@ -2,11 +2,18 @@
 
 **Live: https://100millclub.netlify.app**
 
-A trading terminal that pairs **real live TradingView market data** with a fully
-simulated practice environment: watchlists, order entry, position tracking and a
-working strategy backtester — plus a creator vlog row with social sharing.
+An **all-markets trading hub**: one terminal that switches whole-site between
+**All markets / Futures / Stocks / Crypto / Forex / Indices**, prices its
+entire ~120-instrument board from real feeds (Binance WebSocket streaming,
+ECB rates, and a keyless Yahoo proxy for stocks, indices, micro futures and
+metals), hunts the live long tail of thousands more symbols through a
+TradingView-style search, runs a four-desk **signals engine** with its
+reasoning on display, and wraps it all around the original practice
+environment: order entry, position tracking, alerts, backtesting, portfolio,
+Coach and vlogs.
 
-Pure HTML, CSS and vanilla JavaScript. No framework, no build step, no backend.
+Pure HTML, CSS and vanilla JavaScript, plus a thin set of Netlify Functions
+for the data proxies. No framework, no build step.
 
 ---
 
@@ -85,7 +92,11 @@ subscribers get the real feed.
 
 | Area | Detail |
 | --- | --- |
-| **Watchlist** | 30 instruments across Stocks, Crypto, Forex and Indices. Grouped, searchable by symbol *or* name, filtered by the market tabs. |
+| **Market modes** | All markets / Futures / Stocks / Crypto / Forex / Indices — one switch steers the watchlist, chart, ticker tape, screener, heatmap and signals desk together. Remembered across visits. |
+| **Real prices, keyless** | The whole board prices live: crypto streams over a Binance WebSocket, forex (every pair and cross) derives from ECB reference rates, and stocks, indices, micro futures and metals come through the site's own `/api/quote` Netlify Function proxying Yahoo Finance server-side. Every row is labelled by its source; anything unpriceable runs simulated and says so. |
+| **The big search** | TradingView-style: fuzzy over the board, class tabs, favourites, recents, `?` syntax help, prefixes (`c:pepe`), and a live long-tail hunt across Yahoo (stocks, indices, futures, forex worldwide) + CoinGecko (every listed coin). Picking a long-tail result registers it permanently — it charts, quotes, demo-trades and takes alerts like a built-in. |
+| **Signals desk** | Four desks — TrendCatcher (EMA posture + ADX), Momentum (RSI + MACD), Mean reversion (Bollinger position), Volume (OBV) — vote on real bars, with confidence, per-desk reasoning in plain English, ATR-derived stop/target levels, personalised ranking by what you actually watch, a per-mode pro-resources shelf, and an optional AI read (site key or your own OpenRouter key). Education, never advice. |
+| **Watchlist** | ~120 instruments across Futures, Stocks, Crypto, Forex and Indices — plus anything search adds. Grouped, drag-to-reorder, sparklines, live/sim source labels. |
 | **Indices** | S&P 500, NASDAQ 100, Dow Jones, Russell 2000, FTSE 100, DAX 40, CAC 40, Nikkei 225, Hang Seng, Euro Stoxx 50, VIX. |
 | **Chart** | 7 timeframes (1m → 1w), candle / line / mountain styles, volume, settings modal. |
 | **Indicators** | A library of **35** — moving averages (SMA, EMA, WMA, HMA, DEMA, TEMA, VWMA, VWAP), bands (Bollinger, Keltner, Donchian, envelopes), trend (Supertrend, Parabolic SAR, Ichimoku, pivot points, ADX, Aroon), momentum (RSI, MACD, Stochastic, Stoch RSI, CCI, Williams %R, momentum, ROC, TRIX, Ultimate, Awesome), volume (OBV, MFI, CMF, Force Index) and volatility (ATR, standard deviation). Searchable, with live parameter editing and one stacked panel per oscillator, all time-synced to the chart. |
