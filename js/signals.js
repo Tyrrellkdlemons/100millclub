@@ -141,6 +141,7 @@
         .then(function (rows) {
           return {
             source: 'Binance',
+            interval: BIN_INT[tf],          // Binance has every interval we offer
             bars: rows.map(function (k) {
               return { time: Math.floor(k[0] / 1000), open: +k[1], high: +k[2],
                        low: +k[3], close: +k[4], volume: +k[5] };
@@ -155,7 +156,10 @@
         .then(function (r) { if (!r.ok) throw new Error('proxy ' + r.status); return r.json(); })
         .then(function (d) {
           if (!d.bars || d.bars.length < 40) throw new Error('thin history');
-          return { source: 'Yahoo', bars: d.bars.slice(-140) };
+          // Yahoo has no 4h interval, so a "4h" request really runs on 1h
+          // bars. Carry the interval actually used so the card can say so
+          // instead of quietly mislabelling the reading.
+          return { source: 'Yahoo', interval: YH_INT[tf], bars: d.bars.slice(-140) };
         });
     }
 
@@ -259,9 +263,12 @@
   ];
   SIG.DESKS = DESKS;
 
-  function analyze(asset, tf, bars, source) {
-    // only confirmed closes vote — the forming candle changes its mind
-    var tfSec = TF_SECONDS[tf] || 3600;
+  function analyze(asset, tf, bars, source, barInterval) {
+    // only confirmed closes vote — the forming candle changes its mind.
+    // Freshness must be judged against the bars we ACTUALLY have: a 4h
+    // request served by 1h bars is stale after 1h of silence, not 4h.
+    var actual = barInterval || tf;
+    var tfSec = TF_SECONDS[actual] || TF_SECONDS[tf] || 3600;
     bars = SIG.confirmedBars(bars, tfSec);
 
     var closes = MC.ind.src.close(bars);
@@ -317,6 +324,7 @@
       votes: votes, levels: levels,
       price: px, atr: atr,
       barAgeSec: isFinite(barAgeSec) ? Math.round(barAgeSec) : null,
+      barInterval: actual,
       vetoes: vetoes,
       roll: SIG.rollInfo(asset.s)
     };
@@ -338,12 +346,13 @@
       inFlight++;
       (function (j) {
         fetchBars(j.asset, j.tf)
-          .then(function (r) { j.resolve(analyze(j.asset, j.tf, r.bars, r.source)); })
+          .then(function (r) { j.resolve(analyze(j.asset, j.tf, r.bars, r.source, r.interval)); })
           .catch(function () {
             // offline or unpriceable: the simulated engine still teaches,
             // and the card says "Simulated" in plain sight
-            var bars = MC.genBars(j.asset.s, j.tf === '1d' ? '1d' : '1h', 140);
-            j.resolve(analyze(j.asset, j.tf, bars, 'Simulated'));
+            var simTf = j.tf === '1d' ? '1d' : '1h';
+            var bars = MC.genBars(j.asset.s, simTf, 140);
+            j.resolve(analyze(j.asset, j.tf, bars, 'Simulated', simTf));
           })
           .then(function () { inFlight--; pump(); });
       })(job);

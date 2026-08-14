@@ -27,10 +27,14 @@
   function notes() {
     try { return JSON.parse(MC.store.get(NOTES_KEY) || '{}') || {}; } catch (e) { return {}; }
   }
-  function saveNote(closedAt, text) {
+
+  /** Rows written before ids existed are still keyed by their close time. */
+  function noteKey(trade) { return trade.id || trade.closedAt; }
+
+  function saveNote(key, text) {
     var n = notes();
-    if (text && text.trim()) n[closedAt] = text.trim().slice(0, 400);
-    else delete n[closedAt];
+    if (text && text.trim()) n[key] = text.trim().slice(0, 400);
+    else delete n[key];
     MC.store.set(NOTES_KEY, JSON.stringify(n));
   }
 
@@ -168,8 +172,8 @@
         '<td class="mono ' + cls + '">' + MC.fmtMoney(t.pnl) + '</td>' +
         '<td class="mono ' + cls + '">' + fmtR(t.r) + '</td>' +
         '<td class="dk-dim">' + reason + (held != null ? ' · ' + (held < 90 ? held + 'm' : Math.round(held / 60) + 'h') : '') + '</td>' +
-        '<td class="dk-note-cell"><input class="dk-note" data-note="' + t.closedAt + '" ' +
-          'placeholder="why? note it…" value="' + MC.esc(n[t.closedAt] || '') + '" maxlength="400" /></td>' +
+        '<td class="dk-note-cell"><input class="dk-note" data-note="' + MC.esc(noteKey(t)) + '" ' +
+          'placeholder="why? note it…" value="' + MC.esc(n[noteKey(t)] || '') + '" maxlength="400" /></td>' +
       '</tr>';
     }).join('');
 

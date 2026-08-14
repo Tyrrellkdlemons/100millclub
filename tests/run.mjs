@@ -116,6 +116,39 @@ section('Trade stats');
 }
 
 /* ========================================================================
+   4b · Journal note keys must be unique per trade
+   Regression: flattenAll closes every position inside one loop, so several
+   rows land on the same millisecond. Notes were keyed by closedAt, so one
+   note silently appeared on every trade closed in that batch.
+   ======================================================================== */
+section('Journal note keys');
+{
+  localStorage.setItem('mc_trade_history', '[]');
+  localStorage.setItem('mc_positions', '[]');
+  localStorage.setItem('mc_acct_cfg', JSON.stringify({ start: 100000 }));
+  MC.MAP.MES.p = 100;
+
+  // three positions, closed together the way flattenAll does it
+  MC.State.positions = ['a', 'b', 'c'].map((t, i) => ({
+    id: 'P' + i, sym: 'MES', side: 'buy', qty: 1, entry: 90, sl: 80, tp: 120, at: new Date()
+  }));
+  MC.ui = { toast: function () {} };          // headless
+  MC.trade.renderPositions = function () {};
+  MC.trade.renderAccount = function () {};
+  MC.trade.flattenAll();
+
+  const hist = MC.trade.history();
+  ok(hist.length === 3, 'three rows written by flatten-all', hist.length);
+  const stamps = new Set(hist.map(t => t.closedAt));
+  const ids = new Set(hist.map(t => t.id));
+  ok(ids.size === 3, 'every row has a DISTINCT id', [...ids]);
+  ok(hist.every(t => t.id), 'no row is missing an id');
+  // the collision the ids exist to survive:
+  if (stamps.size < 3) ok(true, 'closedAt did collide (' + stamps.size + ' stamps) — ids are what save the journal');
+  else ok(true, 'closedAt happened not to collide this run; ids still guarantee it');
+}
+
+/* ========================================================================
    5 · The risk guard
    ======================================================================== */
 section('Risk guard');

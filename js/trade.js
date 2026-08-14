@@ -267,6 +267,11 @@
     var riskUsd = position.sl ? Math.abs(position.entry - position.sl) * position.qty : null;
     var list = Trade.history();
     list.unshift({
+      // A unique row id. closedAt is NOT unique: flattenAll closes every
+      // position inside one loop, so several rows land on the same
+      // millisecond — and the journal keys notes by row, so a shared key
+      // meant one note silently appeared on several trades.
+      id: 'T-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
       sym: position.sym,
       side: position.side,
       qty: position.qty,

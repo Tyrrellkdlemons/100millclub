@@ -37,6 +37,20 @@
     return { cls: 'measuring', label: 'MEASURING' };
   }
 
+  /**
+   * The timeframe chip. When the source has no such interval (Yahoo has no
+   * 4h), the read really runs on smaller candles — so the chip is starred
+   * and says which, rather than quietly mislabelling the reading.
+   */
+  function tfChipHtml(sig) {
+    var approx = sig.barInterval && sig.barInterval !== sig.tf;
+    if (!approx) return '<span class="sig-tf">' + MC.esc(sig.tf) + '</span>';
+    return '<span class="sig-tf approx" data-tip="Computed on ' + MC.esc(sig.barInterval) + ' bars" ' +
+      'data-tip-desc="This data source has no ' + MC.esc(sig.tf) + ' interval, so the read runs on ' +
+      MC.esc(sig.barInterval) + ' candles over a longer window. Calling it ' + MC.esc(sig.tf) +
+      ' outright would be a mislabel.">' + MC.esc(sig.tf) + '*</span>';
+  }
+
   function agoLabel(sec) {
     if (sec == null) return '';
     if (sec < 90) return 'just closed';
@@ -155,7 +169,7 @@
           '<div class="sig-conf" data-tip="How strongly the four desks agree — not a probability of profit">' +
             '<i style="width:' + sig.confidence + '%"></i><span>' + sig.confidence + '%</span>' +
           '</div>' +
-          '<span class="sig-tf">' + sig.tf + '</span>' +
+          tfChipHtml(sig) +
         '</div>' +
         '<div class="sig-desks">' +
           MC.signals.DESKS.map(function (desk) {
