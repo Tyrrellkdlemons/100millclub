@@ -11,10 +11,29 @@ const SERIES = [
   { id: 'T10YIE',   label: '10-yr inflation expectation', unit: '%' }
 ];
 
+/* Ask for a WINDOW, not all of history. DFF starts in 1954 and DGS10 in
+   1962 — four full-history CSVs is megabytes of text, which parsed fine on
+   a laptop and then timed the function out (502) on a cold start. `cosd`
+   trims it to the last ~6 months, which is all the strip draws anyway. */
+function windowStart() {
+  return new Date(Date.now() - 190 * 86400000).toISOString().slice(0, 10);
+}
+
 async function fred(id) {
-  const r = await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + id, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; 100MillClub/1.0)' }
-  });
+  // one slow series must not take the whole strip down with it
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 4500);
+  let r;
+  try {
+    r = await fetch(
+      'https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + id + '&cosd=' + windowStart(),
+      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; 100MillClub/1.0)' }, signal: ctl.signal }
+    );
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
   if (!r.ok) return null;
   const text = await r.text();
   const points = [];
@@ -36,11 +55,13 @@ async function fred(id) {
 async function eiaCrudeStocks() {
   const key = process.env.EIA_API_KEY;
   if (!key) return null;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 4500);
   try {
     const url = 'https://api.eia.gov/v2/petroleum/stoc/wstk/data/?api_key=' + encodeURIComponent(key) +
       '&frequency=weekly&data[0]=value&facets[series][]=WCESTUS1' +
       '&sort[0][column]=period&sort[0][direction]=desc&length=8';
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: ctl.signal });
     if (!r.ok) return null;
     const j = await r.json();
     const rows = j?.response?.data || [];
@@ -54,7 +75,11 @@ async function eiaCrudeStocks() {
       change: isFinite(prev) ? Math.round((latest - prev) / 1000 * 10) / 10 : null,
       series: rows.slice().reverse().map(x => parseFloat(x.value) / 1000).filter(isFinite)
     };
-  } catch { return null; }
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export default async () => {
